@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import GridLayout from '~/grid-fork/grid-layout.vue'
 import GridItem from '~/grid-fork/grid-item.vue'
 import {
@@ -188,12 +188,63 @@ const nav = [
 
 const activeId = ref('overview')
 const drawerOpen = ref(false)
+const drawerRef = ref(null)
+const openBtnRef = ref(null)
+const closeBtnRef = ref(null)
+let restoreFocusOnClose = true
 
 function go(id) {
+  restoreFocusOnClose = false
   drawerOpen.value = false
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const el = document.getElementById(id)
+  if (el) {
+    el.setAttribute('tabindex', '-1')
+    el.focus({ preventScroll: true })
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
   history.replaceState(null, '', `#${id}`)
 }
+
+function drawerFocusables() {
+  const root = drawerRef.value
+  if (!root) return []
+  return [...root.querySelectorAll('a[href], button:not([disabled])')].filter(
+    (el) => el.offsetParent !== null
+  )
+}
+
+function onDrawerKeydown(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    drawerOpen.value = false
+    return
+  }
+  if (e.key !== 'Tab') return
+  const items = drawerFocusables()
+  if (!items.length) return
+  const first = items[0]
+  const last = items[items.length - 1]
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
+watch(drawerOpen, async (open) => {
+  if (open) {
+    restoreFocusOnClose = true
+    document.addEventListener('keydown', onDrawerKeydown)
+    await nextTick()
+    closeBtnRef.value?.focus()
+    return
+  }
+  document.removeEventListener('keydown', onDrawerKeydown)
+  if (restoreFocusOnClose) openBtnRef.value?.focus()
+  restoreFocusOnClose = true
+})
 
 let observer = null
 onMounted(() => {
@@ -209,7 +260,10 @@ onMounted(() => {
   )
   els.forEach((el) => observer.observe(el))
 })
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  document.removeEventListener('keydown', onDrawerKeydown)
+})
 </script>
 
 <template>
@@ -218,12 +272,15 @@ onBeforeUnmount(() => observer?.disconnect())
       class="fixed inset-x-0 top-0 z-30 flex items-center gap-3 border-b border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur lg:hidden"
     >
       <button
+        ref="openBtnRef"
         type="button"
         class="rounded-md border border-neutral-300 px-2.5 py-1 text-sm"
         aria-label="Open navigation"
+        aria-controls="site-nav"
+        :aria-expanded="drawerOpen"
         @click="drawerOpen = true"
       >
-        ☰
+        <span aria-hidden="true">☰</span>
       </button>
       <span class="font-semibold">Vue Grid</span>
     </div>
@@ -231,10 +288,13 @@ onBeforeUnmount(() => observer?.disconnect())
     <div
       v-if="drawerOpen"
       class="fixed inset-0 z-40 bg-black/30 lg:hidden"
+      aria-hidden="true"
       @click="drawerOpen = false"
     />
 
     <aside
+      id="site-nav"
+      ref="drawerRef"
       class="fixed inset-y-0 left-0 z-50 w-64 transform overflow-y-auto border-r border-neutral-200 bg-white px-4 py-6 transition-transform duration-200 lg:sticky lg:top-0 lg:z-0 lg:h-screen lg:translate-x-0"
       :class="drawerOpen ? 'translate-x-0' : '-translate-x-full'"
     >
@@ -247,16 +307,17 @@ onBeforeUnmount(() => observer?.disconnect())
           Vue Grid
         </a>
         <button
+          ref="closeBtnRef"
           type="button"
           class="rounded-md px-2 py-1 text-sm text-neutral-500 lg:hidden"
           aria-label="Close navigation"
           @click="drawerOpen = false"
         >
-          ✕
+          <span aria-hidden="true">✕</span>
         </button>
       </div>
 
-      <nav class="space-y-5">
+      <nav class="space-y-5" aria-label="Documentation sections">
         <div v-for="section in nav" :key="section.group">
           <p class="mb-1.5 px-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
             {{ section.group }}
@@ -265,6 +326,7 @@ onBeforeUnmount(() => observer?.disconnect())
             <li v-for="item in section.items" :key="item.id">
               <a
                 :href="`#${item.id}`"
+                :aria-current="activeId === item.id ? 'true' : undefined"
                 class="block rounded-md px-2 py-1.5 text-sm transition"
                 :class="
                   activeId === item.id
