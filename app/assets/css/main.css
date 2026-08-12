@@ -1,0 +1,124 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+@theme static {
+  --font-sans: 'Public Sans', sans-serif;
+
+  --color-green-50: #effdf5;
+  --color-green-100: #d9fbe8;
+  --color-green-200: #b3f5d1;
+  --color-green-300: #75edae;
+  --color-green-400: #00dc82;
+  --color-green-500: #00c16a;
+  --color-green-600: #00a155;
+  --color-green-700: #007f45;
+  --color-green-800: #016538;
+  --color-green-900: #0a5331;
+  --color-green-950: #052e16;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.doc-root {
+  color-scheme: light;
+}
+
+.doc-h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111;
+}
+.doc-h2-sub {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #9a9a9a;
+}
+.doc-lead {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+  max-width: 46rem;
+  color: #525252;
+  line-height: 1.6;
+}
+.doc-inline {
+  border-radius: 0.35rem;
+  background: #f3f3f3;
+  padding: 0.05rem 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  color: #047857;
+}
+.doc-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82em;
+  color: #374151;
+  white-space: nowrap;
+}
+.doc-kbd {
+  display: inline-block;
+  border: 1px solid #d4d4d4;
+  border-bottom-width: 2px;
+  border-radius: 0.35rem;
+  background: #fafafa;
+  padding: 0.05rem 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  color: #333;
+}
+
+.doc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #ececec;
+  border-radius: 0.75rem;
+}
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.doc-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fafafa;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid #ececec;
+  white-space: nowrap;
+}
+.doc-table td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid #f3f3f3;
+  color: #404040;
+  vertical-align: top;
+}
+.doc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.doc-table tbody tr:hover {
+  background: #fcfcfc;
+}
+
+.doc-tile {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: color-mix(in srgb, #10b981 15%, transparent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #065f46;
+  text-align: center;
+}
+.doc-tile--locked {
+  background: #f3f4f6;
+  color: #6b7280;
+}
