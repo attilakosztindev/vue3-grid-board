@@ -299,3 +299,73 @@ a **behaviour change**, so it was left alone.
 
 Note this is only a fallback path — `controlPosition` uses the cached gesture frame
 whenever a gesture is in flight.
+
+---
+
+## 10. Keyboard drag and resize
+
+Upstream vue-grid-layout is pointer-only, which fails WCAG 2.1.1 _Keyboard_ (A) and
+2.5.7 _Dragging Movements_ (AA). The fork now ships a keyboard controller alongside
+the pointer one.
+
+### Key map
+
+| Key                                 | While idle        | While grabbed             |
+| ----------------------------------- | ----------------- | ------------------------- |
+| <kbd>Enter</kbd> / <kbd>Space</kbd> | pick the item up  | drop it where it is       |
+| <kbd>↑↓←→</kbd>                     | _not intercepted_ | move one cell             |
+| <kbd>Shift</kbd> + <kbd>↑↓←→</kbd>  | _not intercepted_ | resize by one column/row  |
+| <kbd>Esc</kbd>                      | —                 | restore the original slot |
+
+Arrow keys are deliberately inert until the item is grabbed, so a merely-focused tile
+never steals page scroll. `preventDefault()` is only called on keys the controller
+actually consumes.
+
+### Why it needed no new geometry
+
+The pointer engine already funnels everything through two `mitt` tuples that are
+expressed in **grid units, not pixels**:
+
+```
+emitter.emit('dragEvent',   ['dragmove',   id, x, y, h, w])
+emitter.emit('resizeEvent', ['resizemove', id, x, y, h, w])
+```
+
+The keyboard path emits the _same_ tuples, so collision resolution, `compact()`, the
+placeholder, `update:layout` and every consumer event work unchanged. No pixel math,
+no second code path through `calcXY` / `calcWH`.
+
+It also deliberately does **not** set the item's own `state.isDragging`. That leaves
+the existing `[x, y, w, h]` props watcher free to FLIP-animate the tile between slots,
+so keyboard moves glide exactly like pointer moves for free.
+
+### Lazy gesture start
+
+`grab()` only sets `state.grabbed`; it does not open a gesture. The `dragstart` /
+`resizestart` is emitted by the first arrow press (`beginKeyGesture`), which is what
+decides whether this is a move or a resize. Consequences:
+
+- Grab-then-drop with no arrow press emits nothing at all, so no spurious
+  `update:layout` and no placeholder flash.
+- Switching from moving to resizing mid-grab closes the drag gesture and opens a
+  resize one.
+
+That second point is why `cancelGrab()` cannot simply reverse the _current_ gesture —
+the earlier one is already committed. It instead diffs the live slot against
+`grabOrigin` and replays whichever channels are needed, **size first, then position**,
+so the width clamp (`cols - x`) is evaluated against the original width.
+
+### Announcements
+
+`grid-layout.vue` owns one visually-hidden `role="status" aria-live="polite"` region
+and listens for an `announce` event on the bus. Identical consecutive messages get a
+trailing zero-width space appended, otherwise a repeated string is not re-announced
+(e.g. pressing <kbd>↓</kbd> against vertical compaction, which is a legitimate no-op).
+
+Each tile carries `role="group"`, `aria-roledescription="Draggable grid item"`, a live
+`aria-label` ("Item 0, column 5, row 1, 4 wide, 2 tall") and an `aria-describedby`
+pointing at a single shared instructions paragraph — one `useId()` per grid, not per
+tile.
+
+Static tiles, non-interactive grids and the placeholder get no `tabindex` and no ARIA;
+the placeholder is additionally `aria-hidden`, as is the resize handle.

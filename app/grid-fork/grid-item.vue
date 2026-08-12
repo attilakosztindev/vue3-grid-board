@@ -83,6 +83,10 @@ const props = defineProps({
   radius: {
     type: Number,
     default: 22
+  },
+  ariaLabel: {
+    type: String,
+    default: null
   }
 })
 
@@ -105,6 +109,8 @@ let gestureFrame = null
 let shadowGesture = 0
 let rawStyle = null
 let dragSlot = null
+let keyGesture = null
+let grabOrigin = null
 
 const state = reactive({
   cols: 1,
@@ -118,6 +124,7 @@ const state = reactive({
   dragging: null,
   raised: false,
   isResizing: false,
+  grabbed: false,
   resizing: null,
   resizeMin: null,
   resizeMax: null,
@@ -153,8 +160,16 @@ const classObj = computed(() => ({
   'vue-draggable-dragging': state.isDragging,
   settling: state.raised,
   'disable-userselect': state.isDragging,
-  'no-touch': unref(draggableOrResizableAndNotStatic)
+  'no-touch': unref(draggableOrResizableAndNotStatic),
+  'vgl-grabbed': state.grabbed
 }))
+
+const itemName = computed(() => props.ariaLabel || `Item ${props.i}`)
+
+const itemLabel = computed(
+  () =>
+    `${unref(itemName)}, column ${state.innerX + 1}, row ${state.innerY + 1}, ${state.innerW} wide, ${state.innerH} tall`
+)
 
 emitter.on('updateWidth', updateWidth)
 emitter.on('setDraggable', setDraggableHandler)
@@ -300,6 +315,7 @@ onBeforeUnmount(() => {
   emitter.off('setResizable', setResizableHandler)
   emitter.off('setRowHeight', setRowHeightHandler)
   emitter.off('setColNum', setColNum)
+  endKeyGesture()
   clearSettle()
   endGestureFrame()
   pointerCtl?.destroy()
@@ -644,6 +660,151 @@ function updateWidth(width, colNum) {
   state.containerWidth = width
   if (colNum !== undefined && colNum !== null) state.cols = colNum
 }
+
+const ARROW_DELTAS = {
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1]
+}
+
+function currentSlot() {
+  const item = gridLayout?.state?.layout?.find((it) => it.i === props.i)
+  if (item) return { x: item.x, y: item.y, w: item.w, h: item.h }
+  return { x: state.innerX, y: state.innerY, w: state.innerW, h: state.innerH }
+}
+
+function announce(message) {
+  emitter.emit('announce', message)
+}
+
+function announceSlot(suffix) {
+  const slot = currentSlot()
+  const where = `${unref(itemName)}, column ${slot.x + 1}, row ${slot.y + 1}, ${slot.w} wide, ${slot.h} tall`
+  announce(suffix ? `${where}. ${suffix}` : where)
+}
+
+function beginKeyGesture(kind) {
+  if (keyGesture === kind) return
+  if (keyGesture) endKeyGesture()
+  const slot = currentSlot()
+  keyGesture = kind
+  if (kind === 'drag') {
+    emitter.emit('dragEvent', ['dragstart', props.i, slot.x, slot.y, slot.h, slot.w])
+  } else {
+    emitter.emit('resizeEvent', ['resizestart', props.i, slot.x, slot.y, slot.h, slot.w])
+  }
+}
+
+function endKeyGesture() {
+  if (!keyGesture) return
+  const kind = keyGesture
+  keyGesture = null
+  const slot = currentSlot()
+  if (kind === 'drag') {
+    emitter.emit('dragEvent', ['dragend', props.i, slot.x, slot.y, slot.h, slot.w])
+  } else {
+    emitter.emit('resizeEvent', ['resizeend', props.i, slot.x, slot.y, slot.h, slot.w])
+  }
+}
+
+function keyMoveBy(dx, dy) {
+  if (!state.draggable || props.static) return
+  beginKeyGesture('drag')
+  const slot = currentSlot()
+  const x = Math.max(0, Math.min(state.cols - slot.w, slot.x + dx))
+  const y = Math.max(0, slot.y + dy)
+  if (x !== slot.x || y !== slot.y) {
+    emitter.emit('dragEvent', ['dragmove', props.i, x, y, slot.h, slot.w])
+    emit('move', props.i, x, y)
+  }
+  nextTick(() => announceSlot())
+}
+
+function keyResizeBy(dw, dh) {
+  if (!state.resizable || props.static) return
+  beginKeyGesture('resize')
+  const slot = currentSlot()
+  const w = Math.max(props.minW, Math.min(props.maxW, state.cols - slot.x, slot.w + dw))
+  const h = Math.max(props.minH, Math.min(props.maxH, slot.h + dh))
+  if (w !== slot.w || h !== slot.h) {
+    emitter.emit('resizeEvent', ['resizemove', props.i, slot.x, slot.y, h, w])
+    emit('resize', props.i, h, w)
+  }
+  nextTick(() => announceSlot())
+}
+
+function grab() {
+  grabOrigin = currentSlot()
+  state.grabbed = true
+  announceSlot(
+    'Picked up. Arrow keys move, Shift plus arrow keys resize, Enter drops, Escape cancels.'
+  )
+}
+
+function releaseGrab() {
+  if (!state.grabbed) return
+  const moved = keyGesture !== null
+  endKeyGesture()
+  state.grabbed = false
+  grabOrigin = null
+  nextTick(() => announceSlot(moved ? 'Dropped.' : 'Put down.'))
+}
+
+function cancelGrab() {
+  if (!state.grabbed) return
+  const origin = grabOrigin
+  endKeyGesture()
+
+  if (origin) {
+    let slot = currentSlot()
+    if (slot.w !== origin.w || slot.h !== origin.h) {
+      beginKeyGesture('resize')
+      emitter.emit('resizeEvent', ['resizemove', props.i, slot.x, slot.y, origin.h, origin.w])
+      endKeyGesture()
+      slot = currentSlot()
+    }
+    if (slot.x !== origin.x || slot.y !== origin.y) {
+      beginKeyGesture('drag')
+      emitter.emit('dragEvent', ['dragmove', props.i, origin.x, origin.y, origin.h, origin.w])
+      endKeyGesture()
+    }
+  }
+
+  state.grabbed = false
+  grabOrigin = null
+  nextTick(() => announceSlot('Returned to its original place.'))
+}
+
+function onKeydown(e) {
+  if (!unref(draggableOrResizableAndNotStatic)) return
+  if (e.target !== exposeObj.el) return
+  if (e.altKey || e.ctrlKey || e.metaKey) return
+
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault()
+    if (state.grabbed) releaseGrab()
+    else grab()
+    return
+  }
+
+  if (e.key === 'Escape') {
+    if (!state.grabbed) return
+    e.preventDefault()
+    cancelGrab()
+    return
+  }
+
+  const delta = ARROW_DELTAS[e.key]
+  if (!delta || !state.grabbed) return
+  e.preventDefault()
+  if (e.shiftKey) keyResizeBy(delta[0], delta[1])
+  else keyMoveBy(delta[0], delta[1])
+}
+
+function onBlur() {
+  if (state.grabbed) releaseGrab()
+}
 </script>
 
 <template>
@@ -653,9 +814,18 @@ function updateWidth(width, colNum) {
     class="vue-grid-item"
     :class="classObj"
     :style="[state.style, gestureStyle]"
+    :tabindex="draggableOrResizableAndNotStatic ? 0 : undefined"
+    :role="draggableOrResizableAndNotStatic ? 'group' : undefined"
+    :aria-roledescription="draggableOrResizableAndNotStatic ? 'Draggable grid item' : undefined"
+    :aria-label="draggableOrResizableAndNotStatic ? itemLabel : undefined"
+    :aria-describedby="draggableOrResizableAndNotStatic ? gridLayout.instructionsId : undefined"
+    :aria-hidden="placeholder ? 'true' : undefined"
+    :data-grabbed="state.grabbed ? 'true' : undefined"
+    @keydown="onKeydown"
+    @blur="onBlur"
   >
     <slot />
-    <span v-if="resizableAndNotStatic" class="vue-resizable-handle" />
+    <span v-if="resizableAndNotStatic" class="vue-resizable-handle" aria-hidden="true" />
   </div>
 </template>
 
@@ -669,6 +839,17 @@ function updateWidth(width, colNum) {
 
 .vue-grid-item.no-touch {
   touch-action: none;
+}
+
+.vue-grid-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.vue-grid-item.vgl-grabbed {
+  z-index: 100;
+  outline: 2px dashed currentColor;
+  outline-offset: 2px;
 }
 
 .vue-grid-item.vue-draggable-dragging {

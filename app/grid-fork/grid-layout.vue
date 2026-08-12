@@ -1,6 +1,15 @@
 <script setup>
 import mitt from 'mitt'
-import { onBeforeMount, onMounted, onBeforeUnmount, reactive, watch, provide, nextTick } from 'vue'
+import {
+  onBeforeMount,
+  onMounted,
+  onBeforeUnmount,
+  reactive,
+  watch,
+  provide,
+  nextTick,
+  useId
+} from 'vue'
 import {
   bottom,
   compact,
@@ -79,14 +88,18 @@ const state = reactive({
     i: -1
   },
   layout: [],
-  gestureId: 0
+  gestureId: 0,
+  announcement: ''
 })
 
+const instructionsId = useId()
+
 provide('emitter', emitter)
-provide('gridLayout', { props, state })
+provide('gridLayout', { props, state, instructionsId })
 
 emitter.on('resizeEvent', onResizeEvent)
 emitter.on('dragEvent', onDragEvent)
+emitter.on('announce', onAnnounce)
 emit('layout-created', props.layout)
 
 seedLayout()
@@ -152,12 +165,18 @@ onMounted(() => emit('layout-mounted', state.layout))
 onBeforeUnmount(() => {
   emitter.off('resizeEvent', onResizeEvent)
   emitter.off('dragEvent', onDragEvent)
+  emitter.off('announce', onAnnounce)
   if (resizeObserver && exposeObj.el) resizeObserver.disconnect()
   if (import.meta.client) document.removeEventListener('selectstart', preventSelection)
 })
 
 function preventSelection(e) {
   e.preventDefault()
+}
+
+function onAnnounce(message) {
+  if (!message) return
+  state.announcement = message === state.announcement ? `${message}\u200b` : message
 }
 
 function seedLayout() {
@@ -302,6 +321,13 @@ function setRef(e) {
       placeholder
       :gesture-id="state.gestureId"
     />
+    <p :id="instructionsId" class="vgl-sr">
+      Press Enter or Space to pick the item up. Then use the arrow keys to move it, or hold Shift
+      with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back.
+    </p>
+    <p class="vgl-sr" role="status" aria-live="polite" aria-atomic="true">
+      {{ state.announcement }}
+    </p>
   </div>
 </template>
 
@@ -313,5 +339,17 @@ function setRef(e) {
 
 .vue-grid-layout.vgl-gesture {
   transition: none;
+}
+
+.vgl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 </style>
