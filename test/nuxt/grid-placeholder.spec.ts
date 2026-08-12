@@ -55,8 +55,9 @@ function mountBoard() {
 
   const layout = () => wrapper.vm.layout as Item[]
   const item = (id: string) => layout().find((it) => it.i === id)!
+  const shadowEl = () => wrapper.find('.vue-grid-placeholder')
 
-  return { wrapper, emitter, shadow, layout, item }
+  return { wrapper, emitter, shadow, layout, item, shadowEl }
 }
 
 function overlaps(a: { x: number; y: number; w: number; h: number }, b: Item) {
@@ -110,6 +111,55 @@ describe('drag placeholder', () => {
         expect(overlaps(shadow, other), `${where}: shadow over item ${other.i}`).toBe(false)
       }
     }
+  })
+
+  it('snaps rather than gliding, so it is never painted mid-flight over a tile', async () => {
+    const board = mountBoard()
+    const el = board.shadowEl().element as unknown as {
+      animate: (...args: unknown[]) => unknown
+    }
+
+    const started: unknown[] = []
+    el.animate = (...args: unknown[]) => {
+      started.push(args)
+      return {
+        cancel() {},
+        finish() {},
+        set onfinish(_v: unknown) {},
+        set oncancel(_v: unknown) {}
+      }
+    }
+
+    board.emitter.emit('dragEvent', ['dragstart', '4', 0, 3, 4, 6])
+    await nextTick()
+    for (const [x, y] of [
+      [6, 3],
+      [6, 6],
+      [0, 0],
+      [3, 4]
+    ]) {
+      board.emitter.emit('dragEvent', ['dragmove', '4', x, y, 4, 6])
+      await nextTick()
+    }
+
+    // A FLIP on the shadow renders it between two slots, i.e. across tiles it is
+    // not landing on. It must move by re-layout only.
+    expect(started).toEqual([])
+  })
+
+  it('paints under the tiles, so a tile gliding clear covers it', () => {
+    const board = mountBoard()
+    const children = [...board.wrapper.find('.vue-grid-layout').element.children]
+    const shadowIndex = children.findIndex((n) => n.classList.contains('vue-grid-placeholder'))
+    const firstTileIndex = children.findIndex(
+      (n) => n.classList.contains('vue-grid-item') && !n.classList.contains('vue-grid-placeholder')
+    )
+
+    // Every tile is absolutely positioned and the shadow carries no z-index, so
+    // paint order is DOM order and the shadow has to come first. (The z-index side
+    // of this lives in the SFC stylesheet, which is not injected under test.)
+    expect(shadowIndex).toBeGreaterThanOrEqual(0)
+    expect(shadowIndex).toBeLessThan(firstTileIndex)
   })
 
   it('keeps the shadow on the item while resizing', async () => {

@@ -56,10 +56,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  gestureId: {
-    type: Number,
-    default: 0
-  },
   dragIgnoreFrom: {
     type: String,
     default: 'a, button'
@@ -106,7 +102,6 @@ const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
 let pointerCtl
 const settleAnims = new Set()
 let gestureFrame = null
-let shadowGesture = 0
 let rawStyle = null
 let dragSlot = null
 let keyGesture = null
@@ -224,17 +219,6 @@ watch(
   }
 )
 
-watch(
-  () => props.gestureId,
-  (id) => {
-    if (!props.placeholder) return
-    clearSettle()
-    nextTick(() => {
-      shadowGesture = id
-    })
-  }
-)
-
 watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, prev) => {
   state.innerX = props.x
   state.innerY = props.y
@@ -242,9 +226,11 @@ watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, prev)
   state.innerH = props.h
   createStyle()
 
+  // The shadow is a readout of the slot the tile will land in, so it snaps. Gliding
+  // would paint it, mid-flight, across tiles it is never going to land on.
+  if (props.placeholder) return
   if (state.isDragging || state.isResizing) return
   if (state.raised) return
-  if (props.placeholder && props.gestureId !== shadowGesture) return
 
   const [nx, ny, nw, nh] = next
   const [ox, oy, ow, oh] = prev
@@ -870,8 +856,12 @@ function onBlur() {
   background: red;
   border-radius: var(--vgl-radius, 22px);
   opacity: 0.2;
-  transition-duration: 100ms;
-  z-index: 2;
+  /* Snaps, like the FLIP above: a lagging width/height would spill the shadow
+     over neighbours that have already moved out of the way. */
+  transition: none;
+  /* No z-index on purpose. Every tile is absolutely positioned, so paint order is
+     DOM order, and the container renders this one first -- putting it below the
+     tiles without needing it to outrank the dragged tile's z-index. */
   user-select: none;
 }
 

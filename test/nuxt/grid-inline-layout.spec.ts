@@ -24,7 +24,7 @@ describe('grid inline layout invariants', () => {
 
   it('positions an interactive tile inline and disables native touch gestures', () => {
     const wrapper = mountGrid()
-    const style = wrapper.get('.vue-grid-item').attributes('style')
+    const style = wrapper.get('.vue-grid-item:not(.vue-grid-placeholder)').attributes('style')
 
     expect(style).toContain('position: absolute')
     expect(style).toContain('touch-action: none')
@@ -35,7 +35,7 @@ describe('grid inline layout invariants', () => {
     ['static', { static: true }]
   ])('leaves touch-action unset on a %s tile', (_label, itemProps) => {
     const wrapper = mountGrid(itemProps)
-    const style = wrapper.get('.vue-grid-item').attributes('style')
+    const style = wrapper.get('.vue-grid-item:not(.vue-grid-placeholder)').attributes('style')
 
     expect(style).toContain('position: absolute')
     expect(style).not.toContain('touch-action')

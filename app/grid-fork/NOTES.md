@@ -183,38 +183,23 @@ The placeholder is a ghost `GridItem` rendered by the container with `placeholde
 set. It is a readout of where the dragged tile will land, so it is never interactive
 — no resize handle, no pointer controller.
 
-It **does** glide from slot to slot. Since `left`/`top` are not transitioned, that
-FLIP is the only thing producing the movement; removing it makes the shadow snap.
+It **snaps** from slot to slot — no FLIP, and `transition: none` so width/height do
+not lag either. The position watcher in `grid-item.vue` returns early on
+`props.placeholder` before it reaches `settleFrom`. See §15 for why gliding it is
+not merely a style choice but actively wrong.
 
-The one movement it must **not** animate is the hand-over at the start of a gesture.
-The shadow's previous slot belongs to whatever tile was dragged last time, so
-FLIPping that sends the ghost sliding across the whole grid from an unrelated tile.
-Symptom: "the shadow of the grid item's starting position is the position of the
-lastly selected item's original position."
+It also renders **before** `<slot />` in the container template and carries **no
+`z-index`**. Every grid item is `position: absolute`, so with `z-index: auto` paint
+order is DOM order, and being first puts the shadow underneath every tile. That is
+deliberate: it means a tile reflowing out of the way covers the shadow rather than
+the shadow bleeding across the tile. Moving it after the slot, or giving it a
+`z-index`, reintroduces the bug in §15.
 
-### Why the fix looks the way it does
-
-The container bumps `state.gestureId` on every `dragstart`/`resizestart`. The tile
-compares the live prop against `shadowGesture`, a marker advanced **on `nextTick`**.
-
-Two failed approaches, both worth not repeating:
-
-1. **A token consumed by the position watcher.** Fails because a hand-over often
-   lands the shadow on the slot it already occupied — no position change, so the
-   watcher never fires and never consumes the token. The token then gets eaten by the
-   gesture's first genuine move, killing exactly the glide it was supposed to
-   preserve.
-2. **A flag set by a `gestureId` watcher registered above the position watcher.**
-   Fails because Vue gives every pre-flush watcher of one component the same
-   `job.id` (`instance.uid`), so they run in the order their props were _assigned_,
-   not the order they were registered. `:gesture-id` is bound last in the template,
-   so the position watcher runs first and sees the flag still unset.
-
-The `nextTick` deferral is what makes the current version order-independent: props
-are all written before any watcher callback runs, so the position watcher always
-reads the _new_ `gestureId`, while the marker stays on the old value until the flush
-is over. Both orderings therefore agree that a hand-over is in progress, and a
-hand-over needing no movement cannot swallow the next real glide.
+A previous version glided the shadow and needed a `gestureId` / `shadowGesture`
+hand-over protocol to suppress the one animation it must never play — the jump at
+`dragstart` from whatever slot the _previously_ dragged tile left it in. Snapping
+deletes that whole problem, and that machinery is gone. Do not bring it back
+without re-reading §15.
 
 ---
 
@@ -577,3 +562,51 @@ they do.
 Worth remembering when touching these handlers: `l` is a **live reference into
 `state.layout`**, not a copy. Anything read off it before `moveElement`/`compact` is a
 snapshot of the past.
+
+---
+
+## 15. The shadow must never paint over another tile
+
+Symptom: "the shadow sometimes slightly crossing other grid items". Two independent
+causes, both required fixing.
+
+### Cause 1 — stacked FLIPs sent the shadow flying
+
+The placeholder went through the same position watcher as a real tile, so every slot
+change started a 220ms `settleFrom` FLIP. Those animations use `composite: 'add'` and
+nothing cancels the previous one, so during a drag they **sum**: 1, then 2, then 3
+overlapping animations, each adding its own offset. Measured on a live board, the
+shadow was painted up to **730px** away from the slot it actually represented,
+sweeping across tiles it was never going to land on.
+
+A FLIP is legitimate for a tile — a tile is an object moving from A to B. The shadow
+is not an object, it is a _readout_ of where the dragged tile will land. Rendering it
+between two slots means rendering a lie. So it snaps, and `transition: none` keeps
+width/height from lagging into a neighbour that has already moved clear.
+
+### Cause 2 — the shadow outranked the tile getting out of its way
+
+Reflowing tiles call `settleFrom(..., false)`, so `state.raised` stays false, they
+get no `.settling` class, and they keep `z-index: auto`. The placeholder had
+`z-index: 2`. Net effect: the shadow painted **on top of** the very tile that was
+gliding aside to make room for it. Fix: render the shadow first in the container and
+drop its `z-index` (see §5).
+
+### Measurements
+
+Identical 385-probe sweep on a live board, using `document.elementFromPoint` so the
+result reflects paint order rather than bare rect intersection:
+
+|        | max shadow drift from its slot | shadow painted over a tile |
+| ------ | ------------------------------ | -------------------------- |
+| before | 730px                          | 22                         |
+| after  | 0px                            | 0                          |
+
+80 purely _geometric_ overlaps remain in both runs. Those are tiles caught mid-reflow
+and are desirable — the point is that the tile now occludes the shadow instead of the
+other way round.
+
+Regression coverage lives in `test/nuxt/grid-placeholder.spec.ts`: one test stubs
+`el.animate` on the placeholder and asserts it is never called, another asserts the
+shadow precedes the first real tile in DOM order. The z-index half cannot be asserted
+under test because scoped SFC styles are not injected there.

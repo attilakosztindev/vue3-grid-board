@@ -88,7 +88,6 @@ const state = reactive({
     i: -1
   },
   layout: [],
-  gestureId: 0,
   announcement: ''
 })
 
@@ -247,7 +246,6 @@ function onDragEvent([eventName, id, x, y, h, w] = []) {
   }
 
   const gesturing = eventName === 'dragmove' || eventName === 'dragstart'
-  if (eventName === 'dragstart') state.gestureId++
 
   state.layout = moveElement(state.layout, l, x, y, true, false)
   compact(state.layout, props.verticalCompact, id)
@@ -280,7 +278,6 @@ function onResizeEvent([eventName, id, x, y, h, w] = []) {
   l.h = h
 
   const gesturing = eventName === 'resizestart' || eventName === 'resizemove'
-  if (eventName === 'resizestart') state.gestureId++
 
   compact(state.layout, props.verticalCompact, id)
 
@@ -311,7 +308,8 @@ function setRef(e) {
     :class="{ 'vgl-gesture': state.isDragging }"
     :style="state.mergedStyle"
   >
-    <slot />
+    <!-- Rendered before the tiles so it paints underneath them: a tile gliding out of
+         the way should cover the shadow, not have the shadow bleed across it. -->
     <GridItem
       v-show="state.isDragging"
       class="vue-grid-placeholder"
@@ -321,8 +319,8 @@ function setRef(e) {
       :h="state.placeholder.h"
       i="placeholder"
       placeholder
-      :gesture-id="state.gestureId"
     />
+    <slot />
     <p :id="instructionsId" class="vgl-sr">
       Press Enter or Space to pick the item up. Then use the arrow keys to move it, or hold Shift
       with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back.
