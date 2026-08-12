@@ -418,3 +418,48 @@ supposed to propagate to the viewport, but Chrome does not honour `clip` that wa
 with `html { overflow-x: clip }` the page still scrolled horizontally to 730px during
 a drag. On a normal element it clips as expected (measured `scrollX` pinned at 0 with
 a tile 412px past the card's right edge).
+
+---
+
+## 12. Edge auto-scroll must opt out of CSS `scroll-behavior`
+
+`runAutoScroll` in `usePointerDragResize.js` used to call:
+
+```js
+window.scrollBy(dx, dy)
+```
+
+Per CSSOM View, the two-argument form is equivalent to `behavior: 'auto'`, and `auto`
+resolves to the **CSS `scroll-behavior` of the scrolling box**. This app sets
+`html { scroll-behavior: smooth }` for the docs anchor navigation, so every auto-scroll
+tick was queuing an _animated_ scroll rather than applying an instant delta — each new
+frame superseding the previous animation, so the page crawled instead of tracking the
+cursor.
+
+Measured on the live page, same call, only the CSS differing:
+
+| `scroll-behavior` | `window.scrollBy(0, 18)` immediate delta |
+| ----------------- | ---------------------------------------- |
+| `smooth`          | **0 px**                                 |
+| `auto`            | 18 px                                    |
+
+`scrollBy(0, 18)` under `smooth` is indistinguishable from an explicit
+`behavior: 'smooth'` call. Fixed by naming the behaviour instead of inheriting it:
+
+```js
+window.scrollBy({ left: dx, top: dy, behavior: 'instant' })
+```
+
+After the fix, holding the pointer 40 px into the 60 px edge band scrolls 12 px/frame,
+exactly matching `speed()`'s `(40 / 60) * MAX_SPEED` ramp (252 px over 20 frames).
+
+Two things made this easy to miss:
+
+- The `prefers-reduced-motion: reduce` block in `main.css` sets `scroll-behavior: auto`,
+  so the old code worked **by accident** for reduced-motion users. The bug only appeared
+  for everyone else.
+- It is invisible until a consumer sets `scroll-behavior: smooth`. A grid dropped into a
+  page without it behaves fine, so the fork looked correct in isolation.
+
+`behavior: 'instant'` is the only correct value here — `'auto'` is what re-introduces the
+bug, since it defers to the CSS.

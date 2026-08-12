@@ -187,7 +187,7 @@ export function usePointerDragResize(root, options) {
       else if (clientX > vw - EDGE) dx = speed(clientX - (vw - EDGE))
 
       if (dx || dy) {
-        window.scrollBy(dx, dy)
+        window.scrollBy({ left: dx, top: dy, behavior: 'instant' })
         emitMoveNow()
         scrollRaf = requestAnimationFrame(step)
       }
