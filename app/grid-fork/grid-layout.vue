@@ -308,8 +308,8 @@ function setRef(e) {
     :class="{ 'vgl-gesture': state.isDragging }"
     :style="state.mergedStyle"
   >
-    <!-- Rendered before the tiles so it paints underneath them: a tile gliding out of
-         the way should cover the shadow, not have the shadow bleed across it. -->
+    <!-- Rendered first because it is a backdrop, but paint order is settled by
+         z-index, not by this: see the placeholder rule in grid-item.vue. -->
     <GridItem
       v-show="state.isDragging"
       class="vue-grid-placeholder"

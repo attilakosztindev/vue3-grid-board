@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import GridLayout from '~/grid-fork/grid-layout.vue'
 import GridItem from '~/grid-fork/grid-item.vue'
+import gridItemSource from '~/grid-fork/grid-item.vue?raw'
 
 type Item = { i: string; x: number; y: number; w: number; h: number }
 
@@ -146,23 +147,30 @@ describe('drag placeholder', () => {
     // mid-flight has to restart from wherever it reached, so it falls further behind
     // on each change rather than converging; a transition on left/top always
     // interpolates from the painted value to the new one. Measured over a full sweep,
-    // the FLIP left the shadow up to 1394px from the slot it was meant to show.
+    // the FLIP ran up to 4 settles at once and threw the shadow 511px past the slot
+    // it was heading for.
     expect(started).toEqual([])
   })
 
-  it('paints under the tiles, so a tile gliding clear covers it', () => {
-    const board = mountBoard()
-    const children = [...board.wrapper.find('.vue-grid-layout').element.children]
-    const shadowIndex = children.findIndex((n) => n.classList.contains('vue-grid-placeholder'))
-    const firstTileIndex = children.findIndex(
-      (n) => n.classList.contains('vue-grid-item') && !n.classList.contains('vue-grid-placeholder')
-    )
+  it('stacks above an idle tile but below the tile being dragged', () => {
+    const zOf = (selector: string) => {
+      const rule = gridItemSource.match(
+        new RegExp(`\\.vue-grid-item\\.${selector}\\s*\\{([^}]*)\\}`)
+      )?.[1]
+      expect(rule, `no rule for .${selector}`).toBeTruthy()
+      return Number(rule?.match(/z-index:\s*(\d+)/)?.[1])
+    }
 
-    // Every tile is absolutely positioned and the shadow carries no z-index, so
-    // paint order is DOM order and the shadow has to come first. (The z-index side
-    // of this lives in the SFC stylesheet, which is not injected under test.)
-    expect(shadowIndex).toBeGreaterThanOrEqual(0)
-    expect(shadowIndex).toBeLessThan(firstTileIndex)
+    // The shadow is translucent, so it has to sit over the tiles reflowing around it
+    // or it disappears under whichever one is gliding across. Idle tiles carry no
+    // z-index at all, and every active tile carries the dragging one, so the shadow
+    // belongs strictly between the two. Scoped SFC styles are not injected under
+    // test, so this reads the contract out of the stylesheet itself.
+    const shadow = zOf('vue-grid-placeholder')
+    const dragged = zOf('vue-draggable-dragging')
+
+    expect(shadow).toBeGreaterThan(0)
+    expect(shadow).toBeLessThan(dragged)
   })
 
   it('keeps the shadow on the item while resizing', async () => {

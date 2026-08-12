@@ -201,12 +201,26 @@ in the placeholder rule. §15 has the measurements, but the two reasons are:
    needed a `gestureId` / `shadowGesture` hand-over protocol for exactly this; that
    machinery is gone and should not come back.
 
-It also renders **before** `<slot />` in the container template and carries **no
-`z-index`**. Every grid item is `position: absolute`, so with `z-index: auto` paint
-order is DOM order, and being first puts the shadow underneath every tile. That is
-deliberate: it means a tile reflowing out of the way covers the shadow rather than
-the shadow bleeding across the tile. Moving it after the slot, or giving it a
-`z-index`, reintroduces the bug in §15.
+### Stacking
+
+The shadow carries **`z-index: 1`**, which puts it in the only band that works:
+
+| element                                                                           | z-index | vs. the shadow |
+| --------------------------------------------------------------------------------- | ------- | -------------- |
+| an idle tile, including one reflowing out of the way                              | `auto`  | shadow on top  |
+| the shadow                                                                        | `1`     | —              |
+| any active tile (`vue-draggable-dragging`, `vgl-grabbed`, `resizing`, `settling`) | `100`   | tile on top    |
+
+It has to be **above idle tiles** because it is translucent (`opacity: 0.2`) — under
+them it simply vanishes whenever a tile glides across it. It has to stay **below the
+active band** so the tile under the cursor is never covered by its own shadow.
+
+Anything strictly between `0` and `100` would do; the spec asserts the relationship
+rather than the literal `1`.
+
+It also renders before `<slot />` in the container template, but nothing depends on
+that any more — it is just where a backdrop belongs. Paint order is settled by
+`z-index`, not by DOM order.
 
 ---
 
@@ -572,66 +586,69 @@ snapshot of the past.
 
 ---
 
-## 15. The shadow must never paint over another tile
+## 15. Shadow stacking, and two ways to measure it wrongly
 
-Symptom: "the shadow sometimes slightly crossing other grid items". Two independent
-causes, and a measurement trap that made one of them look far worse than it is.
+Symptom: "the shadow sometimes slightly crossing other grid items", later followed by
+"now the shadow slips beneath them". Both are the same axis — where the shadow sits in
+the stacking order — and the answer is the band in §5: above idle tiles, below active
+ones.
 
-### Cause 1 — the shadow outranked the tile getting out of its way
+The original bug was `z-index: 2` on the shadow against `z-index: 100` on the dragged
+tile but **`auto` on tiles merely reflowing out of the way** (they settle with
+`raise = false`, so they never get `.settling`). So the shadow painted over the very
+tile gliding aside to make room for it. The first attempt over-corrected — dropping
+the z-index entirely put the shadow under _everything_, and since it is translucent it
+disappeared instead. `z-index: 1` is the fix: one band above idle tiles, still two
+orders of magnitude below the active band.
 
-This is the one that produced the reported artefact. Reflowing tiles call
-`settleFrom(..., false)`, so `state.raised` stays false, they get no `.settling`
-class, and they keep `z-index: auto`. The placeholder had `z-index: 2`. Net effect:
-the shadow painted **on top of** the very tile that was gliding aside to make room
-for it.
+### Stacked FLIPs (separate, real, fixed)
 
-Fix: render the shadow first in the container and drop its `z-index` (see §5). Note
-this makes a mid-flight shadow harmless rather than impossible — tiles caught
-reflowing still _geometrically_ intersect it, they now simply occlude it.
+`settleFrom` animations use `composite: 'add'` and nothing cancelled the previous one,
+so re-targeting mid-flight summed the legs instead of replacing them — up to **4** live
+at once. `settleFrom` now measures the offset an in-flight settle is still painting,
+folds it into the new delta, and cancels the old animation. After the fix a tile never
+has more than one live settle and always comes to rest at exactly `transform: none`.
 
-### Cause 2 — stacked FLIPs
+### Two measurement traps, both of which produced confident nonsense
 
-`settleFrom` animations use `composite: 'add'` and nothing cancelled the previous
-one, so re-targeting mid-flight summed the legs instead of replacing them. Up to
-**4** were live at once on the shadow. `settleFrom` now measures the offset an
-in-flight settle is still painting, folds it into the new delta, and cancels the old
-animation, so at most one is ever live and it always starts from what is on screen.
+Automation runs with the tab hidden, and that breaks two things independently:
 
-This applies to tiles too, not just the shadow: after the fix a tile never has more
-than one live settle and always comes to rest at exactly `transform: none`.
+1. **The document timeline is frozen**, so every WAAPI animation sits pinned at its
+   first keyframe. Measuring drift like that reported 700–2000px excursions that do
+   not exist. Fix: advance `anim.currentTime` by hand, ~16ms per simulated frame.
+2. **`scroll-behavior: smooth` never lands** (same root cause as §12), so scrolling the
+   grid into view silently does nothing. `document.elementFromPoint` only hit-tests
+   inside the viewport and returns `null` outside it — which reads as "no paint-over
+   found" no matter what is on screen. An entire 4300-probe run scored a clean zero
+   purely because the grid was 1660px below the fold. Fix: set
+   `scrollBehavior = 'auto'`, scroll with `behavior: 'instant'`, and **count skipped
+   probes** so a vacuous run cannot masquerade as a passing one.
 
-### Why the shadow does not use `settleFrom` at all
+A third, milder trap: tiles have a 22px `border-radius`, so a probe at the centre of a
+thin overlap sliver lands in a rounded corner and hit-tests through to whatever is
+behind. That alone accounted for 18 apparent "shadow is underneath" results. Only probe
+overlaps wider than twice the radius.
 
-Even fixed, a FLIP is the wrong mechanism for the shadow. It re-targets on every cell
-the pointer crosses, far faster than a 220ms glide finishes, so it spends its whole
-life being interrupted. A CSS transition handles that natively — it interpolates from
-the currently painted value — and it cannot run at all on an element that was
-`display: none` last frame, which is exactly the `dragstart` hand-over that used to
-need the `gestureId` protocol.
+### Results
 
-### Measurements
+Serpentine drag across every slot of every item, adjacent cells only, ~1 cell per
+100ms, grid parked in view, corner-safe probes:
 
-Serpentine drag across every slot for every item, adjacent cells only, ~1 cell per
-100ms. The tab is hidden during automation so the document timeline is frozen; the
-animation clock is therefore advanced by hand, 16ms per frame. **Getting this wrong
-is the trap**: leaving the clock frozen pins every animation at its first keyframe
-and reports drift figures in the 700–2000px range that are pure artefact.
+| probe                                   | result                                   |
+| --------------------------------------- | ---------------------------------------- |
+| shadow above an idle tile it overlaps   | 91 / 91                                  |
+| shadow above the tile being dragged     | 0 / 12 (correct — the tile stays on top) |
+| tile z-index during a real pointer drag | 100 vs the shadow's 1                    |
 
-"Excursion" is how far outside the corridor between the slot it left and the slot it
-is heading for the shadow was ever painted — i.e. actual overshoot, not lag.
-
-|                        | live anims on the shadow | max excursion | gestures gliding in at `dragstart` | painted over a tile | offset once settled |
-| ---------------------- | ------------------------ | ------------- | ---------------------------------- | ------------------- | ------------------- |
-| FLIP                   | 4                        | 511px         | 5 of 5                             | 0                   | 0                   |
-| CSS transition (fixed) | 2 (`left` + `top`)       | 79px          | 0                                  | 0                   | 0                   |
-
-Both columns show 0 paint-overs because the §15 cause-1 fix is in both — that one is
-what closes the reported bug. The transition's win is the other three columns.
+The dragged-tile row needs a **real** pointer drag: driving `emitter.emit('dragEvent',…)`
+directly never adds `.vue-draggable-dragging`, so the tile keeps `z-index: auto` and the
+shadow appears to cover it. That is a harness artefact, not a bug — dispatch real
+`PointerEvent`s to check anything that depends on gesture classes.
 
 ### Regression coverage
 
-`test/nuxt/grid-placeholder.spec.ts` stubs `el.animate` on the placeholder and
-asserts it is never called (the shadow must glide by transition, not FLIP), and
-asserts the shadow precedes the first real tile in DOM order. The `z-index` half
-cannot be asserted under test because scoped SFC styles are not injected there, and
-neither can the transition itself — both were verified in the browser instead.
+`test/nuxt/grid-placeholder.spec.ts` stubs `el.animate` on the placeholder and asserts
+it is never called (the shadow glides by transition, not FLIP), and parses the SFC
+stylesheet to assert the shadow's z-index is above 0 and below the dragging one. It
+reads the stylesheet because scoped SFC styles are not injected under test, so a
+computed-style assertion would silently pass on an empty string.

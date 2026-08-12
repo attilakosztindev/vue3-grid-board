@@ -909,9 +909,12 @@ function onBlur() {
     top 200ms ease,
     width 200ms ease,
     height 200ms ease;
-  /* No z-index on purpose. Every tile is absolutely positioned, so paint order is
-     DOM order, and the container renders this one first -- putting it below the
-     tiles without needing it to outrank the dragged tile's z-index. */
+  /* Above the tiles reflowing around it -- those carry no z-index of their own -- so
+     a translucent shadow stays readable instead of vanishing under whichever tile is
+     gliding across it. Still far below the 100 every *active* tile gets (dragging,
+     grabbed, resizing, settling), so the tile under the cursor stays on top of its
+     own shadow. */
+  z-index: 1;
   user-select: none;
 }
 
