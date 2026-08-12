@@ -255,7 +255,7 @@ function onDragEvent([eventName, id, x, y, h, w] = []) {
   }
 
   state.layout = moveElement(state.layout, l, x, y, true, false)
-  compact(state.layout, props.verticalCompact)
+  compact(state.layout, props.verticalCompact, id)
   updateHeight()
   emitIfChanged()
 }
@@ -286,7 +286,7 @@ function onResizeEvent([eventName, id, x, y, h, w] = []) {
     state.isDragging = false
   }
 
-  compact(state.layout, props.verticalCompact)
+  compact(state.layout, props.verticalCompact, id)
   updateHeight()
   emitIfChanged()
 }

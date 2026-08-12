@@ -463,3 +463,74 @@ Two things made this easy to miss:
 
 `behavior: 'instant'` is the only correct value here — `'auto'` is what re-introduces the
 bug, since it defers to the CSS.
+
+## 13. The dragged item must win exact position ties in `compact`
+
+Dragging the full-width item 6 up past the side-by-side items 4 and 5 used to split them:
+item 4 ended up **above** item 6 and item 5 an entire band **below** it. Dragging all the
+way up corrected itself, so it read as a feel problem. It was not — symmetric input was
+producing asymmetric output.
+
+Starting board (`colNum: 12`):
+
+```
+1(0,0,2x3)  2(2,0,6x3)  3(8,0,4x3)
+4(0,3,6x4)              5(6,3,6x4)
+6(0,7,12x3)
+```
+
+`moveElement` is symmetric and behaves correctly: dragging item 6 to `y4` pushes **both**
+item 4 and item 5 to `y4`. But item 6 is at `y4` too, so all three overlap and the pile is
+handed to `compact()` to untangle.
+
+`compact()` resolves collisions in `sortLayoutItemsByRowCol` order, and that comparator
+had no tie-break:
+
+```js
+if (a.y === b.y && a.x === b.x) return 0
+```
+
+Items 4 and 6 are both at exactly `(x0, y4)`, so the tie fell through to array order and
+item 4 went first. From there the cascade is forced: item 4 floats to `y3`, which blocks
+item 6 down to `y7`, which blocks item 5 down to `y10`.
+
+The tie is load-bearing — a control run with item 4 moved to `x1` makes item 6 sort first
+and yields the correct result, confirming the outcome hinged on two items coincidentally
+sharing an exact coordinate rather than on anything about the gesture.
+
+Fix: `compact` takes an optional `priorityId`, and the item under the cursor wins exact
+`(y, x)` ties. `grid-layout.vue` passes the gesture's `id` from both `onDragEvent` and
+`onResizeEvent`.
+
+```js
+if (a.y === b.y && a.x === b.x) {
+  if (priorityId !== undefined) {
+    if (a.i === priorityId) return -1
+    if (b.i === priorityId) return 1
+  }
+  return 0
+}
+```
+
+Item 6 dragged to `y4`, before and after:
+
+|        | result                         |
+| ------ | ------------------------------ |
+| before | `6@y7` with `4@y3` and `5@y10` |
+| after  | `6@y3` with `4@y6` and `5@y6`  |
+
+`y4` now matches `y3`/`y2`/`y1`, so the drag is continuous instead of snapping back a band
+mid-gesture.
+
+Scope of the change, swept over every item dragged to every `(x, y)` on this board:
+**2 of 462 cases change (0.4%)**, and both are the bug. Neither version leaves overlapping
+tiles, so the tie-break only picks a winner where the old code picked one arbitrarily.
+
+Two things worth keeping in mind:
+
+- A tie-break is the whole fix. Compacting the dragged item **globally first** was tried
+  and rejected — it lets item 6 float to `y0` and wrongly shoves items 1, 2 and 3 down.
+  Priority must apply only to exact ties, not to ordering in general.
+- The related `moveElement` heuristic `l.y - collision.y > collision.h / 4` is still there
+  and unchanged. It governs when a partial overlap counts as a push, and is not what
+  caused this.

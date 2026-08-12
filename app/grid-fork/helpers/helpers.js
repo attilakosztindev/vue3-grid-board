@@ -19,9 +19,15 @@ function getStatics(layout) {
   return layout.filter((l) => l.static)
 }
 
-function sortLayoutItemsByRowCol(layout) {
+function sortLayoutItemsByRowCol(layout, priorityId) {
   return [].concat(layout).sort((a, b) => {
-    if (a.y === b.y && a.x === b.x) return 0
+    if (a.y === b.y && a.x === b.x) {
+      if (priorityId !== undefined) {
+        if (a.i === priorityId) return -1
+        if (b.i === priorityId) return 1
+      }
+      return 0
+    }
     if (a.y > b.y || (a.y === b.y && a.x > b.x)) return 1
     return -1
   })
@@ -78,9 +84,9 @@ export function getLayoutItem(layout, id) {
   return layout.find((item) => item.i === id)
 }
 
-export function compact(layout, verticalCompact) {
+export function compact(layout, verticalCompact, priorityId) {
   const compareWith = getStatics(layout)
-  const sorted = sortLayoutItemsByRowCol(layout)
+  const sorted = sortLayoutItemsByRowCol(layout, priorityId)
 
   for (let i = 0, len = sorted.length; i < len; i++) {
     const l = sorted[i]
