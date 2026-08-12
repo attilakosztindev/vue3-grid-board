@@ -25,15 +25,13 @@ function rowOf(layout: Item[], id: string) {
 
 function overlappingPairs(layout: Item[]) {
   const pairs: string[] = []
-  for (let a = 0; a < layout.length; a++) {
-    for (let b = a + 1; b < layout.length; b++) {
-      const l1 = layout[a]
-      const l2 = layout[b]
+  layout.forEach((l1, a) => {
+    for (const l2 of layout.slice(a + 1)) {
       const apart =
         l1.x + l1.w <= l2.x || l1.x >= l2.x + l2.w || l1.y + l1.h <= l2.y || l1.y >= l2.y + l2.h
       if (!apart) pairs.push(`${l1.i}/${l2.i}`)
     }
-  }
+  })
   return pairs
 }
 
@@ -59,8 +57,10 @@ describe('compaction during a gesture', () => {
     for (const row of rows) expect(row.four).toBe(row.five)
 
     // Dragging further up may only ever move item 6 up, never back down.
-    for (let i = 1; i < rows.length; i++) {
-      expect(rows[i].six).toBeLessThanOrEqual(rows[i - 1].six)
+    let previous = Number.POSITIVE_INFINITY
+    for (const row of rows) {
+      expect(row.six, `dragged to y${row.y}`).toBeLessThanOrEqual(previous)
+      previous = row.six
     }
   })
 

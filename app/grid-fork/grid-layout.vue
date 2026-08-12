@@ -246,23 +246,24 @@ function onDragEvent([eventName, id, x, y, h, w] = []) {
     return
   }
 
-  if (eventName === 'dragmove' || eventName === 'dragstart') {
-    if (eventName === 'dragstart') state.gestureId++
-    state.placeholder = { ...state.placeholder, x: l.x, y: l.y, w, h }
-    state.isDragging = true
-  } else {
-    state.isDragging = false
-  }
+  const gesturing = eventName === 'dragmove' || eventName === 'dragstart'
+  if (eventName === 'dragstart') state.gestureId++
 
   state.layout = moveElement(state.layout, l, x, y, true, false)
   compact(state.layout, props.verticalCompact, id)
+
+  // Read the placeholder only once the item has settled, otherwise it shows the
+  // slot the item is leaving rather than the one it is landing in.
+  if (gesturing) state.placeholder = { ...state.placeholder, x: l.x, y: l.y, w, h }
+  state.isDragging = gesturing
+
   updateHeight()
   emitIfChanged()
 }
 
 function onResizeEvent([eventName, id, x, y, h, w] = []) {
   if (!eventName) return
-  const l = getLayoutItem(state.layout, id) ?? { h: 0, w: 0 }
+  const l = getLayoutItem(state.layout, id) ?? { x, y, h: 0, w: 0 }
 
   if (
     eventName === 'resizemove' &&
@@ -278,15 +279,16 @@ function onResizeEvent([eventName, id, x, y, h, w] = []) {
   l.w = w
   l.h = h
 
-  if (eventName === 'resizestart' || eventName === 'resizemove') {
-    if (eventName === 'resizestart') state.gestureId++
-    state.placeholder = { ...state.placeholder, x, y, w: l.w, h: l.h }
-    state.isDragging = true
-  } else {
-    state.isDragging = false
-  }
+  const gesturing = eventName === 'resizestart' || eventName === 'resizemove'
+  if (eventName === 'resizestart') state.gestureId++
 
   compact(state.layout, props.verticalCompact, id)
+
+  // Same as the drag path: compaction can still move the item, so the placeholder
+  // has to be read afterwards.
+  if (gesturing) state.placeholder = { ...state.placeholder, x: l.x, y: l.y, w: l.w, h: l.h }
+  state.isDragging = gesturing
+
   updateHeight()
   emitIfChanged()
 }

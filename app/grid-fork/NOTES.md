@@ -534,3 +534,46 @@ Two things worth keeping in mind:
 - The related `moveElement` heuristic `l.y - collision.y > collision.h / 4` is still there
   and unchanged. It governs when a partial overlap counts as a push, and is not what
   caused this.
+
+## 14. The placeholder must be read after the move, not before
+
+The shadow lagged the drag by exactly one frame: it showed the slot the item was
+_leaving_ rather than the one it was landing in, and only caught up once the pointer
+moved again. Holding still left it wrong indefinitely, and at drag end the item settled
+somewhere the shadow had never been.
+
+`onDragEvent` assigned the placeholder from the live layout item **before** applying the
+move to that same object:
+
+```js
+const l = getLayoutItem(state.layout, id)
+state.placeholder = { ...state.placeholder, x: l.x, y: l.y, w, h } // l is still where it was
+state.layout = moveElement(state.layout, l, x, y, true, false) // now l.x / l.y change
+compact(state.layout, props.verticalCompact, id) // and compaction can change l.y again
+```
+
+`moveElement` mutates `l` in place and `compact` can move it again afterwards, so by the
+end of the handler `l` held the real slot — but the placeholder had already been snapshotted
+from the pre-move values. Fix: assign it last, off the settled `l`.
+
+The giveaway is that the shadow could **overlap a real tile**, which is impossible for a
+compacted layout and therefore proves the placeholder had drifted out of sync with
+`state.layout`. Sweeping every item across every slot on the reference board:
+
+|        | drag frames | shadow showing the wrong slot | shadow overlapping a tile |
+| ------ | ----------- | ----------------------------- | ------------------------- |
+| before | 462         | 429 (92.9%)                   | 19                        |
+| after  | 462         | 0                             | 0                         |
+
+Confirmed the same way on a live board by driving synthetic pointer events and comparing
+`state.placeholder` against `state.layout` frame by frame — 6 mismatches and one
+tile-overlap before, none after.
+
+`onResizeEvent` had the same shape: it took the placeholder's `x`/`y` straight from the
+event arguments, but `compact` runs afterwards and can still move the item, so those
+coordinates could be stale too. Both handlers now read the placeholder as the last thing
+they do.
+
+Worth remembering when touching these handlers: `l` is a **live reference into
+`state.layout`**, not a copy. Anything read off it before `moveElement`/`compact` is a
+snapshot of the past.
