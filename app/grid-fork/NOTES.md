@@ -369,3 +369,52 @@ tile.
 
 Static tiles, non-interactive grids and the placeholder get no `tabindex` and no ARIA;
 the placeholder is additionally `aria-hidden`, as is the resize handle.
+
+---
+
+## 11. A dragged tile must not be clipped by an ancestor
+
+A tile in flight is `position: absolute` with a `translate3d` offset that tracks the
+cursor without clamping — it is _supposed_ to leave the grid's box. Nothing in the
+fork clips it, but **any ancestor with `overflow` other than `visible` will**, and the
+tile then vanishes at that ancestor's edge mid-drag.
+
+This bit the docs page: `DocExample.vue`'s card used `overflow-hidden` purely to keep
+the header bar and the code panel inside the rounded border. Since `overflow` clips
+every descendant, it also ate the dragged tile.
+
+The fix is not to clip at the card at all. `border-radius` already clips an element's
+**own background and border** without clipping overflowing children, so rounding moved
+onto the panels themselves:
+
+- card root: `rounded-xl border` (no `overflow-hidden`)
+- header bar: `+ rounded-t-xl`
+- preview panel: `+ rounded-b-xl`
+- code panel: `+ rounded-b-xl` (keeps its own `overflow-auto` — it never contains a grid)
+
+Only one of the two body panels is ever visible, so the bottom corners are always
+supplied by whichever is showing.
+
+### The scrollbar this uncovers
+
+Once the tile can escape, dragging it toward the right edge extends the document's
+scrollable width and pops a horizontal scrollbar mid-drag. That is worse than the
+original bug: the scrollbar steals viewport height, which fires the grid's
+`ResizeObserver` and makes the layout jitter under the cursor.
+
+`#__nuxt` therefore gets `overflow-x: clip` (in `app/assets/css/main.css`). Clipping
+now happens at the viewport edge rather than at the card, which is roomy enough that a
+tile never visibly disappears while under the cursor.
+
+`clip` is load-bearing here, not a synonym for `hidden`:
+
+- `overflow-x: hidden` would force `overflow-y` to compute to `auto`, turning `#__nuxt`
+  into a scroll container and breaking page scrolling and `position: sticky`.
+- `overflow-x: clip` leaves `overflow-y: visible` genuinely visible. Verified computed:
+  `clip/visible`.
+
+It also has to sit on `#__nuxt` rather than on `html`. Overflow on the root element is
+supposed to propagate to the viewport, but Chrome does not honour `clip` that way —
+with `html { overflow-x: clip }` the page still scrolled horizontally to 730px during
+a drag. On a normal element it clips as expected (measured `scrollX` pinned at 0 with
+a tile 412px past the card's right edge).

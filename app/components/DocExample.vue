@@ -51,8 +51,10 @@ async function copy(code: string) {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-xl border border-neutral-200">
-    <div class="flex items-center gap-1 border-b border-neutral-200 bg-neutral-50 px-2 py-1.5">
+  <div class="rounded-xl border border-neutral-200">
+    <div
+      class="flex items-center gap-1 rounded-t-xl border-b border-neutral-200 bg-neutral-50 px-2 py-1.5"
+    >
       <div
         v-if="hasPreview"
         ref="tabsRef"
@@ -115,7 +117,7 @@ async function copy(code: string) {
       role="tabpanel"
       :aria-labelledby="tabId('preview')"
       tabindex="0"
-      class="bg-white p-6"
+      class="rounded-b-xl bg-white p-6"
     >
       <slot />
     </div>
@@ -126,7 +128,7 @@ async function copy(code: string) {
       :role="hasPreview ? 'tabpanel' : undefined"
       :aria-labelledby="hasPreview ? tabId('code') : undefined"
       tabindex="0"
-      class="max-h-[28rem] overflow-auto bg-neutral-950"
+      class="max-h-[28rem] overflow-auto rounded-b-xl bg-neutral-950"
     >
       <pre class="p-4 text-[0.8rem] leading-relaxed text-neutral-100"><code>{{ code }}</code></pre>
     </div>

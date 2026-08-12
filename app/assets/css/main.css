@@ -21,6 +21,10 @@ html {
   scroll-behavior: smooth;
 }
 
+#__nuxt {
+  overflow-x: clip;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
