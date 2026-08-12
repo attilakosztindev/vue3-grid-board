@@ -183,10 +183,23 @@ The placeholder is a ghost `GridItem` rendered by the container with `placeholde
 set. It is a readout of where the dragged tile will land, so it is never interactive
 — no resize handle, no pointer controller.
 
-It **snaps** from slot to slot — no FLIP, and `transition: none` so width/height do
-not lag either. The position watcher in `grid-item.vue` returns early on
-`props.placeholder` before it reaches `settleFrom`. See §15 for why gliding it is
-not merely a style choice but actively wrong.
+It **glides**, but not with the FLIP the tiles use. The position watcher in
+`grid-item.vue` returns early on `props.placeholder` before it reaches `settleFrom`;
+the movement comes from a plain CSS transition on `left` / `top` / `width` / `height`
+in the placeholder rule. §15 has the measurements, but the two reasons are:
+
+1. **A transition converges, a FLIP does not.** The shadow re-targets every time the
+   pointer crosses a cell, which is far more often than a 220ms glide can finish. A
+   transition always interpolates from the value currently painted, so an interrupted
+   glide just heads for the new slot. The FLIPs composite additively and were never
+   cancelled, so they piled up instead.
+2. **The hand-over suppresses itself.** The shadow is `display: none` between
+   gestures (`v-show="state.isDragging"`), and a transition never runs on an element
+   that was not rendered on the previous frame. So the one movement it must never
+   animate — the jump at `dragstart` from whatever slot the _previously_ dragged tile
+   left it in — costs nothing to prevent. An older version glided it with a FLIP and
+   needed a `gestureId` / `shadowGesture` hand-over protocol for exactly this; that
+   machinery is gone and should not come back.
 
 It also renders **before** `<slot />` in the container template and carries **no
 `z-index`**. Every grid item is `position: absolute`, so with `z-index: auto` paint
@@ -194,12 +207,6 @@ order is DOM order, and being first puts the shadow underneath every tile. That 
 deliberate: it means a tile reflowing out of the way covers the shadow rather than
 the shadow bleeding across the tile. Moving it after the slot, or giving it a
 `z-index`, reintroduces the bug in §15.
-
-A previous version glided the shadow and needed a `gestureId` / `shadowGesture`
-hand-over protocol to suppress the one animation it must never play — the jump at
-`dragstart` from whatever slot the _previously_ dragged tile left it in. Snapping
-deletes that whole problem, and that machinery is gone. Do not bring it back
-without re-reading §15.
 
 ---
 
@@ -568,45 +575,63 @@ snapshot of the past.
 ## 15. The shadow must never paint over another tile
 
 Symptom: "the shadow sometimes slightly crossing other grid items". Two independent
-causes, both required fixing.
+causes, and a measurement trap that made one of them look far worse than it is.
 
-### Cause 1 — stacked FLIPs sent the shadow flying
+### Cause 1 — the shadow outranked the tile getting out of its way
 
-The placeholder went through the same position watcher as a real tile, so every slot
-change started a 220ms `settleFrom` FLIP. Those animations use `composite: 'add'` and
-nothing cancels the previous one, so during a drag they **sum**: 1, then 2, then 3
-overlapping animations, each adding its own offset. Measured on a live board, the
-shadow was painted up to **730px** away from the slot it actually represented,
-sweeping across tiles it was never going to land on.
+This is the one that produced the reported artefact. Reflowing tiles call
+`settleFrom(..., false)`, so `state.raised` stays false, they get no `.settling`
+class, and they keep `z-index: auto`. The placeholder had `z-index: 2`. Net effect:
+the shadow painted **on top of** the very tile that was gliding aside to make room
+for it.
 
-A FLIP is legitimate for a tile — a tile is an object moving from A to B. The shadow
-is not an object, it is a _readout_ of where the dragged tile will land. Rendering it
-between two slots means rendering a lie. So it snaps, and `transition: none` keeps
-width/height from lagging into a neighbour that has already moved clear.
+Fix: render the shadow first in the container and drop its `z-index` (see §5). Note
+this makes a mid-flight shadow harmless rather than impossible — tiles caught
+reflowing still _geometrically_ intersect it, they now simply occlude it.
 
-### Cause 2 — the shadow outranked the tile getting out of its way
+### Cause 2 — stacked FLIPs
 
-Reflowing tiles call `settleFrom(..., false)`, so `state.raised` stays false, they
-get no `.settling` class, and they keep `z-index: auto`. The placeholder had
-`z-index: 2`. Net effect: the shadow painted **on top of** the very tile that was
-gliding aside to make room for it. Fix: render the shadow first in the container and
-drop its `z-index` (see §5).
+`settleFrom` animations use `composite: 'add'` and nothing cancelled the previous
+one, so re-targeting mid-flight summed the legs instead of replacing them. Up to
+**4** were live at once on the shadow. `settleFrom` now measures the offset an
+in-flight settle is still painting, folds it into the new delta, and cancels the old
+animation, so at most one is ever live and it always starts from what is on screen.
+
+This applies to tiles too, not just the shadow: after the fix a tile never has more
+than one live settle and always comes to rest at exactly `transform: none`.
+
+### Why the shadow does not use `settleFrom` at all
+
+Even fixed, a FLIP is the wrong mechanism for the shadow. It re-targets on every cell
+the pointer crosses, far faster than a 220ms glide finishes, so it spends its whole
+life being interrupted. A CSS transition handles that natively — it interpolates from
+the currently painted value — and it cannot run at all on an element that was
+`display: none` last frame, which is exactly the `dragstart` hand-over that used to
+need the `gestureId` protocol.
 
 ### Measurements
 
-Identical 385-probe sweep on a live board, using `document.elementFromPoint` so the
-result reflects paint order rather than bare rect intersection:
+Serpentine drag across every slot for every item, adjacent cells only, ~1 cell per
+100ms. The tab is hidden during automation so the document timeline is frozen; the
+animation clock is therefore advanced by hand, 16ms per frame. **Getting this wrong
+is the trap**: leaving the clock frozen pins every animation at its first keyframe
+and reports drift figures in the 700–2000px range that are pure artefact.
 
-|        | max shadow drift from its slot | shadow painted over a tile |
-| ------ | ------------------------------ | -------------------------- |
-| before | 730px                          | 22                         |
-| after  | 0px                            | 0                          |
+"Excursion" is how far outside the corridor between the slot it left and the slot it
+is heading for the shadow was ever painted — i.e. actual overshoot, not lag.
 
-80 purely _geometric_ overlaps remain in both runs. Those are tiles caught mid-reflow
-and are desirable — the point is that the tile now occludes the shadow instead of the
-other way round.
+|                        | live anims on the shadow | max excursion | gestures gliding in at `dragstart` | painted over a tile | offset once settled |
+| ---------------------- | ------------------------ | ------------- | ---------------------------------- | ------------------- | ------------------- |
+| FLIP                   | 4                        | 511px         | 5 of 5                             | 0                   | 0                   |
+| CSS transition (fixed) | 2 (`left` + `top`)       | 79px          | 0                                  | 0                   | 0                   |
 
-Regression coverage lives in `test/nuxt/grid-placeholder.spec.ts`: one test stubs
-`el.animate` on the placeholder and asserts it is never called, another asserts the
-shadow precedes the first real tile in DOM order. The z-index half cannot be asserted
-under test because scoped SFC styles are not injected there.
+Both columns show 0 paint-overs because the §15 cause-1 fix is in both — that one is
+what closes the reported bug. The transition's win is the other three columns.
+
+### Regression coverage
+
+`test/nuxt/grid-placeholder.spec.ts` stubs `el.animate` on the placeholder and
+asserts it is never called (the shadow must glide by transition, not FLIP), and
+asserts the shadow precedes the first real tile in DOM order. The `z-index` half
+cannot be asserted under test because scoped SFC styles are not injected there, and
+neither can the transition itself — both were verified in the browser instead.

@@ -113,7 +113,7 @@ describe('drag placeholder', () => {
     }
   })
 
-  it('snaps rather than gliding, so it is never painted mid-flight over a tile', async () => {
+  it('glides by transitioning its own box, never by a FLIP', async () => {
     const board = mountBoard()
     const el = board.shadowEl().element as unknown as {
       animate: (...args: unknown[]) => unknown
@@ -125,8 +125,8 @@ describe('drag placeholder', () => {
       return {
         cancel() {},
         finish() {},
-        set onfinish(_v: unknown) {},
-        set oncancel(_v: unknown) {}
+        onfinish: null,
+        oncancel: null
       }
     }
 
@@ -142,8 +142,11 @@ describe('drag placeholder', () => {
       await nextTick()
     }
 
-    // A FLIP on the shadow renders it between two slots, i.e. across tiles it is
-    // not landing on. It must move by re-layout only.
+    // The shadow re-targets on every cell the pointer crosses. A FLIP interrupted
+    // mid-flight has to restart from wherever it reached, so it falls further behind
+    // on each change rather than converging; a transition on left/top always
+    // interpolates from the painted value to the new one. Measured over a full sweep,
+    // the FLIP left the shadow up to 1394px from the slot it was meant to show.
     expect(started).toEqual([])
   })
 

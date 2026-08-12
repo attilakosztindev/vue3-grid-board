@@ -226,8 +226,10 @@ watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, prev)
   state.innerH = props.h
   createStyle()
 
-  // The shadow is a readout of the slot the tile will land in, so it snaps. Gliding
-  // would paint it, mid-flight, across tiles it is never going to land on.
+  // The shadow glides via a CSS transition on left/top instead (see the stylesheet).
+  // A FLIP is wrong for it: the shadow re-targets on every cell the pointer crosses,
+  // and a FLIP interrupted mid-flight has to be restarted from wherever it got to, so
+  // it lags further behind on every change instead of converging.
   if (props.placeholder) return
   if (state.isDragging || state.isResizing) return
   if (state.raised) return
@@ -547,9 +549,47 @@ function handleDrag(event) {
   }
 }
 
+/** Translation currently baked into `value`, in px. Handles both the `translate3d`
+ *  we write inline and the `matrix` / `matrix3d` a computed style reports back. */
+function readTranslate(value) {
+  if (!value || value === 'none') return { dx: 0, dy: 0 }
+  const n = value.match(/-?[\d.]+(?:e[-+]?\d+)?/g)?.map(Number)
+  if (!n) return { dx: 0, dy: 0 }
+  if (value.startsWith('matrix3d')) return { dx: n[12] ?? 0, dy: n[13] ?? 0 }
+  if (value.startsWith('matrix')) return { dx: n[4] ?? 0, dy: n[5] ?? 0 }
+  return { dx: n[0] ?? 0, dy: n[1] ?? 0 }
+}
+
+/** Offset an in-flight settle is still painting, then drop that settle. */
+function takeSettleOffset(el) {
+  if (settleAnims.size === 0) return { dx: 0, dy: 0 }
+
+  const total = readTranslate(getComputedStyle(el).transform)
+  const base = readTranslate(rawStyle?.transform)
+
+  for (const anim of settleAnims) {
+    anim.onfinish = null
+    anim.oncancel = null
+    anim.cancel()
+  }
+  settleAnims.clear()
+  state.raised = false
+
+  return { dx: total.dx - base.dx, dy: total.dy - base.dy }
+}
+
 function settleFrom(dx, dy, raise = true) {
   const el = exposeObj.el
   if (!el || typeof el.animate !== 'function') return
+
+  // These animations use `composite: 'add'`, so overlapping settles *sum* rather than
+  // replace. Re-targeting mid-flight has to carry the offset already on screen into
+  // the new one and cancel the old, or the element accumulates every leg of the
+  // journey and drifts far away from the slot it belongs to.
+  const carry = takeSettleOffset(el)
+  dx += carry.dx
+  dy += carry.dy
+
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
 
   const anim = el.animate(
@@ -856,9 +896,19 @@ function onBlur() {
   background: red;
   border-radius: var(--vgl-radius, 22px);
   opacity: 0.2;
-  /* Snaps, like the FLIP above: a lagging width/height would spill the shadow
-     over neighbours that have already moved out of the way. */
-  transition: none;
+  /* Glides by transitioning its own box rather than by the FLIP the tiles use. The
+     shadow re-targets every time the pointer crosses a cell, and a transition always
+     interpolates from the currently painted value to the new one, so an interrupted
+     glide converges on the new slot instead of accumulating the leg it never
+     finished. It also costs nothing to suppress on the first frame of a gesture:
+     the shadow is `display: none` between gestures, and a transition never runs on
+     an element that was not rendered before, so it cannot come sailing in from
+     wherever the previously dragged tile left it. */
+  transition:
+    left 200ms ease,
+    top 200ms ease,
+    width 200ms ease,
+    height 200ms ease;
   /* No z-index on purpose. Every tile is absolutely positioned, so paint order is
      DOM order, and the container renders this one first -- putting it below the
      tiles without needing it to outrank the dragged tile's z-index. */
