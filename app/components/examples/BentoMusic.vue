@@ -1,21 +1,21 @@
 <script setup>
 import { computed, ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+import GridBoard from '~/grid/grid-board.vue'
+import GridTile from '~/grid/grid-tile.vue'
 
 const dynamic = defineModel('dynamic', { type: Boolean, default: false })
 
 const L = {
-  hero: { i: 1, x: 0, y: 0, w: 7, h: 4 },
-  tracks: { i: 2, x: 7, y: 0, w: 5, h: 2 },
-  listeners: { i: 3, x: 7, y: 2, w: 5, h: 2 },
-  player: { i: 4, x: 0, y: 4, w: 12, h: 1 }
+  hero: { id: 1, x: 0, y: 0, w: 7, h: 4 },
+  tracks: { id: 2, x: 7, y: 0, w: 5, h: 2 },
+  listeners: { id: 3, x: 7, y: 2, w: 5, h: 2 },
+  player: { id: 4, x: 0, y: 4, w: 12, h: 1 }
 }
-const layout = ref(Object.values(L))
+const tiles = ref(Object.values(L))
 
 const at = computed(() => {
-  const byId = Object.fromEntries(layout.value.map((it) => [it.i, it]))
-  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.i]]))
+  const byId = Object.fromEntries(tiles.value.map((it) => [it.id, it]))
+  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.id]]))
 })
 
 const tracks = [
@@ -45,15 +45,15 @@ const wave = Array.from({ length: 56 }, (_, i) => {
     />
 
     <div class="relative">
-      <GridLayout
-        v-model:layout="layout"
-        :col-num="12"
+      <GridBoard
+        v-model:tiles="tiles"
+        :columns="12"
         :row-height="86"
-        :margin="[18, 18]"
-        :is-draggable="dynamic"
-        :is-resizable="dynamic"
+        :gap="18"
+        :draggable="dynamic"
+        :resizable="dynamic"
       >
-        <GridItem v-bind="at.hero">
+        <GridTile v-bind="at.hero">
           <div
             class="relative flex size-full flex-col justify-between overflow-hidden rounded-[22px] p-7"
           >
@@ -103,9 +103,9 @@ const wave = Array.from({ length: 56 }, (_, i) => {
               </div>
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.tracks">
+        <GridTile v-bind="at.tracks">
           <div
             class="flex size-full flex-col rounded-[22px] bg-white/[0.04] p-5 ring-1 ring-white/10 backdrop-blur"
           >
@@ -134,9 +134,9 @@ const wave = Array.from({ length: 56 }, (_, i) => {
               </div>
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.listeners" class="z-20">
+        <GridTile v-bind="at.listeners" class="z-20">
           <div class="relative size-full">
             <div
               class="flex size-full flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-br from-indigo-600/40 via-fuchsia-600/20 to-transparent p-5 ring-1 ring-white/10"
@@ -166,9 +166,9 @@ const wave = Array.from({ length: 56 }, (_, i) => {
               <span class="absolute inset-0 m-auto size-1.5 rounded-full bg-black" />
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.player">
+        <GridTile v-bind="at.player">
           <div
             class="flex size-full items-center gap-6 rounded-[22px] bg-white/[0.04] px-6 ring-1 ring-white/10 backdrop-blur"
           >
@@ -200,8 +200,8 @@ const wave = Array.from({ length: 56 }, (_, i) => {
             </svg>
             <span class="text-xs tabular-nums text-white/50">1:12 / 3:42</span>
           </div>
-        </GridItem>
-      </GridLayout>
+        </GridTile>
+      </GridBoard>
     </div>
   </div>
 </template>

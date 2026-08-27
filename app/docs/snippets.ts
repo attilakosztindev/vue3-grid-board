@@ -1,270 +1,198 @@
-/**
- * Copy-pasteable source shown in the docs "Code" tabs. Kept as plain strings so
- * the rendered example and the snippet can't drift apart at a glance.
- */
-
-export const installSnippet = `# The grid engine is a self-contained fork — no runtime grid
-# dependency to install. Copy the building blocks in:
-#
-#   app/grid-fork/grid-layout.vue          container
-#   app/grid-fork/grid-item.vue            tile
-#   app/grid-fork/helpers/helpers.js       pure layout math
-#   app/grid-fork/helpers/usePointerDragResize.js   native Pointer Events engine
-#
-# or clone the reference app and run it locally
-git clone <repo> && cd vue3-grid-test && pnpm install && pnpm dev`
-
-export const quickStartSnippet = `<script setup>
+export const usageSnippet = `<script setup lang="ts">
 import { ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+import GridBoard from '~/grid/grid-board.vue'
+import GridTile from '~/grid/grid-tile.vue'
+import type { Tile } from '~/grid/types'
 
-// Each item is a plain { i, x, y, w, h } cell in grid units.
-const layout = ref([
-  { i: '0', x: 0, y: 0, w: 2, h: 2 },
-  { i: '1', x: 2, y: 0, w: 2, h: 4 },
-  { i: '2', x: 4, y: 0, w: 2, h: 5 },
-  { i: '3', x: 6, y: 0, w: 2, h: 3 }
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 6, h: 4 },
+  { id: 'b', x: 6, y: 0, w: 3, h: 2 },
+  { id: 'c', x: 9, y: 0, w: 3, h: 2 },
+  { id: 'd', x: 6, y: 2, w: 6, h: 2 },
+  { id: 'e', x: 0, y: 4, w: 4, h: 2 },
+  { id: 'f', x: 4, y: 4, w: 4, h: 2 },
+  { id: 'g', x: 8, y: 4, w: 4, h: 2 }
 ])
 </script>
 
 <template>
-  <GridLayout
-    v-model:layout="layout"
-    :col-num="12"
-    :row-height="40"
-    :margin="[10, 10]"
-  >
-    <GridItem
-      v-for="item in layout"
-      :key="item.i"
-      v-bind="item"
-    >
-      <div class="tile">Item {{ item.i }}</div>
-    </GridItem>
-  </GridLayout>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :gap="10">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile">
+      {{ tile.id }}
+    </GridTile>
+  </GridBoard>
 </template>`
 
-export const basicSnippet = `<script setup>
-import { ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+export const interactiveSnippet = `<GridBoard v-model:tiles="tiles" :draggable="live" :resizable="live">
+  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+</GridBoard>`
 
-const layout = ref([
-  { i: '0', x: 0, y: 0, w: 2, h: 2 },
-  { i: '1', x: 2, y: 0, w: 2, h: 4 },
-  { i: '2', x: 4, y: 0, w: 2, h: 5 },
-  { i: '3', x: 6, y: 0, w: 2, h: 3 },
-  { i: '4', x: 8, y: 0, w: 2, h: 3 }
-])
+export const gravitySnippet = `<GridBoard v-model:tiles="tiles" :gravity="gravity">
+  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+</GridBoard>`
 
-// Flip both flags to freeze the board (static, lightweight) or
-// re-enable the native drag + resize gestures.
-const interactive = ref(true)
-</script>
+export const frozenSnippet = `const tiles = ref<Tile[]>([
+  { id: 'sidebar', x: 0, y: 0, w: 3, h: 6, frozen: true },
+  { id: 'a', x: 3, y: 0, w: 5, h: 3 },
+  { id: 'b', x: 8, y: 0, w: 4, h: 3 }
+])`
 
-<template>
-  <GridLayout
-    v-model:layout="layout"
-    :col-num="12"
-    :row-height="40"
-    :margin="[10, 10]"
-    :is-draggable="interactive"
-    :is-resizable="interactive"
-    @layout-updated="(l) => console.log('new layout', l)"
-  >
-    <GridItem v-for="item in layout" :key="item.i" v-bind="item">
-      <div class="tile">Item {{ item.i }}</div>
-    </GridItem>
-  </GridLayout>
-</template>`
+export const slotsSnippet = `<GridTile v-bind="tile" drag-handle=".card-header">
+  <header class="card-header">{{ tile.title }}</header>
+  <input v-model="tile.note">
 
-export const constraintsSnippet = `<script setup>
-import { ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+  <template #handle>
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+      <path
+        d="M3 13 L13 3 M13 3 H8 M13 3 V8"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      />
+    </svg>
+  </template>
+</GridTile>
 
-// Per-item constraints: min/max size, and a fully static tile that
-// never moves and can't be moved through.
-const layout = ref([
-  { i: 'a', x: 0, y: 0, w: 3, h: 3, minW: 2, minH: 2, maxW: 5, maxH: 5 },
-  { i: 'b', x: 3, y: 0, w: 3, h: 3 },
-  { i: 'locked', x: 6, y: 0, w: 3, h: 3, static: true }
-])
-</script>
+<style>
+.grid-tile > .grid-handle { color: var(--ui-primary); }
+</style>`
 
-<template>
-  <GridLayout v-model:layout="layout" :col-num="12" :row-height="40" :margin="[10, 10]">
-    <GridItem
-      v-for="item in layout"
-      :key="item.i"
-      :i="item.i"
-      :x="item.x"
-      :y="item.y"
-      :w="item.w"
-      :h="item.h"
-      :min-w="item.minW"
-      :min-h="item.minH"
-      :max-w="item.maxW"
-      :max-h="item.maxH"
-      :static="item.static"
-    >
-      <div class="tile">{{ item.static ? 'Locked' : item.i }}</div>
-    </GridItem>
-  </GridLayout>
-</template>`
+export const overflowSnippet = `<div class="panel">
+  <GridBoard v-model:tiles="tiles" overflow>
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  </GridBoard>
+</div>
 
-export const backendSnippet = `<script setup>
-// <GridBoard> is an auto-imported wrapper. It is CLIENT-SIDE by default;
-// it only becomes server-sided when you point it at a dynamic endpoint,
-// whose config is fetched (and awaited) before the client loads in.
-</script>
+<style>
+.panel {
+  max-width: 34rem;
+  overflow: hidden;
+}
+</style>`
 
-<template>
-  <!-- Client-side by default: no fetch, renders from props / defaults -->
-  <GridBoard title="Client-side" />
+export const dynamicSnippet = `import { getLastRow } from '~/grid/helpers/helpers'
 
-  <!-- Server-sided: pass a dynamic endpoint. Its response must match the
-       GridBoardResponse shape ({ config?, layout? }). -->
-  <GridBoard title="Server-sourced" endpoint="/api/grid-layout" />
-</template>`
+let seq = 4
 
-export const shapeSnippet = `// shared/types/grid.ts — the contract every endpoint is expected to meet.
-export interface GridConfig {
-  colNum: number
-  rowHeight: number
-  margin: [number, number]
-  interactive: boolean
+function add() {
+  const tile = { id: String(seq++), x: 0, y: getLastRow(tiles.value), w: 3, h: 2 }
+  tiles.value = [...tiles.value, tile]
 }
 
-export interface GridLayoutItem {
-  i: number | string
-  x: number
-  y: number
-  w: number
-  h: number
-  minW?: number; minH?: number; maxW?: number; maxH?: number
-  static?: boolean
-}
-
-// The board doesn't know the endpoint URL ahead of time — only this shape.
-export interface GridBoardResponse {
-  config?: Partial<GridConfig>
-  layout?: GridLayoutItem[]
+function remove(id: string) {
+  tiles.value = tiles.value.filter((t) => t.id !== id)
 }`
 
-export const eventsSnippet = `<GridLayout
-  v-model:layout="layout"
-  @layout-created="(l) => console.log('created', l)"
-  @layout-before-mount="(l) => console.log('before mount', l)"
-  @layout-mounted="(l) => console.log('mounted', l)"
-  @layout-ready="(l) => console.log('ready', l)"
-  @layout-updated="(l) => console.log('updated', l)"
-  @update:layout="(l) => (layout = l)"
->
-  <GridItem
-    v-for="item in layout"
-    :key="item.i"
-    v-bind="item"
-    @move="(i, x, y) => console.log('moving', i, x, y)"
-    @moved="(i, x, y) => console.log('moved', i, x, y)"
-    @resize="(i, h, w) => console.log('resizing', i, h, w)"
-    @resized="(i, h, w) => console.log('resized', i, h, w)"
-    @container-resized="(i, h, w) => console.log('container', i, h, w)"
-  >
-    <div class="tile">Item {{ item.i }}</div>
-  </GridItem>
-</GridLayout>`
+export const mutationSnippet = `tiles.value = [...tiles.value, tile]
+tiles.value = tiles.value.map((t) => (t.id === 'a' ? { ...t, w: 6 } : t))
+tiles.value = tiles.value.filter((t) => t.id !== 'c')`
 
-export const boardComposableSnippet = `<script setup lang="ts">
-import type { GridBoardResponse } from '#shared/types/grid'
+export const persistenceSnippet = `import { validateTiles } from '~/grid/helpers/helpers'
 
-// Client-side by default. Pass a dynamic \`endpoint\` to fetch (and await)
-// the config server-side before hydration; omit it to stay client-only.
-// The endpoint is opaque — only its response shape is known.
-const {
-  layout,          // reactive GridLayoutItem[]
-  config,          // resolved GridConfig
-  isDynamic,       // v-model target for a "drag & resize" toggle
-  clientFallback,  // true when there's no endpoint (or the fetch failed)
-  skeletonStyle,   // (item) => CSSProperties for a placeholder tile
-  skeletonHeight   // total board height while loading
-} = await useGridBoard({
-  endpoint: '/api/grid-layout', // omit for a purely client-side board
-  layout: [],
-  config: {}
-})
-</script>`
+const KEY = 'dashboard'
 
-export const pointerComposableSnippet = `import { usePointerDragResize } from '~/grid-fork/helpers/usePointerDragResize'
+watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))
 
-// The native Pointer Events engine that replaced interact.js. GridItem
-// wires it up in onMounted; you only touch it to build a custom tile.
-const { destroy } = usePointerDragResize(el, {
-  handleSelector: '.vue-resizable-handle',
-  draggable: () => true,
-  resizable: () => true,
-  dragIgnoreFrom: () => 'a, button',
-  dragAllowFrom: () => null,
-  resizeIgnoreFrom: () => 'a, button',
-  autoScroll: () => true,
-  // Synthetic gesture events: { type, target, clientX, clientY }
-  onDrag: (event) => {
-    // event.type is 'dragstart' | 'dragmove' | 'dragend'
-  },
-  onResize: (event) => {
-    // event.type is 'resizestart' | 'resizemove' | 'resizeend'
+function restore(fallback: Tile[]): Tile[] {
+  const raw = localStorage.getItem(KEY)
+  if (!raw) return fallback
+  try {
+    const parsed = JSON.parse(raw)
+    validateTiles(parsed, 'stored tiles')
+    return parsed as Tile[]
+  } catch {
+    return fallback
   }
-})
+}`
 
-// Call on unmount to remove listeners and release pointer capture.
-onBeforeUnmount(destroy)`
+export const keyboardSnippet = `<GridBoard v-model:tiles="tiles">
+  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" :label="tile.title" />
+</GridBoard>`
 
-export const helpersSnippet = `import {
-  bottom,
-  cloneLayout,
-  getLayoutItem,
-  compact,
-  moveElement,
-  validateLayout,
-  getControlPosition,
-  createCoreData
-} from '~/grid-fork/helpers/helpers'
+export const ssrSnippet = `<script setup lang="ts">
+const { data } = await useFetch('/api/grid-tiles')
+const tiles = ref(data.value?.tiles ?? [])
+</script>
 
-// Pure functions — no Vue, no DOM. The container drives them on every gesture.
-const rows = bottom(layout)                       // lowest occupied row
-const copy = cloneLayout(layout)                  // deep clone
-const item = getLayoutItem(layout, '2')           // find by id
-compact(copy, true)                               // gravity: pull tiles up
-moveElement(copy, item, 3, 0, true, false)        // move + push collisions
-validateLayout(layout, 'my-board')                // throws on a bad shape`
+<template>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  </GridBoard>
+</template>`
 
-export const cssSnippet = `/* GridItem renders structural markup + a class contract and no theme.
-   Style the classes yourself (Tailwind or plain CSS). */
-.vue-grid-item {
-  transition: transform 200ms ease;      /* animate reflow */
+export const eventsSnippet = `<GridBoard v-model:tiles="tiles" @ready="onReady">
+  <GridTile
+    v-for="tile in tiles"
+    :key="tile.id"
+    v-bind="tile"
+    @dragstart="(id, x, y) => {}"
+    @drag="(id, x, y) => {}"
+    @dragend="(id, x, y) => {}"
+    @resizestart="(id, w, h) => {}"
+    @resize="(id, w, h) => {}"
+    @resizeend="(id, w, h) => {}"
+    @size="(id, width, height) => {}"
+  />
+</GridBoard>`
+
+export const typesSnippet = `import type {
+  Tile,
+  TileId,
+  Gap,
+  GridBoardProps,
+  GridTileProps,
+  GridTileEmits,
+  GridTileSlots,
+  GridBoardExposed
+} from '~/grid/types'
+
+const tiles = ref<Tile[]>([{ id: 'a', x: 0, y: 0, w: 2, h: 2 }])
+
+const board = ref<GridBoardExposed | null>(null)
+board.value?.dispatch('dragEvent', ['dragmove', 'a', 3, 1, 2, 2])
+board.value?.dispatch('measure')`
+
+export const extendSnippet = `import type { TileWith } from '~/grid/types'
+import { getTileById } from '~/grid/helpers/helpers'
+
+type Panel = TileWith<{
+  title: string
+  kind: 'chart' | 'table' | 'notes'
+}>
+
+const tiles = ref<Panel[]>([
+  { id: 'a', x: 0, y: 0, w: 4, h: 3, title: 'Revenue', kind: 'chart' }
+])
+
+const found = getTileById(tiles.value, 'a')
+found?.title`
+
+export const methodsSnippet = `import {
+  applyGravity,
+  copyTiles,
+  getTileById,
+  moveTile
+} from '~/grid/helpers/helpers'
+
+const next = copyTiles(tiles.value)
+const tile = getTileById(next, 'a')!
+
+moveTile(next, tile, 3, 1, true, false)
+applyGravity(next, true, 'a')
+
+tiles.value = next`
+
+export const stylingSnippet = `.grid-tile {
+  background: var(--ui-bg-elevated);
+  border-radius: inherit;
 }
-.vue-grid-item.vue-draggable-dragging {
-  transition: none;                      /* follow the pointer 1:1 */
-  z-index: 3;
-}
-.vue-grid-item.resizing {
-  opacity: 0.9;
-}
-.vue-grid-item.vue-grid-placeholder {
-  background: var(--rdp-accent, #10b981);
+
+.grid-tile--dragging { cursor: grabbing; }
+.grid-tile--resizing { opacity: 0.9; }
+.grid-tile--grabbed  { outline: 2px solid var(--ui-primary); }
+
+.grid-shadow {
+  background: var(--ui-primary);
   opacity: 0.2;
-}
-/* The resize affordance in the bottom-right corner. */
-.vue-grid-item .vue-resizable-handle {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 20px;
-  height: 20px;
-  cursor: se-resize;
-}
-/* Corner radius is exposed as a CSS var, fed by the \`radius\` prop. */
-.vue-grid-item {
-  border-radius: var(--vgl-radius);
 }`

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, useId, useSlots } from 'vue'
+import { onMounted, ref, useId, useSlots } from 'vue'
+import { CODE_BG } from '~/docs/code-theme'
 
-defineProps<{
+const props = defineProps<{
   code: string
   lang?: string
 }>()
@@ -9,30 +10,31 @@ defineProps<{
 defineSlots<{ default?: () => unknown }>()
 
 const hasPreview = !!useSlots().default
-const tab = ref<'preview' | 'code'>(hasPreview ? 'preview' : 'code')
+const open = ref(!hasPreview)
 const copied = ref(false)
 const status = ref('')
 
-const uid = useId()
-const tabId = (name: string) => `${uid}-tab-${name}`
-const panelId = (name: string) => `${uid}-panel-${name}`
+const panelId = `${useId()}-code`
 
-const tabsRef = ref<HTMLElement | null>(null)
-
-function onTablistKeydown(e: KeyboardEvent) {
-  if (!hasPreview) return
-  const order = ['preview', 'code'] as const
-  const i = order.indexOf(tab.value)
-  let next: (typeof order)[number] | null = null
-  if (e.key === 'ArrowRight') next = order[(i + 1) % order.length]!
-  else if (e.key === 'ArrowLeft') next = order[(i - 1 + order.length) % order.length]!
-  else if (e.key === 'Home') next = order[0]!
-  else if (e.key === 'End') next = order[order.length - 1]!
-  if (!next) return
-  e.preventDefault()
-  tab.value = next
-  tabsRef.value?.querySelector<HTMLElement>(`#${CSS.escape(tabId(next))}`)?.focus()
+function hash(value: string): string {
+  let h = 0
+  for (let i = 0; i < value.length; i++) h = (Math.imul(31, h) + value.charCodeAt(i)) | 0
+  return (h >>> 0).toString(36)
 }
+
+const lang = props.lang ?? 'vue'
+const highlighted = useState(`code:${lang}:${hash(props.code)}`, () => '')
+
+if (import.meta.server && !highlighted.value) {
+  const { highlight } = await import('~/docs/highlight')
+  highlighted.value = highlight(props.code, lang)
+}
+
+onMounted(async () => {
+  if (highlighted.value) return
+  const { highlight } = await import('~/docs/highlight')
+  highlighted.value = highlight(props.code, lang)
+})
 
 async function copy(code: string) {
   try {
@@ -51,53 +53,28 @@ async function copy(code: string) {
 </script>
 
 <template>
-  <div class="rounded-xl border border-neutral-200">
+  <div class="overflow-hidden rounded-xl border border-neutral-200">
+    <div v-if="hasPreview" class="bg-white p-6">
+      <slot />
+    </div>
+
     <div
-      class="flex items-center gap-1 rounded-t-xl border-b border-neutral-200 bg-neutral-50 px-2 py-1.5"
+      class="flex items-center gap-1 border-neutral-200 bg-neutral-50 px-2 py-1.5"
+      :class="hasPreview ? 'border-t' : 'border-b'"
     >
-      <div
+      <button
         v-if="hasPreview"
-        ref="tabsRef"
-        role="tablist"
-        aria-label="Example view"
-        class="flex items-center gap-1"
-        @keydown="onTablistKeydown"
+        type="button"
+        class="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-200 hover:text-neutral-800"
+        :aria-expanded="open"
+        :aria-controls="panelId"
+        @click="open = !open"
       >
-        <button
-          :id="tabId('preview')"
-          type="button"
-          role="tab"
-          :aria-selected="tab === 'preview'"
-          :aria-controls="panelId('preview')"
-          :tabindex="tab === 'preview' ? 0 : -1"
-          class="rounded-md px-3 py-1 text-sm font-medium transition"
-          :class="
-            tab === 'preview'
-              ? 'bg-white text-neutral-900 shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-800'
-          "
-          @click="tab = 'preview'"
-        >
-          Preview
-        </button>
-        <button
-          :id="tabId('code')"
-          type="button"
-          role="tab"
-          :aria-selected="tab === 'code'"
-          :aria-controls="panelId('code')"
-          :tabindex="tab === 'code' ? 0 : -1"
-          class="rounded-md px-3 py-1 text-sm font-medium transition"
-          :class="
-            tab === 'code'
-              ? 'bg-white text-neutral-900 shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-800'
-          "
-          @click="tab = 'code'"
-        >
-          Code
-        </button>
-      </div>
+        <span aria-hidden="true" class="transition-transform" :class="open ? 'rotate-90' : ''">
+          ›
+        </span>
+        {{ open ? 'Hide code' : 'Show code' }}
+      </button>
       <span class="ml-auto text-xs text-neutral-400">{{ lang ?? 'vue' }}</span>
       <button
         type="button"
@@ -110,27 +87,17 @@ async function copy(code: string) {
 
     <p class="sr-only" role="status" aria-live="polite">{{ status }}</p>
 
+    <!-- eslint-disable vue/no-v-html -- shiki's output, built from a string
+         literal in ~/docs/snippets.ts. No user input ever reaches it. -->
     <div
-      v-if="hasPreview"
-      v-show="tab === 'preview'"
-      :id="panelId('preview')"
-      role="tabpanel"
-      :aria-labelledby="tabId('preview')"
+      v-show="open"
+      :id="panelId"
       tabindex="0"
-      class="rounded-b-xl bg-white p-6"
-    >
-      <slot />
-    </div>
-
-    <div
-      v-show="tab === 'code'"
-      :id="panelId('code')"
-      :role="hasPreview ? 'tabpanel' : undefined"
-      :aria-labelledby="hasPreview ? tabId('code') : undefined"
-      tabindex="0"
-      class="max-h-[28rem] overflow-auto rounded-b-xl bg-neutral-950"
-    >
-      <pre class="p-4 text-[0.8rem] leading-relaxed text-neutral-100"><code>{{ code }}</code></pre>
-    </div>
+      class="doc-code max-h-[30rem] overflow-auto"
+      :class="hasPreview ? 'border-t border-neutral-200' : ''"
+      :style="{ backgroundColor: CODE_BG }"
+      v-html="highlighted"
+    />
+    <!-- eslint-enable vue/no-v-html -->
   </div>
 </template>

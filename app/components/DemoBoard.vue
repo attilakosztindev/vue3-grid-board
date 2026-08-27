@@ -1,19 +1,19 @@
 <script setup>
 import { defineComponent } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+import GridBoard from '~/grid/grid-board.vue'
+import GridTile from '~/grid/grid-tile.vue'
 
 const props = defineProps({
   endpoint: { type: String, default: '' },
-  layout: { type: Array, default: () => [] },
+  tiles: { type: Array, default: () => [] },
   config: { type: Object, default: () => ({}) },
   title: { type: String, default: '' }
 })
 
-const { layout, config, isDynamic, clientFallback, skeletonStyle, skeletonHeight } =
-  await useGridBoard({
+const { tiles, config, isDynamic, clientFallback, skeletonStyle, skeletonHeight } =
+  await useDemoBoard({
     endpoint: props.endpoint,
-    layout: props.layout,
+    tiles: props.tiles,
     config: props.config
   })
 
@@ -41,35 +41,35 @@ const RenderStrategy = computed(() => (clientFallback.value ? ClientOnly : Passt
     </div>
 
     <component :is="RenderStrategy">
-      <GridLayout
-        v-model:layout="layout"
-        :col-num="config.colNum"
+      <GridBoard
+        v-model:tiles="tiles"
+        :columns="config.columns"
         :row-height="config.rowHeight"
-        :margin="config.margin"
-        :is-draggable="isDynamic"
-        :is-resizable="isDynamic"
+        :gap="config.gap"
+        :draggable="isDynamic"
+        :resizable="isDynamic"
       >
-        <GridItem
-          v-for="item in layout"
-          :key="item.i"
-          :i="item.i"
-          :x="item.x"
-          :y="item.y"
-          :w="item.w"
-          :h="item.h"
+        <GridTile
+          v-for="tile in tiles"
+          :id="tile.id"
+          :key="tile.id"
+          :x="tile.x"
+          :y="tile.y"
+          :w="tile.w"
+          :h="tile.h"
         >
           <div class="size-full bg-primary-500/20 rounded-[inherit] p-2 text-center">
-            Item {{ item.i }}
+            Tile {{ tile.id }}
           </div>
-        </GridItem>
-      </GridLayout>
+        </GridTile>
+      </GridBoard>
 
       <template #fallback>
-        <div class="vue-grid-layout relative w-full" :style="{ height: skeletonHeight }">
+        <div class="grid-board relative w-full" :style="{ height: skeletonHeight }">
           <div
-            v-for="item in layout"
-            :key="item.i"
-            :style="skeletonStyle(item)"
+            v-for="tile in tiles"
+            :key="tile.id"
+            :style="skeletonStyle(tile)"
             class="rounded bg-elevated animate-pulse"
           />
         </div>

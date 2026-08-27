@@ -1,23 +1,23 @@
 <script setup>
 import { computed, ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+import GridBoard from '~/grid/grid-board.vue'
+import GridTile from '~/grid/grid-tile.vue'
 
 const dynamic = defineModel('dynamic', { type: Boolean, default: false })
 
 const L = {
-  revenue: { i: 1, x: 0, y: 0, w: 7, h: 3 },
-  mrr: { i: 2, x: 7, y: 0, w: 5, h: 1 },
-  users: { i: 3, x: 7, y: 1, w: 5, h: 2 },
-  spark: { i: 4, x: 0, y: 3, w: 4, h: 2 },
-  region: { i: 5, x: 4, y: 3, w: 3, h: 2 },
-  cta: { i: 6, x: 7, y: 3, w: 5, h: 2 }
+  revenue: { id: 1, x: 0, y: 0, w: 7, h: 3 },
+  mrr: { id: 2, x: 7, y: 0, w: 5, h: 1 },
+  users: { id: 3, x: 7, y: 1, w: 5, h: 2 },
+  spark: { id: 4, x: 0, y: 3, w: 4, h: 2 },
+  region: { id: 5, x: 4, y: 3, w: 3, h: 2 },
+  cta: { id: 6, x: 7, y: 3, w: 5, h: 2 }
 }
-const layout = ref(Object.values(L))
+const tiles = ref(Object.values(L))
 
 const at = computed(() => {
-  const byId = Object.fromEntries(layout.value.map((it) => [it.i, it]))
-  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.i]]))
+  const byId = Object.fromEntries(tiles.value.map((it) => [it.id, it]))
+  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.id]]))
 })
 
 const data = [12, 20, 16, 28, 24, 40, 34, 52, 46, 64, 58, 78]
@@ -38,15 +38,15 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
     class="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-indigo-900 via-slate-950 to-fuchsia-900 p-6 ring-1 ring-white/10"
   >
     <div class="relative">
-      <GridLayout
-        v-model:layout="layout"
-        :col-num="12"
+      <GridBoard
+        v-model:tiles="tiles"
+        :columns="12"
         :row-height="94"
-        :margin="[18, 18]"
-        :is-draggable="dynamic"
-        :is-resizable="dynamic"
+        :gap="18"
+        :draggable="dynamic"
+        :resizable="dynamic"
       >
-        <GridItem v-bind="at.revenue">
+        <GridTile v-bind="at.revenue">
           <div
             class="relative size-full overflow-hidden rounded-[22px] bg-white/5 p-7 shadow-xl shadow-black/20 ring-1 ring-white/15 backdrop-blur-lg"
           >
@@ -85,9 +85,9 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
               />
             </svg>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.mrr" class="z-20">
+        <GridTile v-bind="at.mrr" class="z-20">
           <div class="relative size-full">
             <div
               class="flex size-full items-center justify-between overflow-hidden rounded-[22px] bg-gradient-to-r from-indigo-500/40 to-violet-500/40 px-6 shadow-lg shadow-indigo-900/40 ring-1 ring-white/20 backdrop-blur-lg"
@@ -117,9 +117,9 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
               LIVE
             </span>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.users">
+        <GridTile v-bind="at.users">
           <div
             class="flex size-full flex-col justify-between rounded-[22px] bg-white/5 p-6 shadow-xl shadow-black/20 ring-1 ring-white/15 backdrop-blur-lg"
           >
@@ -147,9 +147,9 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
               1,204 <span class="text-base font-medium text-slate-500">sessions</span>
             </p>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.spark">
+        <GridTile v-bind="at.spark">
           <div
             class="flex size-full flex-col justify-between rounded-[22px] bg-white/5 p-6 shadow-xl shadow-black/20 ring-1 ring-white/15 backdrop-blur-lg"
           >
@@ -170,9 +170,9 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
             </div>
             <p class="text-2xl font-black tracking-tight text-white">7.9%</p>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.region">
+        <GridTile v-bind="at.region">
           <div
             class="flex size-full flex-col items-center justify-center gap-3 rounded-[22px] bg-white/5 shadow-xl shadow-black/20 ring-1 ring-white/15 backdrop-blur-lg"
           >
@@ -196,9 +196,9 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
               </div>
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.cta">
+        <GridTile v-bind="at.cta">
           <div
             class="relative flex size-full flex-col justify-center overflow-hidden rounded-[22px] bg-gradient-to-br from-fuchsia-500/40 via-purple-500/40 to-indigo-500/40 p-7 shadow-lg shadow-purple-900/40 ring-1 ring-white/20 backdrop-blur-lg"
           >
@@ -211,8 +211,8 @@ const spark = [30, 55, 42, 68, 50, 82, 60, 95]
               View plans →
             </button>
           </div>
-        </GridItem>
-      </GridLayout>
+        </GridTile>
+      </GridBoard>
     </div>
   </div>
 </template>

@@ -1,23 +1,23 @@
 <script setup>
 import { computed, ref } from 'vue'
-import GridLayout from '~/grid-fork/grid-layout.vue'
-import GridItem from '~/grid-fork/grid-item.vue'
+import GridBoard from '~/grid/grid-board.vue'
+import GridTile from '~/grid/grid-tile.vue'
 
 const dynamic = defineModel('dynamic', { type: Boolean, default: false })
 
 const L = {
-  city: { i: 1, x: 0, y: 0, w: 5, h: 4 },
-  beach: { i: 2, x: 5, y: 0, w: 4, h: 2 },
-  mountain: { i: 3, x: 9, y: 0, w: 3, h: 4 },
-  forest: { i: 4, x: 5, y: 2, w: 2, h: 2 },
-  desert: { i: 5, x: 7, y: 2, w: 2, h: 2 },
-  coast: { i: 6, x: 0, y: 4, w: 9, h: 2 }
+  city: { id: 1, x: 0, y: 0, w: 5, h: 4 },
+  beach: { id: 2, x: 5, y: 0, w: 4, h: 2 },
+  mountain: { id: 3, x: 9, y: 0, w: 3, h: 4 },
+  forest: { id: 4, x: 5, y: 2, w: 2, h: 2 },
+  desert: { id: 5, x: 7, y: 2, w: 2, h: 2 },
+  coast: { id: 6, x: 0, y: 4, w: 9, h: 2 }
 }
-const layout = ref(Object.values(L))
+const tiles = ref(Object.values(L))
 
 const at = computed(() => {
-  const byId = Object.fromEntries(layout.value.map((it) => [it.i, it]))
-  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.i]]))
+  const byId = Object.fromEntries(tiles.value.map((it) => [it.id, it]))
+  return Object.fromEntries(Object.entries(L).map(([k, v]) => [k, byId[v.id]]))
 })
 
 const small = [
@@ -38,15 +38,15 @@ const small = [
     />
 
     <div class="relative">
-      <GridLayout
-        v-model:layout="layout"
-        :col-num="12"
+      <GridBoard
+        v-model:tiles="tiles"
+        :columns="12"
         :row-height="86"
-        :margin="[18, 18]"
-        :is-draggable="dynamic"
-        :is-resizable="dynamic"
+        :gap="18"
+        :draggable="dynamic"
+        :resizable="dynamic"
       >
-        <GridItem v-bind="at.city" class="z-20">
+        <GridTile v-bind="at.city" class="z-20">
           <div class="relative size-full">
             <div class="absolute inset-0 overflow-hidden rounded-[22px] shadow-xl">
               <img src="/bento/city.jpg" class="size-full scale-105 object-cover" alt="" />
@@ -85,9 +85,9 @@ const small = [
               </div>
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.beach">
+        <GridTile v-bind="at.beach">
           <div class="relative size-full overflow-hidden rounded-[22px] shadow-lg">
             <img src="/bento/beach.jpg" class="size-full object-cover" alt="" />
             <div
@@ -103,9 +103,9 @@ const small = [
               ★ 4.9
             </span>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.mountain" class="z-20">
+        <GridTile v-bind="at.mountain" class="z-20">
           <div class="relative size-full">
             <div class="absolute inset-0 overflow-hidden rounded-[22px] shadow-lg">
               <img src="/bento/mountain.jpg" class="size-full object-cover" alt="" />
@@ -132,9 +132,9 @@ const small = [
               ✈️
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-for="s in small" :key="s.key" v-bind="at[s.key]">
+        <GridTile v-for="s in small" :key="s.key" v-bind="at[s.key]">
           <div class="relative size-full overflow-hidden rounded-[22px] shadow-md">
             <img :src="s.img" class="size-full object-cover" alt="" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
@@ -150,9 +150,9 @@ const small = [
               <p class="text-lg font-black leading-none drop-shadow">{{ s.name }}</p>
             </div>
           </div>
-        </GridItem>
+        </GridTile>
 
-        <GridItem v-bind="at.coast">
+        <GridTile v-bind="at.coast">
           <div class="relative size-full overflow-hidden rounded-[22px] shadow-lg">
             <img src="/bento/coast.jpg" class="absolute inset-0 size-full object-cover" alt="" />
             <div
@@ -173,8 +173,8 @@ const small = [
               </button>
             </div>
           </div>
-        </GridItem>
-      </GridLayout>
+        </GridTile>
+      </GridBoard>
     </div>
   </div>
 </template>
