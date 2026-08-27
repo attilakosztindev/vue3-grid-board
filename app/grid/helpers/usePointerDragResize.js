@@ -4,12 +4,12 @@ const MAX_SPEED = 18
 
 export function usePointerDragResize(root, options) {
   const {
-    handleSelector = '.vue-resizable-handle',
+    handleSelector = '.grid-handle',
     draggable = () => false,
     resizable = () => false,
-    dragIgnoreFrom = () => null,
-    dragAllowFrom = () => null,
-    resizeIgnoreFrom = () => null,
+    dragIgnore = () => null,
+    dragHandle = () => null,
+    resizeIgnore = () => null,
     autoScroll = () => true,
     onDrag = () => {},
     onResize = () => {}
@@ -86,13 +86,13 @@ export function usePointerDragResize(root, options) {
     const onHandle = matches(e.target, handleSelector)
 
     if (onHandle && resizable()) {
-      if (matches(e.target, resizeIgnoreFrom())) return
+      if (matches(e.target, resizeIgnore())) return
       mode = 'resize'
     } else if (!onHandle && draggable()) {
-      const ignore = dragIgnoreFrom()
-      const allow = dragAllowFrom()
+      const ignore = dragIgnore()
+      const handle = dragHandle()
       if (ignore && matches(e.target, ignore)) return
-      if (allow && !matches(e.target, allow)) return
+      if (handle && !matches(e.target, handle)) return
       mode = 'drag'
     } else {
       return

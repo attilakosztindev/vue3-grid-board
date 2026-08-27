@@ -1,5 +1,5 @@
-export interface GridLayoutItem {
-  i: number | string
+export interface GridTileData {
+  id: number | string
   x: number
   y: number
   w: number
@@ -8,17 +8,17 @@ export interface GridLayoutItem {
   minH?: number
   maxW?: number
   maxH?: number
-  static?: boolean
+  frozen?: boolean
 }
 
 export interface GridConfig {
-  colNum: number
+  columns: number
   rowHeight: number
-  margin: [number, number]
+  gap: number
   interactive: boolean
 }
 
 export interface GridBoardResponse {
   config?: Partial<GridConfig>
-  layout?: GridLayoutItem[]
+  tiles?: GridTileData[]
 }

@@ -1,10 +1,11 @@
 <script setup>
 import { reactive, unref, watch, computed, onBeforeUnmount, onMounted, inject, nextTick } from 'vue'
-import { getControlPosition, createCoreData } from './helpers/helpers'
+import { IS_BROWSER, getPointerOffset, getFrameDelta } from './helpers/helpers'
 import { usePointerDragResize } from './helpers/usePointerDragResize'
+import { GRID_BOARD } from './context'
 
 const props = defineProps({
-  i: {
+  id: {
     type: [Number, String],
     required: true
   },
@@ -40,61 +41,66 @@ const props = defineProps({
     type: Number,
     default: Infinity
   },
-  isDraggable: {
+  draggable: {
     type: Boolean,
     default: null
   },
-  isResizable: {
+  resizable: {
     type: Boolean,
     default: null
   },
-  static: {
+  frozen: {
     type: Boolean,
     default: false
   },
-  placeholder: {
-    type: Boolean,
-    default: false
-  },
-  dragIgnoreFrom: {
-    type: String,
-    default: 'a, button'
-  },
-  dragAllowFrom: {
+  dragHandle: {
     type: String,
     default: null
   },
-  resizeIgnoreFrom: {
+  dragIgnore: {
     type: String,
     default: 'a, button'
   },
-  dragOption: {
-    type: Object,
-    default: () => ({})
-  },
-  resizeOption: {
-    type: Object,
-    default: () => ({})
+  resizeIgnore: {
+    type: String,
+    default: 'a, button'
   },
   radius: {
     type: Number,
     default: 22
   },
-  ariaLabel: {
+  label: {
     type: String,
     default: null
+  },
+  shadow: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['container-resized', 'resize', 'resized', 'move', 'moved'])
+const emit = defineEmits([
+  'dragstart',
+  'drag',
+  'dragend',
+  'resizestart',
+  'resize',
+  'resizeend',
+  'size'
+])
 
 const exposeObj = {
   el: undefined
 }
 defineExpose(exposeObj)
 
-const emitter = inject('emitter')
-const gridLayout = inject('gridLayout')
+const board = inject(GRID_BOARD, null)
+
+if (!board) {
+  throw new Error(
+    'GridTile must be rendered inside a GridBoard. The two are a single component pair and cannot be used apart.'
+  )
+}
 
 const SETTLE_MS = 220
 const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
@@ -102,22 +108,28 @@ const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
 let pointerCtl
 const settleAnims = new Set()
 let gestureFrame = null
+let gestureParent = null
 let rawStyle = null
 let dragSlot = null
 let keyGesture = null
 let grabOrigin = null
 
-const state = reactive({
-  cols: 1,
-  containerWidth: 100,
-  rowHeight: 30,
-  margin: [10, 10],
-  draggable: null,
-  resizable: null,
+const columns = computed(() => board.props.columns)
+const rowHeight = computed(() => board.props.rowHeight)
+const boardWidth = computed(() => board.state.width ?? 100)
+const gap = computed(() => board.gap.value)
 
+const dragEnabled = computed(() =>
+  props.draggable === null ? board.props.draggable : props.draggable
+)
+const resizeEnabled = computed(() =>
+  props.resizable === null ? board.props.resizable : props.resizable
+)
+
+const state = reactive({
   isDragging: false,
   dragging: null,
-  raised: false,
+  settling: false,
   isResizing: false,
   grabbed: false,
   resizing: null,
@@ -139,103 +151,58 @@ const state = reactive({
   innerH: props.h
 })
 
-const resizableAndNotStatic = computed(() => state.resizable && !props.static && !props.placeholder)
-const draggableOrResizableAndNotStatic = computed(
-  () => (state.draggable || state.resizable) && !props.static && !props.placeholder
+const canResize = computed(() => resizeEnabled.value && !props.frozen && !props.shadow)
+const interactive = computed(
+  () => (dragEnabled.value || resizeEnabled.value) && !props.frozen && !props.shadow
 )
 
-const gestureStyle = computed(() =>
-  unref(draggableOrResizableAndNotStatic) ? { touchAction: 'none' } : {}
+const gestureStyle = computed(() => (unref(interactive) ? { touchAction: 'none' } : {}))
+
+const escapes = computed(
+  () =>
+    IS_BROWSER && !props.shadow && board.props.overflow && (state.isDragging || state.isResizing)
 )
 
 const classObj = computed(() => ({
-  'vue-resizable': unref(resizableAndNotStatic),
-  static: props.static,
-  resizing: state.isResizing,
-  'vue-draggable-dragging': state.isDragging,
-  settling: state.raised,
-  'disable-userselect': state.isDragging,
-  'no-touch': unref(draggableOrResizableAndNotStatic),
-  'vgl-grabbed': state.grabbed
+  'grid-tile--frozen': props.frozen,
+  'grid-tile--dragging': state.isDragging,
+  'grid-tile--resizing': state.isResizing,
+  'grid-tile--settling': state.settling,
+  'grid-tile--grabbed': state.grabbed
 }))
 
-const itemName = computed(() => props.ariaLabel || `Item ${props.i}`)
+const tileName = computed(() => props.label || `Tile ${props.id}`)
 
-const itemLabel = computed(
+const tileLabel = computed(
   () =>
-    `${unref(itemName)}, column ${state.innerX + 1}, row ${state.innerY + 1}, ${state.innerW} wide, ${state.innerH} tall`
+    `${unref(tileName)}, column ${state.innerX + 1}, row ${state.innerY + 1}, ${state.innerW} wide, ${state.innerH} tall`
 )
 
-emitter.on('updateWidth', updateWidth)
-emitter.on('setDraggable', setDraggableHandler)
-emitter.on('setResizable', setResizableHandler)
-emitter.on('setRowHeight', setRowHeightHandler)
-emitter.on('setColNum', setColNum)
+createStyle()
 
-if (gridLayout && gridLayout.props && gridLayout.state) {
-  const parent = { ...gridLayout.props, ...gridLayout.state }
-  if (parent.colNum !== undefined) state.cols = parent.colNum
-  if (parent.rowHeight !== undefined) state.rowHeight = parent.rowHeight
-  if (parent.margin !== undefined) state.margin = parent.margin
-  state.draggable = props.isDraggable === null ? parent.isDraggable : props.isDraggable
-  state.resizable = props.isResizable === null ? parent.isResizable : props.isResizable
+watch([rowHeight, columns], () => {
   createStyle()
-}
+  emitSize()
+})
 
-watch(
-  () => props.isDraggable,
-  (v) => {
-    state.draggable = v
-  }
-)
-watch(
-  () => props.isResizable,
-  (v) => {
-    state.resizable = v
-  }
-)
+watch(boardWidth, () => {
+  if (state.isDragging || state.isResizing) createStyle()
+  emitSize()
+})
 
-watch(
-  () => state.rowHeight,
-  () => {
-    createStyle()
-    emitContainerResized()
-  }
-)
-
-watch(
-  () => state.cols,
-  () => {
-    createStyle()
-    emitContainerResized()
-  }
-)
-
-watch(
-  () => state.containerWidth,
-  () => {
-    if (state.isDragging || state.isResizing) createStyle()
-    emitContainerResized()
-  }
-)
-
-watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, prev) => {
+watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, previous) => {
   state.innerX = props.x
   state.innerY = props.y
   state.innerW = props.w
   state.innerH = props.h
   createStyle()
 
-  // The shadow glides via a CSS transition on left/top instead (see the stylesheet).
-  // A FLIP is wrong for it: the shadow re-targets on every cell the pointer crosses,
-  // and a FLIP interrupted mid-flight has to be restarted from wherever it got to, so
-  // it lags further behind on every change instead of converging.
-  if (props.placeholder) return
+  if (props.shadow) return
   if (state.isDragging || state.isResizing) return
-  if (state.raised) return
+  if (state.settling) return
 
   const [nx, ny, nw, nh] = next
-  const [ox, oy, ow, oh] = prev
+  const [ox, oy, ow, oh] = previous
   if (nx === ox && ny === oy) return
 
   const from = calcPosition(ox, oy, ow, oh)
@@ -245,36 +212,21 @@ watch([() => props.x, () => props.y, () => props.w, () => props.h], (next, prev)
 
 watch(() => props.radius, createStyle)
 
-watch(
-  () => gridLayout.props.margin,
-  (margin) => {
-    if (
-      !margin ||
-      (Number(margin[0]) === Number(state.margin[0]) &&
-        Number(margin[1]) === Number(state.margin[1]))
-    ) {
-      return
-    }
-    state.margin = margin.map((m) => Number(m) || 0)
-    createStyle()
-    emitContainerResized()
-  }
-)
+watch(gap, (next, previous) => {
+  if (next[0] === previous[0] && next[1] === previous[1]) return
+  createStyle()
+  emitSize()
+})
 
 onMounted(() => {
-  const parent = { ...gridLayout.props, ...gridLayout.state }
-  state.cols = parent.colNum
-  state.rowHeight = parent.rowHeight
-  state.containerWidth = parent.width !== null ? parent.width : 100
-  state.margin = parent.margin !== undefined ? parent.margin : [10, 10]
   createStyle()
   syncPointerCtl()
 })
 
-watch(draggableOrResizableAndNotStatic, syncPointerCtl)
+watch(interactive, syncPointerCtl)
 
 function syncPointerCtl() {
-  const want = unref(draggableOrResizableAndNotStatic)
+  const want = unref(interactive)
   if (want === !!pointerCtl) return
 
   if (!want) {
@@ -285,12 +237,12 @@ function syncPointerCtl() {
   if (!exposeObj.el) return
 
   pointerCtl = usePointerDragResize(exposeObj.el, {
-    handleSelector: '.vue-resizable-handle',
-    draggable: () => state.draggable && !props.static,
-    resizable: () => state.resizable && !props.static,
-    dragIgnoreFrom: () => props.dragIgnoreFrom,
-    dragAllowFrom: () => props.dragAllowFrom,
-    resizeIgnoreFrom: () => props.resizeIgnoreFrom,
+    handleSelector: '.grid-handle',
+    draggable: () => dragEnabled.value && !props.frozen,
+    resizable: () => resizeEnabled.value && !props.frozen,
+    dragIgnore: () => props.dragIgnore,
+    dragHandle: () => props.dragHandle,
+    resizeIgnore: () => props.resizeIgnore,
     autoScroll: () => true,
     onDrag: handleDrag,
     onResize: handleResize
@@ -298,11 +250,6 @@ function syncPointerCtl() {
 }
 
 onBeforeUnmount(() => {
-  emitter.off('updateWidth', updateWidth)
-  emitter.off('setDraggable', setDraggableHandler)
-  emitter.off('setResizable', setResizableHandler)
-  emitter.off('setRowHeight', setRowHeightHandler)
-  emitter.off('setColNum', setColNum)
   endKeyGesture()
   clearSettle()
   endGestureFrame()
@@ -313,37 +260,35 @@ function setRef(e) {
   exposeObj.el = e
 }
 
-function setDraggableHandler(isDraggable) {
-  if (props.isDraggable === null) state.draggable = isDraggable
+const ESCAPE_Z = 2147483647
+
+function boardViewportRect() {
+  const parent = gestureParent || exposeObj.el?.offsetParent
+  return parent ? parent.getBoundingClientRect() : null
 }
 
-function setResizableHandler(isResizable) {
-  if (props.isResizable === null) state.resizable = isResizable
-}
-
-function setRowHeightHandler(rowHeight) {
-  state.rowHeight = rowHeight
-}
-
-function setColNum(colNum) {
-  state.cols = parseInt(colNum, 10)
+function onEscapeScroll() {
+  if (escapes.value) createStyle()
 }
 
 function createStyle() {
-  if (props.x + props.w > state.cols) {
+  const cols = columns.value
+
+  if (props.x + props.w > cols) {
     state.innerX = 0
-    state.innerW = props.w > state.cols ? state.cols : props.w
+    state.innerW = props.w > cols ? cols : props.w
   } else {
     state.innerX = props.x
     state.innerW = props.w
   }
 
-  const { innerX: x, innerY: y, innerW: w, innerH: h, rowHeight: rh, cols } = state
-  const [mx, my] = state.margin
-  const colExpr = `((100% - ${(cols + 1) * mx}px) / ${cols})`
+  const { innerX: x, innerY: y, innerW: w, innerH: h } = state
+  const rh = rowHeight.value
+  const [gx, gy] = gap.value
+  const colExpr = `((100% - ${(cols + 1) * gx}px) / ${cols})`
 
-  let top = `${rh * y + (y + 1) * my}px`
-  let left = `calc(${colExpr} * ${x} + ${(x + 1) * mx}px)`
+  let top = `${rh * y + (y + 1) * gy}px`
+  let left = `calc(${colExpr} * ${x} + ${(x + 1) * gx}px)`
   let offset = null
 
   if (state.isDragging) {
@@ -359,6 +304,33 @@ function createStyle() {
     dragSlot = null
   }
 
+  if (escapes.value) {
+    const rect = boardViewportRect()
+    if (rect) {
+      const slot = state.isDragging ? dragSlot : calcPosition(x, y, w, h)
+      const next = {
+        position: 'fixed',
+        top: `${rect.top + slot.top}px`,
+        left: `${rect.left + slot.left}px`,
+        width: `${state.isResizing ? state.resizing.width : slot.width}px`,
+        height: `${state.isResizing ? state.resizing.height : slot.height}px`,
+        zIndex: String(ESCAPE_Z),
+        transition: 'none',
+        ...(offset
+          ? {
+              transform: `translate3d(${offset.dx}px, ${offset.dy}px, 0)`,
+              willChange: 'transform'
+            }
+          : {}),
+        '--grid-radius': `${props.radius}px`
+      }
+      if (rawStyle && sameStyle(rawStyle, next)) return
+      rawStyle = next
+      state.style = next
+      return
+    }
+  }
+
   const next = {
     position: 'absolute',
     top,
@@ -367,12 +339,12 @@ function createStyle() {
       ? `${state.resizing.width}px`
       : w === Infinity
         ? 'auto'
-        : `calc(${colExpr} * ${w} + ${Math.max(0, w - 1) * mx}px)`,
+        : `calc(${colExpr} * ${w} + ${Math.max(0, w - 1) * gx}px)`,
     height: state.isResizing
       ? `${state.resizing.height}px`
       : h === Infinity
         ? 'auto'
-        : `${rh * h + Math.max(0, h - 1) * my}px`,
+        : `${rh * h + Math.max(0, h - 1) * gy}px`,
     ...(offset
       ? {
           transform: `translate3d(${offset.dx}px, ${offset.dy}px, 0)`,
@@ -382,7 +354,7 @@ function createStyle() {
       : state.isResizing
         ? { transition: 'none' }
         : {}),
-    '--vgl-radius': `${props.radius}px`
+    '--grid-radius': `${props.radius}px`
   }
 
   if (rawStyle && sameStyle(rawStyle, next)) return
@@ -406,20 +378,21 @@ function writeDragOffset(position) {
   el.style.transform = value
 }
 
-function emitContainerResized() {
+function emitSize() {
   const { width, height } = calcPosition(state.innerX, state.innerY, state.innerW, state.innerH)
   if (!Number.isFinite(width) || !Number.isFinite(height)) return
-  emit('container-resized', props.i, props.h, props.w, height, width)
+  emit('size', props.id, width, height)
 }
 
 function handleResize(event) {
-  if (props.static && !(event.type === 'resizeend' && state.isResizing)) return
+  if (props.frozen && !(event.type === 'resizeend' && state.isResizing)) return
   if (event.type === 'resizestart') beginGestureFrame(event.target)
   const position = controlPosition(event)
   if (position == null) return
   const { x, y } = position
 
   const newSize = { width: 0, height: 0 }
+  let live = null
   let pos
   switch (event.type) {
     case 'resizestart': {
@@ -432,22 +405,24 @@ function handleResize(event) {
       newSize.height = pos.height
       state.resizing = newSize
       state.isResizing = true
+      emit('resizestart', props.id, state.innerW, state.innerH)
       break
     }
     case 'resizemove': {
-      const coreEvent = createCoreData(state.lastW, state.lastH, x, y)
+      const delta = getFrameDelta(state.lastW, state.lastH, x, y)
       newSize.width = Math.max(
         state.resizeMin.width,
-        Math.min(state.resizeMax.width, state.resizing.width + coreEvent.deltaX)
+        Math.min(state.resizeMax.width, state.resizing.width + delta.deltaX)
       )
       newSize.height = Math.max(
         state.resizeMin.height,
-        Math.min(state.resizeMax.height, state.resizing.height + coreEvent.deltaY)
+        Math.min(state.resizeMax.height, state.resizing.height + delta.deltaY)
       )
       state.resizing = newSize
       break
     }
     case 'resizeend': {
+      live = state.resizing
       pos = calcPosition(state.innerX, state.innerY, state.innerW, state.innerH)
       newSize.width = pos.width
       newSize.height = pos.height
@@ -458,29 +433,28 @@ function handleResize(event) {
   }
   createStyle()
 
-  pos = calcWH(newSize.height, newSize.width)
-  pos.w = Math.max(props.minW, Math.min(props.maxW, pos.w), 1)
-  pos.h = Math.max(props.minH, Math.min(props.maxH, pos.h), 1)
+  pos = clampSpan(calcWH(newSize.height, newSize.width))
+  const settled = live ? clampSpan(calcWH(live.height, live.width)) : pos
 
   state.lastW = x
   state.lastH = y
 
   if (state.innerW !== pos.w || state.innerH !== pos.h) {
-    emit('resize', props.i, pos.h, pos.w, newSize.height, newSize.width)
+    emit('resize', props.id, pos.w, pos.h)
   }
   if (
     event.type === 'resizeend' &&
-    (state.previousW !== state.innerW || state.previousH !== state.innerH)
+    (state.previousW !== settled.w || state.previousH !== settled.h)
   ) {
-    emit('resized', props.i, pos.h, pos.w, newSize.height, newSize.width)
+    emit('resizeend', props.id, settled.w, settled.h)
   }
-  emitter.emit('resizeEvent', [event.type, props.i, state.innerX, state.innerY, pos.h, pos.w])
+  board.resizeEvent([event.type, props.id, state.innerX, state.innerY, settled.h, settled.w])
   if (event.type === 'resizeend') endGestureFrame()
 }
 
 function handleDrag(event) {
   if (state.isResizing) return
-  if (props.static && !(event.type === 'dragend' && state.isDragging)) return
+  if (props.frozen && !(event.type === 'dragend' && state.isDragging)) return
 
   if (event.type === 'dragstart') beginGestureFrame(event.target)
   const position = controlPosition(event)
@@ -497,18 +471,21 @@ function handleDrag(event) {
         state.previousY = state.innerY
         clearSettle()
       }
-      const parentRect = event.target.offsetParent.getBoundingClientRect()
+      const parentRect = boardViewportRect() ?? { left: 0, top: 0 }
       const clientRect = event.target.getBoundingClientRect()
       newPosition.left = clientRect.left - parentRect.left
       newPosition.top = clientRect.top - parentRect.top
       state.dragging = event.type === 'dragstart' ? newPosition : null
       state.isDragging = event.type === 'dragstart'
+      if (event.type === 'dragstart') {
+        emit('dragstart', props.id, state.innerX, state.innerY)
+      }
       break
     }
     case 'dragmove': {
-      const coreEvent = createCoreData(state.lastX, state.lastY, x, y)
-      newPosition.left = state.dragging.left + coreEvent.deltaX
-      newPosition.top = state.dragging.top + coreEvent.deltaY
+      const delta = getFrameDelta(state.lastX, state.lastY, x, y)
+      newPosition.left = state.dragging.left + delta.deltaX
+      newPosition.top = state.dragging.top + delta.deltaY
       state.dragging = newPosition
       break
     }
@@ -516,32 +493,32 @@ function handleDrag(event) {
   if (event.type !== 'dragmove') createStyle()
 
   const pos = calcXY(newPosition.top, newPosition.left)
-  const movesLayout = state.innerX !== pos.x || state.innerY !== pos.y
+  const movesBoard = state.innerX !== pos.x || state.innerY !== pos.y
 
   if (event.type === 'dragmove') {
-    if (movesLayout) createStyle()
+    if (movesBoard) createStyle()
     else writeDragOffset(newPosition)
   }
 
   state.lastX = x
   state.lastY = y
 
-  if (movesLayout) {
-    emit('move', props.i, pos.x, pos.y)
+  if (movesBoard) {
+    emit('drag', props.id, pos.x, pos.y)
   }
   if (
     event.type === 'dragend' &&
     (state.previousX !== state.innerX || state.previousY !== state.innerY)
   ) {
-    emit('moved', props.i, pos.x, pos.y)
+    emit('dragend', props.id, pos.x, pos.y)
   }
-  emitter.emit('dragEvent', [event.type, props.i, pos.x, pos.y, state.innerH, state.innerW])
+  board.dragEvent([event.type, props.id, pos.x, pos.y, state.innerH, state.innerW])
 
   if (event.type === 'dragend') {
-    if (import.meta.client && exposeObj.el) {
-      const finalItem = gridLayout?.state?.layout?.find((it) => it.i === props.i)
-      if (finalItem) {
-        const rest = calcPosition(finalItem.x, finalItem.y, finalItem.w, finalItem.h)
+    if (IS_BROWSER && exposeObj.el) {
+      const settled = board.state.tiles.find((t) => t.id === props.id)
+      if (settled) {
+        const rest = calcPosition(settled.x, settled.y, settled.w, settled.h)
         settleFrom(newPosition.left - rest.left, newPosition.top - rest.top)
       }
     }
@@ -549,8 +526,6 @@ function handleDrag(event) {
   }
 }
 
-/** Translation currently baked into `value`, in px. Handles both the `translate3d`
- *  we write inline and the `matrix` / `matrix3d` a computed style reports back. */
 function readTranslate(value) {
   if (!value || value === 'none') return { dx: 0, dy: 0 }
   const n = value.match(/-?[\d.]+(?:e[-+]?\d+)?/g)?.map(Number)
@@ -560,7 +535,6 @@ function readTranslate(value) {
   return { dx: n[0] ?? 0, dy: n[1] ?? 0 }
 }
 
-/** Offset an in-flight settle is still painting, then drop that settle. */
 function takeSettleOffset(el) {
   if (settleAnims.size === 0) return { dx: 0, dy: 0 }
 
@@ -573,7 +547,7 @@ function takeSettleOffset(el) {
     anim.cancel()
   }
   settleAnims.clear()
-  state.raised = false
+  state.settling = false
 
   return { dx: total.dx - base.dx, dy: total.dy - base.dy }
 }
@@ -582,10 +556,6 @@ function settleFrom(dx, dy, raise = true) {
   const el = exposeObj.el
   if (!el || typeof el.animate !== 'function') return
 
-  // These animations use `composite: 'add'`, so overlapping settles *sum* rather than
-  // replace. Re-targeting mid-flight has to carry the offset already on screen into
-  // the new one and cancel the old, or the element accumulates every leg of the
-  // journey and drifts far away from the slot it belongs to.
   const carry = takeSettleOffset(el)
   dx += carry.dx
   dy += carry.dy
@@ -597,11 +567,11 @@ function settleFrom(dx, dy, raise = true) {
     { duration: SETTLE_MS, easing: SETTLE_EASING, composite: 'add' }
   )
   settleAnims.add(anim)
-  if (raise) state.raised = true
+  if (raise) state.settling = true
 
   const done = () => {
     settleAnims.delete(anim)
-    if (settleAnims.size === 0) state.raised = false
+    if (settleAnims.size === 0) state.settling = false
   }
   anim.onfinish = done
   anim.oncancel = done
@@ -614,18 +584,20 @@ function clearSettle() {
     anim.cancel()
   }
   settleAnims.clear()
-  state.raised = false
+  state.settling = false
 }
 
 function beginGestureFrame(target) {
   endGestureFrame()
-  const offsetParent = target.offsetParent || document.body
+  gestureParent = target.offsetParent || null
+  const offsetParent = gestureParent || document.body
   const frame = { offsetParent, left: 0, top: 0, measure: null }
   frame.measure = () => {
     const rect =
       offsetParent === document.body ? { left: 0, top: 0 } : offsetParent.getBoundingClientRect()
     frame.left = rect.left - offsetParent.scrollLeft
     frame.top = rect.top - offsetParent.scrollTop
+    onEscapeScroll()
   }
   frame.measure()
   gestureFrame = frame
@@ -634,6 +606,7 @@ function beginGestureFrame(target) {
 }
 
 function endGestureFrame() {
+  gestureParent = null
   if (!gestureFrame) return
   window.removeEventListener('scroll', gestureFrame.measure, { capture: true })
   window.removeEventListener('resize', gestureFrame.measure)
@@ -641,50 +614,54 @@ function endGestureFrame() {
 }
 
 function controlPosition(event) {
-  if (!gestureFrame) return getControlPosition(event)
+  if (!gestureFrame) return getPointerOffset(event)
   return { x: event.clientX - gestureFrame.left, y: event.clientY - gestureFrame.top }
 }
 
 function calcPosition(x, y, w, h) {
   const colWidth = calcColWidth()
-  const [mx, my] = state.margin
+  const rh = rowHeight.value
+  const [gx, gy] = gap.value
   return {
-    left: Math.round(colWidth * x + (x + 1) * mx),
-    top: Math.round(state.rowHeight * y + (y + 1) * my),
-    width: w === Infinity ? w : Math.round(colWidth * w + Math.max(0, w - 1) * mx),
-    height: h === Infinity ? h : Math.round(state.rowHeight * h + Math.max(0, h - 1) * my)
+    left: Math.round(colWidth * x + (x + 1) * gx),
+    top: Math.round(rh * y + (y + 1) * gy),
+    width: w === Infinity ? w : Math.round(colWidth * w + Math.max(0, w - 1) * gx),
+    height: h === Infinity ? h : Math.round(rh * h + Math.max(0, h - 1) * gy)
   }
 }
 
 function calcXY(top, left) {
   const colWidth = calcColWidth()
-  const [mx, my] = state.margin
-  const x = Math.round((left - mx) / (colWidth + mx))
-  const y = Math.round((top - my) / (state.rowHeight + my))
+  const [gx, gy] = gap.value
+  const x = Math.round((left - gx) / (colWidth + gx))
+  const y = Math.round((top - gy) / (rowHeight.value + gy))
   return {
-    x: Math.max(Math.min(x, state.cols - state.innerW), 0),
+    x: Math.max(Math.min(x, columns.value - state.innerW), 0),
     y: Math.max(y, 0)
   }
 }
 
 function calcColWidth() {
-  return (state.containerWidth - state.margin[0] * (state.cols + 1)) / state.cols
+  const cols = columns.value
+  return (boardWidth.value - gap.value[0] * (cols + 1)) / cols
 }
 
 function calcWH(height, width) {
   const colWidth = calcColWidth()
-  const [mx, my] = state.margin
-  const w = Math.round((width + mx) / (colWidth + mx))
-  const h = Math.round((height + my) / (state.rowHeight + my))
+  const [gx, gy] = gap.value
+  const w = Math.round((width + gx) / (colWidth + gx))
+  const h = Math.round((height + gy) / (rowHeight.value + gy))
   return {
-    w: Math.max(Math.min(w, state.cols - state.innerX), 0),
+    w: Math.max(Math.min(w, columns.value - state.innerX), 0),
     h: Math.max(h, 0)
   }
 }
 
-function updateWidth(width, colNum) {
-  state.containerWidth = width
-  if (colNum !== undefined && colNum !== null) state.cols = colNum
+function clampSpan(span) {
+  return {
+    w: Math.max(props.minW, Math.min(props.maxW, span.w), 1),
+    h: Math.max(props.minH, Math.min(props.maxH, span.h), 1)
+  }
 }
 
 const ARROW_DELTAS = {
@@ -695,19 +672,15 @@ const ARROW_DELTAS = {
 }
 
 function currentSlot() {
-  const item = gridLayout?.state?.layout?.find((it) => it.i === props.i)
-  if (item) return { x: item.x, y: item.y, w: item.w, h: item.h }
+  const tile = board.state.tiles.find((t) => t.id === props.id)
+  if (tile) return { x: tile.x, y: tile.y, w: tile.w, h: tile.h }
   return { x: state.innerX, y: state.innerY, w: state.innerW, h: state.innerH }
-}
-
-function announce(message) {
-  emitter.emit('announce', message)
 }
 
 function announceSlot(suffix) {
   const slot = currentSlot()
-  const where = `${unref(itemName)}, column ${slot.x + 1}, row ${slot.y + 1}, ${slot.w} wide, ${slot.h} tall`
-  announce(suffix ? `${where}. ${suffix}` : where)
+  const where = `${unref(tileName)}, column ${slot.x + 1}, row ${slot.y + 1}, ${slot.w} wide, ${slot.h} tall`
+  board.announce(suffix ? `${where}. ${suffix}` : where)
 }
 
 function beginKeyGesture(kind) {
@@ -716,9 +689,11 @@ function beginKeyGesture(kind) {
   const slot = currentSlot()
   keyGesture = kind
   if (kind === 'drag') {
-    emitter.emit('dragEvent', ['dragstart', props.i, slot.x, slot.y, slot.h, slot.w])
+    emit('dragstart', props.id, slot.x, slot.y)
+    board.dragEvent(['dragstart', props.id, slot.x, slot.y, slot.h, slot.w])
   } else {
-    emitter.emit('resizeEvent', ['resizestart', props.i, slot.x, slot.y, slot.h, slot.w])
+    emit('resizestart', props.id, slot.w, slot.h)
+    board.resizeEvent(['resizestart', props.id, slot.x, slot.y, slot.h, slot.w])
   }
 }
 
@@ -728,34 +703,34 @@ function endKeyGesture() {
   keyGesture = null
   const slot = currentSlot()
   if (kind === 'drag') {
-    emitter.emit('dragEvent', ['dragend', props.i, slot.x, slot.y, slot.h, slot.w])
+    board.dragEvent(['dragend', props.id, slot.x, slot.y, slot.h, slot.w])
   } else {
-    emitter.emit('resizeEvent', ['resizeend', props.i, slot.x, slot.y, slot.h, slot.w])
+    board.resizeEvent(['resizeend', props.id, slot.x, slot.y, slot.h, slot.w])
   }
 }
 
 function keyMoveBy(dx, dy) {
-  if (!state.draggable || props.static) return
+  if (!dragEnabled.value || props.frozen) return
   beginKeyGesture('drag')
   const slot = currentSlot()
-  const x = Math.max(0, Math.min(state.cols - slot.w, slot.x + dx))
+  const x = Math.max(0, Math.min(columns.value - slot.w, slot.x + dx))
   const y = Math.max(0, slot.y + dy)
   if (x !== slot.x || y !== slot.y) {
-    emitter.emit('dragEvent', ['dragmove', props.i, x, y, slot.h, slot.w])
-    emit('move', props.i, x, y)
+    board.dragEvent(['dragmove', props.id, x, y, slot.h, slot.w])
+    emit('drag', props.id, x, y)
   }
   nextTick(() => announceSlot())
 }
 
 function keyResizeBy(dw, dh) {
-  if (!state.resizable || props.static) return
+  if (!resizeEnabled.value || props.frozen) return
   beginKeyGesture('resize')
   const slot = currentSlot()
-  const w = Math.max(props.minW, Math.min(props.maxW, state.cols - slot.x, slot.w + dw))
+  const w = Math.max(props.minW, Math.min(props.maxW, columns.value - slot.x, slot.w + dw))
   const h = Math.max(props.minH, Math.min(props.maxH, slot.h + dh))
   if (w !== slot.w || h !== slot.h) {
-    emitter.emit('resizeEvent', ['resizemove', props.i, slot.x, slot.y, h, w])
-    emit('resize', props.i, h, w)
+    board.resizeEvent(['resizemove', props.id, slot.x, slot.y, h, w])
+    emit('resize', props.id, w, h)
   }
   nextTick(() => announceSlot())
 }
@@ -786,24 +761,24 @@ function cancelGrab() {
     let slot = currentSlot()
     if (slot.w !== origin.w || slot.h !== origin.h) {
       beginKeyGesture('resize')
-      emitter.emit('resizeEvent', ['resizemove', props.i, slot.x, slot.y, origin.h, origin.w])
+      board.resizeEvent(['resizemove', props.id, slot.x, slot.y, origin.h, origin.w])
       endKeyGesture()
       slot = currentSlot()
     }
     if (slot.x !== origin.x || slot.y !== origin.y) {
       beginKeyGesture('drag')
-      emitter.emit('dragEvent', ['dragmove', props.i, origin.x, origin.y, origin.h, origin.w])
+      board.dragEvent(['dragmove', props.id, origin.x, origin.y, origin.h, origin.w])
       endKeyGesture()
     }
   }
 
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot('Returned to its original place.'))
+  nextTick(() => announceSlot('Returned to where it started.'))
 }
 
 function onKeydown(e) {
-  if (!unref(draggableOrResizableAndNotStatic)) return
+  if (!unref(interactive)) return
   if (e.target !== exposeObj.el) return
   if (e.altKey || e.ctrlKey || e.metaKey) return
 
@@ -835,101 +810,95 @@ function onBlur() {
 
 <template>
   <div
-    :id="i"
     :ref="setRef"
-    class="vue-grid-item"
+    class="grid-tile"
     :class="classObj"
     :style="[state.style, gestureStyle]"
-    :tabindex="draggableOrResizableAndNotStatic ? 0 : undefined"
-    :role="draggableOrResizableAndNotStatic ? 'group' : undefined"
-    :aria-roledescription="draggableOrResizableAndNotStatic ? 'Draggable grid item' : undefined"
-    :aria-label="draggableOrResizableAndNotStatic ? itemLabel : undefined"
-    :aria-describedby="draggableOrResizableAndNotStatic ? gridLayout.instructionsId : undefined"
-    :aria-hidden="placeholder ? 'true' : undefined"
+    :data-tile="id"
+    :tabindex="interactive ? 0 : undefined"
+    :role="interactive ? 'group' : undefined"
+    :aria-roledescription="interactive ? 'Draggable tile' : undefined"
+    :aria-label="interactive ? tileLabel : undefined"
+    :aria-describedby="interactive ? board.instructionsId : undefined"
+    :aria-hidden="shadow ? 'true' : undefined"
     :data-grabbed="state.grabbed ? 'true' : undefined"
     @keydown="onKeydown"
     @blur="onBlur"
   >
     <slot />
-    <span v-if="resizableAndNotStatic" class="vue-resizable-handle" aria-hidden="true" />
+    <span
+      v-if="canResize"
+      class="grid-handle"
+      :class="{ 'grid-handle--chevron': !$slots.handle }"
+      :aria-hidden="$slots.handle ? undefined : 'true'"
+    >
+      <slot name="handle" />
+    </span>
   </div>
 </template>
 
 <style scoped>
-.vue-grid-item {
-  border-radius: var(--vgl-radius, 22px);
+.grid-tile {
+  border-radius: var(--grid-radius, 22px);
   transition:
     width 200ms ease,
     height 200ms ease;
 }
 
-.vue-grid-item.no-touch {
-  touch-action: none;
-}
-
-.vue-grid-item:focus-visible {
+.grid-tile:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
-.vue-grid-item.vgl-grabbed {
+.grid-tile--grabbed {
   z-index: 100;
   outline: 2px dashed currentColor;
   outline-offset: 2px;
 }
 
-.vue-grid-item.vue-draggable-dragging {
+.grid-tile--dragging {
   transition: none;
+  user-select: none;
   z-index: 100;
 }
 
-.vue-grid-item.settling {
+.grid-tile--settling {
   z-index: 100;
 }
 
-.vue-grid-item.resizing {
+.grid-tile--resizing {
   opacity: 0.6;
   z-index: 100;
 }
 
-.vue-grid-item.vue-grid-placeholder {
+.grid-tile.grid-shadow {
   background: red;
-  border-radius: var(--vgl-radius, 22px);
+  border-radius: var(--grid-radius, 22px);
   opacity: 0.2;
-  /* Glides by transitioning its own box rather than by the FLIP the tiles use. The
-     shadow re-targets every time the pointer crosses a cell, and a transition always
-     interpolates from the currently painted value to the new one, so an interrupted
-     glide converges on the new slot instead of accumulating the leg it never
-     finished. It also costs nothing to suppress on the first frame of a gesture:
-     the shadow is `display: none` between gestures, and a transition never runs on
-     an element that was not rendered before, so it cannot come sailing in from
-     wherever the previously dragged tile left it. */
   transition:
     left 200ms ease,
     top 200ms ease,
     width 200ms ease,
     height 200ms ease;
-  /* Above the tiles reflowing around it -- those carry no z-index of their own -- so
-     a translucent shadow stays readable instead of vanishing under whichever tile is
-     gliding across it. Still far below the 100 every *active* tile gets (dragging,
-     grabbed, resizing, settling), so the tile under the cursor stays on top of its
-     own shadow. */
   z-index: 1;
   user-select: none;
 }
 
-.vue-grid-item > .vue-resizable-handle {
+.grid-tile > .grid-handle {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: var(--vgl-radius, 22px);
-  height: var(--vgl-radius, 22px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--grid-radius, 22px);
+  min-height: var(--grid-radius, 22px);
   color: currentColor;
   cursor: se-resize;
 }
 
-.vue-grid-item > .vue-resizable-handle::before,
-.vue-grid-item > .vue-resizable-handle::after {
+.grid-tile > .grid-handle--chevron::before,
+.grid-tile > .grid-handle--chevron::after {
   content: '';
   position: absolute;
   top: 0;
@@ -940,19 +909,15 @@ function onBlur() {
   opacity: 0.35;
 }
 
-.vue-grid-item > .vue-resizable-handle::before {
-  width: calc(var(--vgl-radius, 22px) - 8px);
-  height: calc(var(--vgl-radius, 22px) - 8px);
-  border-bottom-right-radius: calc(var(--vgl-radius, 22px) - 8px);
+.grid-tile > .grid-handle--chevron::before {
+  width: calc(var(--grid-radius, 22px) - 8px);
+  height: calc(var(--grid-radius, 22px) - 8px);
+  border-bottom-right-radius: calc(var(--grid-radius, 22px) - 8px);
 }
 
-.vue-grid-item > .vue-resizable-handle::after {
-  width: calc(var(--vgl-radius, 22px) - 13px);
-  height: calc(var(--vgl-radius, 22px) - 13px);
-  border-bottom-right-radius: calc(var(--vgl-radius, 22px) - 13px);
-}
-
-.vue-grid-item.disable-userselect {
-  user-select: none;
+.grid-tile > .grid-handle--chevron::after {
+  width: calc(var(--grid-radius, 22px) - 13px);
+  height: calc(var(--grid-radius, 22px) - 13px);
+  border-bottom-right-radius: calc(var(--grid-radius, 22px) - 13px);
 }
 </style>

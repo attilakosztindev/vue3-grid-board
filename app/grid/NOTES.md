@@ -1,4 +1,4 @@
-# grid-fork — design notes
+# Vue Grid — design notes
 
 Rationale extracted from the source before comments were stripped. Everything here
 was established by measurement, not assumption. Read before "optimising" anything
@@ -79,8 +79,8 @@ A gesture emits a frame on every pointer move, but the _layout_ only changes whe
 tile crosses into a different cell — empirically about one frame in eight.
 
 - `onDragEvent` / `onResizeEvent` in the container bail out early when the cell and
-  placeholder box are unchanged. Otherwise the collision pass, compaction, height
-  recalc and the clone + `update:layout` emit (which re-renders the consumer's whole
+  shadow box are unchanged. Otherwise the collision pass, compaction, height
+  recalc and the clone + `update:tiles` emit (which re-renders the consumer's whole
   page) all run and produce byte-identical results.
 - `writeDragOffset` handles the non-crossing frames in the tile: exactly one thing
   has changed (how far the tile is offset from a slot that is standing still), so it
@@ -113,7 +113,7 @@ This is safe because `rawStyle` is an accurate mirror of the element's inline st
 `writeDragOffset` keeps its `transform` in step with the direct DOM write.
 
 Measured at mount: renders per tile **3 → 1** (`patchStyle` calls 93 → 31 for 30
-tiles, 453 → 151 for 150; the +1 is the placeholder).
+tiles, 453 → 151 for 150; the +1 is the shadow).
 
 ### Other gesture-path costs removed
 
@@ -127,7 +127,7 @@ tiles, 453 → 151 for 150; the +1 is the placeholder).
   of everything after it, every frame. Fine for the one-off settle after a gesture,
   but during a gesture the height changes every time the tile crosses a cell, which
   restarts the transition and runs it back-to-back for the whole drag. The
-  `.vgl-gesture` class disables it mid-gesture; snapping also tracks the placeholder
+  `.grid-board--busy` class disables it mid-gesture; snapping also tracks the shadow
   more honestly.
 - **Gesture frame caching.** `getControlPosition` reads `offsetParent`,
   `scrollLeft`/`scrollTop` and a bounding rect — three synchronous layout flushes per
@@ -177,16 +177,16 @@ animation of the same movement and fight it.
 
 ---
 
-## 5. The placeholder (the "shadow")
+## 5. The shadow
 
-The placeholder is a ghost `GridItem` rendered by the container with `placeholder`
+The shadow is a ghost `GridTile` rendered by the container with `shadow`
 set. It is a readout of where the dragged tile will land, so it is never interactive
 — no resize handle, no pointer controller.
 
 It **glides**, but not with the FLIP the tiles use. The position watcher in
-`grid-item.vue` returns early on `props.placeholder` before it reaches `settleFrom`;
+`grid-tile.vue` returns early on `props.shadow` before it reaches `settleFrom`;
 the movement comes from a plain CSS transition on `left` / `top` / `width` / `height`
-in the placeholder rule. §15 has the measurements, but the two reasons are:
+in the shadow rule. §15 has the measurements, but the two reasons are:
 
 1. **A transition converges, a FLIP does not.** The shadow re-targets every time the
    pointer crosses a cell, which is far more often than a 220ms glide can finish. A
@@ -205,11 +205,11 @@ in the placeholder rule. §15 has the measurements, but the two reasons are:
 
 The shadow carries **`z-index: 1`**, which puts it in the only band that works:
 
-| element                                                                           | z-index | vs. the shadow |
-| --------------------------------------------------------------------------------- | ------- | -------------- |
-| an idle tile, including one reflowing out of the way                              | `auto`  | shadow on top  |
-| the shadow                                                                        | `1`     | —              |
-| any active tile (`vue-draggable-dragging`, `vgl-grabbed`, `resizing`, `settling`) | `100`   | tile on top    |
+| element                                                                                                     | z-index | vs. the shadow |
+| ----------------------------------------------------------------------------------------------------------- | ------- | -------------- |
+| an idle tile, including one reflowing out of the way                                                        | `auto`  | shadow on top  |
+| the shadow                                                                                                  | `1`     | —              |
+| any active tile (`grid-tile--dragging`, `grid-tile--grabbed`, `grid-tile--resizing`, `grid-tile--settling`) | `100`   | tile on top    |
 
 It has to be **above idle tiles** because it is translucent (`opacity: 0.2`) — under
 them it simply vanishes whenever a tile glides across it. It has to stay **below the
@@ -224,21 +224,21 @@ that any more — it is just where a backdrop belongs. Paint order is settled by
 
 ---
 
-## 6. Static handling
+## 6. Frozen handling
 
-**There are two different "static" concepts, and they are not linked.**
+**There are two different "frozen" concepts, and they are not linked.**
 
-- `item.static` in the **layout data** drives the algorithm in `helpers.js`:
-  `compact` skips it, `moveElement` returns early on it, collisions branch on it, and
-  `validateLayout` type-checks it.
-- The `static` **prop** on `<GridItem>` only controls grabbability and whether the
+- `tile.frozen` in the **layout data** drives the algorithm in `helpers/helpers.js`:
+  `applyGravity` skips it, `moveTile` returns early on it, collisions branch on it, and
+  `validateTiles` type-checks it.
+- The `frozen` **prop** on `<GridTile>` only controls grabbability and whether the
   resize handle renders.
 
 Flipping only the prop leaves the tile still movable by its neighbours' collisions.
 
 ### Mid-gesture transitions
 
-`isDraggable`/`isResizable` are live — the grid can be toggled between static and
+`draggable`/`resizable` are live — the grid can be toggled between static and
 interactive at runtime, both as props and over the `setDraggable`/`setResizable` bus.
 The pointer engine is therefore attached and detached by a watcher, not built once at
 mount (a fully static grid used to build a controller and bind a `pointerdown`
@@ -249,16 +249,16 @@ static underneath it:
 
 - `usePointerDragResize.destroy()` emits `${mode}end` for an in-flight gesture instead
   of dropping it. Everything switched on at `${mode}start` — the dragging class, the
-  inline transform, the container's placeholder — is only ever switched back off by
+  inline transform, the container's shadow — is only ever switched back off by
   `${mode}end`, so a controller that disappears mid-drag would strand the tile
   floating under the cursor forever. Reachable two ways: the grid toggled to static
   during a drag, and the tile unmounting during one.
 - `handleDrag` and `handleResize` exempt the terminating event from their
-  `props.static` guard. A bare `props.static` check swallows its own `dragend`.
+  `props.frozen` guard. A bare `props.frozen` check swallows its own `dragend`.
 
 ---
 
-## 7. Container ↔ item contract
+## 7. Board ↔ tile contract
 
 - `props.layout` echoes back the exact array the container just emitted (v-model
   preserves the reference), so the watcher compares against `lastEmittedLayout` and
@@ -269,6 +269,35 @@ static underneath it:
   before it ever looked at `height` — it only ever worked mid-resize-gesture, the one
   moment `width` happens to be plain pixels. An unbounded tile (`w`/`h` of `Infinity`)
   has no size to report and stays silent.
+
+### There is no event bus
+
+The two directions are not symmetric, and were wrong to be carried by one mechanism.
+
+**Board → tile is state, not events.** `columns`, `rowHeight`, `gap`, `draggable`
+and `resizable` used to be _pushed_ down a `mitt` bus (`setColumns`, `setRowHeight`,
+`setDraggable`, `setResizable`, `updateWidth`), each landing in a mirror field on the
+tile's `reactive` state. That is a hand-rolled reactivity system running on top of
+Vue's. The board now `provide`s its live `props`, `state` and `gap` under a Symbol
+key, and the tile reads them through `computed`s. Five broadcast events, five mirror
+fields, five subscriptions and their `off()` teardown all disappeared, and the tile
+can no longer miss an update by mounting in the wrong order — the old
+`onMounted` block that re-read every value existed only to paper over that race.
+
+**Tile → board is a call, not a broadcast.** The same context carries `dragEvent`,
+`resizeEvent` and `announce`. A bus implies many listeners; there was always exactly
+one, and the tuple was already shaped like a function call.
+
+**`dispatch()` replaces the exposed `emitter`.** Emitting on a bus from outside meant
+the public API was "anything anyone happens to listen for". `dispatch` is a closed
+set — `dragEvent`, `resizeEvent`, `announce`, `measure` — and throws on anything
+else. `measure` is the one genuinely new capability: it re-reads `offsetWidth` for
+callers whose container changes size in a way `ResizeObserver` misses, and it is how
+the specs give a board a width in a DOM where `offsetWidth` is always `0`.
+
+**The pair is now enforced.** `GridTile` throws if it cannot inject the board. It has
+never been usable alone — it read `board.props.columns` for its own geometry — but it
+used to fail by silently laying itself out against defaults of 1 column and 30px rows.
 
 ---
 
@@ -289,13 +318,13 @@ Production build, median of 5, identical DOM, both variants Vue-rendered.
   150 tiles).
 - DOM nodes at 150 tiles: CSS grid 601, fork static 602, fork dynamic 753.
 - The remaining 5–8× is per-component cost (a 25-key reactive state, 7 watchers, 5 bus
-  subscriptions and 2 computeds per tile) plus `compact()`'s O(n²) pass.
+  subscriptions and 2 computeds per tile) plus `applyGravity()`'s O(n²) pass.
 
 ---
 
 ## 9. Known latent issue
 
-`getControlPosition` in `helpers.js` was written to special-case an `offsetParent` of
+`getControlPosition` in `helpers/helpers.js` was written to special-case an `offsetParent` of
 `document.body`, but the test was `e.offsetParent === document.body` — `e` is the
 event, which has no `offsetParent`, so the test was always false and the branch was
 dead. The dead branch has been removed, preserving existing behaviour exactly
@@ -310,7 +339,7 @@ whenever a gesture is in flight.
 
 ## 10. Keyboard drag and resize
 
-Upstream vue-grid-layout is pointer-only, which fails WCAG 2.1.1 _Keyboard_ (A) and
+Upstream the grid is pointer-only, which fails WCAG 2.1.1 _Keyboard_ (A) and
 2.5.7 _Dragging Movements_ (AA). The fork now ships a keyboard controller alongside
 the pointer one.
 
@@ -329,16 +358,16 @@ actually consumes.
 
 ### Why it needed no new geometry
 
-The pointer engine already funnels everything through two `mitt` tuples that are
+The pointer engine already funnels everything through two tuples that are
 expressed in **grid units, not pixels**:
 
 ```
-emitter.emit('dragEvent',   ['dragmove',   id, x, y, h, w])
-emitter.emit('resizeEvent', ['resizemove', id, x, y, h, w])
+board.dragEvent(  ['dragmove',   id, x, y, h, w])
+board.resizeEvent(['resizemove', id, x, y, h, w])
 ```
 
-The keyboard path emits the _same_ tuples, so collision resolution, `compact()`, the
-placeholder, `update:layout` and every consumer event work unchanged. No pixel math,
+The keyboard path emits the _same_ tuples, so collision resolution, `applyGravity()`, the
+shadow, `update:tiles` and every consumer event work unchanged. No pixel math,
 no second code path through `calcXY` / `calcWH`.
 
 It also deliberately does **not** set the item's own `state.isDragging`. That leaves
@@ -352,7 +381,7 @@ so keyboard moves glide exactly like pointer moves for free.
 decides whether this is a move or a resize. Consequences:
 
 - Grab-then-drop with no arrow press emits nothing at all, so no spurious
-  `update:layout` and no placeholder flash.
+  `update:tiles` and no shadow flash.
 - Switching from moving to resizing mid-grab closes the drag gesture and opens a
   resize one.
 
@@ -363,7 +392,7 @@ so the width clamp (`cols - x`) is evaluated against the original width.
 
 ### Announcements
 
-`grid-layout.vue` owns one visually-hidden `role="status" aria-live="polite"` region
+`grid-board.vue` owns one visually-hidden `role="status" aria-live="polite"` region
 and listens for an `announce` event on the bus. Identical consecutive messages get a
 trailing zero-width space appended, otherwise a repeated string is not re-announced
 (e.g. pressing <kbd>↓</kbd> against vertical compaction, which is a legitimate no-op).
@@ -373,8 +402,8 @@ Each tile carries `role="group"`, `aria-roledescription="Draggable grid item"`, 
 pointing at a single shared instructions paragraph — one `useId()` per grid, not per
 tile.
 
-Static tiles, non-interactive grids and the placeholder get no `tabindex` and no ARIA;
-the placeholder is additionally `aria-hidden`, as is the resize handle.
+Static tiles, non-interactive grids and the shadow get no `tabindex` and no ARIA;
+the shadow is additionally `aria-hidden`, as is the resize handle.
 
 ---
 
@@ -422,7 +451,7 @@ tile never visibly disappears while under the cursor.
 It also has to sit on `#__nuxt` rather than on `html`. Overflow on the root element is
 supposed to propagate to the viewport, but Chrome does not honour `clip` that way —
 with `html { overflow-x: clip }` the page still scrolled horizontally to 730px during
-a drag. On a normal element it clips as expected (measured `scrollX` pinned at 0 with
+a drag. On a normal element it clips as expected (measured `scrollX` frozen at 0 with
 a tile 412px past the card's right edge).
 
 ---
@@ -470,14 +499,14 @@ Two things made this easy to miss:
 `behavior: 'instant'` is the only correct value here — `'auto'` is what re-introduces the
 bug, since it defers to the CSS.
 
-## 13. The dragged item must win exact position ties in `compact`
+## 13. The dragged tile must win exact position ties in `applyGravity`
 
 Dragging the full-width item 6 up past the side-by-side items 4 and 5 used to split them:
 item 4 ended up **above** item 6 and item 5 an entire band **below** it. Dragging all the
 way up corrected itself, so it read as a feel problem. It was not — symmetric input was
 producing asymmetric output.
 
-Starting board (`colNum: 12`):
+Starting board (`columns: 12`):
 
 ```
 1(0,0,2x3)  2(2,0,6x3)  3(8,0,4x3)
@@ -485,11 +514,11 @@ Starting board (`colNum: 12`):
 6(0,7,12x3)
 ```
 
-`moveElement` is symmetric and behaves correctly: dragging item 6 to `y4` pushes **both**
+`moveTile` is symmetric and behaves correctly: dragging item 6 to `y4` pushes **both**
 item 4 and item 5 to `y4`. But item 6 is at `y4` too, so all three overlap and the pile is
-handed to `compact()` to untangle.
+handed to `applyGravity()` to untangle.
 
-`compact()` resolves collisions in `sortLayoutItemsByRowCol` order, and that comparator
+`applyGravity()` resolves collisions in `sortByRowThenColumn` order, and that comparator
 had no tie-break:
 
 ```js
@@ -504,8 +533,8 @@ The tie is load-bearing — a control run with item 4 moved to `x1` makes item 6
 and yields the correct result, confirming the outcome hinged on two items coincidentally
 sharing an exact coordinate rather than on anything about the gesture.
 
-Fix: `compact` takes an optional `priorityId`, and the item under the cursor wins exact
-`(y, x)` ties. `grid-layout.vue` passes the gesture's `id` from both `onDragEvent` and
+Fix: `applyGravity` takes an optional `priorityId`, and the item under the cursor wins exact
+`(y, x)` ties. `grid-board.vue` passes the gesture's `id` from both `onDragEvent` and
 `onResizeEvent`.
 
 ```js
@@ -537,34 +566,34 @@ Two things worth keeping in mind:
 - A tie-break is the whole fix. Compacting the dragged item **globally first** was tried
   and rejected — it lets item 6 float to `y0` and wrongly shoves items 1, 2 and 3 down.
   Priority must apply only to exact ties, not to ordering in general.
-- The related `moveElement` heuristic `l.y - collision.y > collision.h / 4` is still there
+- The related `moveTile` heuristic `l.y - collision.y > collision.h / 4` is still there
   and unchanged. It governs when a partial overlap counts as a push, and is not what
   caused this.
 
-## 14. The placeholder must be read after the move, not before
+## 14. The shadow must be read after the move, not before
 
 The shadow lagged the drag by exactly one frame: it showed the slot the item was
 _leaving_ rather than the one it was landing in, and only caught up once the pointer
 moved again. Holding still left it wrong indefinitely, and at drag end the item settled
 somewhere the shadow had never been.
 
-`onDragEvent` assigned the placeholder from the live layout item **before** applying the
+`onDragEvent` assigned the shadow from the live layout item **before** applying the
 move to that same object:
 
 ```js
-const l = getLayoutItem(state.layout, id)
-state.placeholder = { ...state.placeholder, x: l.x, y: l.y, w, h } // l is still where it was
-state.layout = moveElement(state.layout, l, x, y, true, false) // now l.x / l.y change
-compact(state.layout, props.verticalCompact, id) // and compaction can change l.y again
+const l = getTileById(state.tiles, id)
+state.shadow = { ...state.shadow, x: l.x, y: l.y, w, h } // l is still where it was
+state.tiles = moveTile(state.tiles, l, x, y, true, false) // now l.x / l.y change
+applyGravity(state.tiles, props.gravity, id) // and compaction can change l.y again
 ```
 
-`moveElement` mutates `l` in place and `compact` can move it again afterwards, so by the
-end of the handler `l` held the real slot — but the placeholder had already been snapshotted
+`moveTile` mutates `l` in place and `applyGravity` can move it again afterwards, so by the
+end of the handler `l` held the real slot — but the shadow had already been snapshotted
 from the pre-move values. Fix: assign it last, off the settled `l`.
 
 The giveaway is that the shadow could **overlap a real tile**, which is impossible for a
-compacted layout and therefore proves the placeholder had drifted out of sync with
-`state.layout`. Sweeping every item across every slot on the reference board:
+compacted layout and therefore proves the shadow had drifted out of sync with
+`state.tiles`. Sweeping every item across every slot on the reference board:
 
 |        | drag frames | shadow showing the wrong slot | shadow overlapping a tile |
 | ------ | ----------- | ----------------------------- | ------------------------- |
@@ -572,16 +601,16 @@ compacted layout and therefore proves the placeholder had drifted out of sync wi
 | after  | 462         | 0                             | 0                         |
 
 Confirmed the same way on a live board by driving synthetic pointer events and comparing
-`state.placeholder` against `state.layout` frame by frame — 6 mismatches and one
+`state.shadow` against `state.tiles` frame by frame — 6 mismatches and one
 tile-overlap before, none after.
 
-`onResizeEvent` had the same shape: it took the placeholder's `x`/`y` straight from the
-event arguments, but `compact` runs afterwards and can still move the item, so those
-coordinates could be stale too. Both handlers now read the placeholder as the last thing
+`onResizeEvent` had the same shape: it took the shadow's `x`/`y` straight from the
+event arguments, but `applyGravity` runs afterwards and can still move the item, so those
+coordinates could be stale too. Both handlers now read the shadow as the last thing
 they do.
 
 Worth remembering when touching these handlers: `l` is a **live reference into
-`state.layout`**, not a copy. Anything read off it before `moveElement`/`compact` is a
+`state.tiles`**, not a copy. Anything read off it before `moveTile`/`applyGravity` is a
 snapshot of the past.
 
 ---
@@ -613,7 +642,7 @@ has more than one live settle and always comes to rest at exactly `transform: no
 
 Automation runs with the tab hidden, and that breaks two things independently:
 
-1. **The document timeline is frozen**, so every WAAPI animation sits pinned at its
+1. **The document timeline is frozen**, so every WAAPI animation sits frozen at its
    first keyframe. Measuring drift like that reported 700–2000px excursions that do
    not exist. Fix: advance `anim.currentTime` by hand, ~16ms per simulated frame.
 2. **`scroll-behavior: smooth` never lands** (same root cause as §12), so scrolling the
@@ -640,14 +669,14 @@ Serpentine drag across every slot of every item, adjacent cells only, ~1 cell pe
 | shadow above the tile being dragged     | 0 / 12 (correct — the tile stays on top) |
 | tile z-index during a real pointer drag | 100 vs the shadow's 1                    |
 
-The dragged-tile row needs a **real** pointer drag: driving `emitter.emit('dragEvent',…)`
+The dragged-tile row needs a **real** pointer drag: driving `dispatch('dragEvent', …)`
 directly never adds `.vue-draggable-dragging`, so the tile keeps `z-index: auto` and the
 shadow appears to cover it. That is a harness artefact, not a bug — dispatch real
 `PointerEvent`s to check anything that depends on gesture classes.
 
 ### Regression coverage
 
-`test/nuxt/grid-placeholder.spec.ts` stubs `el.animate` on the placeholder and asserts
+`test/nuxt/grid-shadow.spec.ts` stubs `el.animate` on the shadow and asserts
 it is never called (the shadow glides by transition, not FLIP), and parses the SFC
 stylesheet to assert the shadow's z-index is above 0 and below the dragging one. It
 reads the stylesheet because scoped SFC styles are not injected under test, so a
