@@ -18,7 +18,6 @@
     "@iconify-json/lucide": "^1.2.104",
     "@iconify-json/simple-icons": "^1.2.80",
     "@nuxt/ui": "^4.7.0",
-    "mitt": "^3.0.1",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.4"
   },
@@ -30,6 +29,7 @@
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.11.2",
     "prettier": "^3.9.6",
+    "shiki": "^4.4.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "vue-tsc": "^3.2.7"
