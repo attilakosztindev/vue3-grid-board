@@ -125,7 +125,9 @@ const tile = reactive<TileWith<{ title: string; note: string }>>({
 </template>
 
 <style>
-.grid-tile > .grid-handle { color: var(--ui-primary); }
+.grid-tile > .grid-handle {
+  color: var(--ui-primary);
+}
 </style>`
 
 export const overflowSnippet = `<script setup lang="ts">
@@ -316,8 +318,13 @@ export const stylingSnippet = `.grid-tile {
   border-radius: inherit;
 }
 
-.grid-tile--resizing { opacity: 0.9; }
-.grid-tile--grabbed  { outline: 2px solid var(--ui-primary); }
+.grid-tile--resizing {
+  opacity: 0.9;
+}
+
+.grid-tile--grabbed {
+  outline: 2px solid var(--ui-primary);
+}
 
 .grid-shadow {
   background: var(--ui-primary);
