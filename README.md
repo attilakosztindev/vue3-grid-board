@@ -2,6 +2,8 @@
 
 A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.
 
+**[Documentation and live demos](https://attilakosztindev.github.io/vue3-grid-board/)**
+
 - No dependencies beyond Vue.
 - Renders the final layout on the server. No measure-then-jump on hydration.
 - Every gesture has a keyboard equivalent, announced to screen readers.
