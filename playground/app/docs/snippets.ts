@@ -316,7 +316,6 @@ export const stylingSnippet = `.grid-tile {
   border-radius: inherit;
 }
 
-.grid-tile--dragging { cursor: grabbing; }
 .grid-tile--resizing { opacity: 0.9; }
 .grid-tile--grabbed  { outline: 2px solid var(--ui-primary); }
 

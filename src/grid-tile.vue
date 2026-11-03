@@ -152,6 +152,9 @@ const state = reactive({
 })
 
 const canResize = computed(() => resizeEnabled.value && !props.frozen && !props.shadow)
+const canDrag = computed(
+  () => dragEnabled.value && !props.frozen && !props.shadow && !props.dragHandle
+)
 const interactive = computed(
   () => (dragEnabled.value || resizeEnabled.value) && !props.frozen && !props.shadow
 )
@@ -167,6 +170,7 @@ const escapes = computed(
 )
 
 const classObj = computed(() => ({
+  'grid-tile--draggable': canDrag.value,
   'grid-tile--frozen': props.frozen,
   'grid-tile--dragging': state.isDragging,
   'grid-tile--resizing': state.isResizing,
@@ -857,13 +861,19 @@ function onBlur() {
   outline-offset: 2px;
 }
 
+.grid-tile--draggable {
+  cursor: grab;
+}
+
 .grid-tile--grabbed {
+  cursor: grabbing;
   z-index: 100;
   outline: 2px dashed currentColor;
   outline-offset: 2px;
 }
 
 .grid-tile--dragging {
+  cursor: grabbing;
   transition: none;
   user-select: none;
   z-index: 100;
@@ -874,6 +884,7 @@ function onBlur() {
 }
 
 .grid-tile--resizing {
+  cursor: se-resize;
   opacity: 0.6;
   z-index: 100;
 }

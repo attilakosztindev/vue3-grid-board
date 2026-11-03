@@ -260,6 +260,7 @@ const cssRows = [
   ['.grid-board--busy', 'A gesture is in flight somewhere on the board.', 'during a gesture'],
   ['.grid-sr', 'Visually-hidden instructions and the live region.', 'always'],
   ['.grid-tile', 'Every tile.', 'always'],
+  ['.grid-tile--draggable', 'The tile can be picked up by its own body.', 'draggable'],
   ['.grid-shadow', 'The slot the dragged tile will land in.', 'during a gesture'],
   ['.grid-tile--frozen', 'The tile is frozen.', 'frozen'],
   ['.grid-tile--dragging', 'The tile is being dragged.', 'mid-drag'],
@@ -1150,6 +1151,19 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="stylingSnippet" lang="css" />
           </div>
+          <h3 class="doc-h2-sub mt-8">Cursors</h3>
+          <p class="mt-2 max-w-[46rem] text-sm leading-relaxed text-neutral-600">
+            The board sets these for you, and only where the gesture is really available.
+            <code class="doc-inline">grab</code> on a tile you can pick up,
+            <code class="doc-inline">grabbing</code> while it is held by pointer or keyboard, and
+            <code class="doc-inline">se-resize</code> on the grip and for the length of a resize.
+            A frozen tile, a board with
+            <code class="doc-inline">:draggable="false"</code>, and the drag shadow all keep the
+            default arrow. When you pass
+            <code class="doc-inline">dragHandle</code> the tile body is not the handle, so it
+            stays default too — style your own handle with
+            <code class="doc-inline">cursor: grab</code>.
+          </p>
           <p class="mt-4 text-sm text-neutral-600">
             Never transition <code class="doc-inline">top</code>,
             <code class="doc-inline">left</code>, <code class="doc-inline">width</code> or
