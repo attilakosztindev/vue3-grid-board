@@ -18,14 +18,6 @@ pnpm add github:attilakosztindev/vue3-grid
 npm install github:attilakosztindev/vue3-grid
 ```
 
-To pin a release, append a tag or commit:
-
-```bash
-pnpm add github:attilakosztindev/vue3-grid#v0.1.0
-```
-
-`dist/` is not committed. It is built automatically by the `prepare` script when the dependency is installed, so the install needs the package's build dependencies available — a normal install does this for you.
-
 Vue 3.5 or newer is a peer dependency.
 
 ## Importing

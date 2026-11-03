@@ -431,10 +431,8 @@ onBeforeUnmount(() => {
             <DocExample :code="installSnippet" lang="bash" />
           </div>
           <p class="mt-4 text-sm text-neutral-600">
-            The bundle is built when the dependency is installed, so there is no
-            <code class="doc-inline">dist</code> committed to the repository. Append
-            <code class="doc-inline">#v0.1.0</code> to pin a release. Types ship with the package,
-            so TypeScript consumers get a real surface out of the plain-JavaScript engine.
+            Types ship with the package, so TypeScript consumers get a real surface out of the
+            plain-JavaScript engine.
           </p>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>
