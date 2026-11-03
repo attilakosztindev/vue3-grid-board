@@ -61,7 +61,7 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(typescript@6.0.3)
 
-  playground:
+  docs:
     dependencies:
       '@iconify-json/lucide':
         specifier: ^1.2.104

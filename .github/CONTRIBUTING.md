@@ -11,7 +11,7 @@ pnpm install
 pnpm dev
 ```
 
-The library lives at the root, in `src/`. `pnpm dev` starts the documentation site in `playground/`, which uses the built package: run `pnpm run build:lib` after changing `src/` to see it there.
+The library lives at the root, in `src/`. `pnpm dev` starts the documentation site in `docs/`, which uses the built package: run `pnpm run build:lib` after changing `src/` to see it there.
 
 Read `src/NOTES.md` before changing the geometry, gesture or rendering code. Several changes that look like obvious wins there have been measured and rejected.
 

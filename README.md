@@ -131,7 +131,7 @@ Slots: `default` for the tile's content, `handle` to replace the resize handle.
 
 ## Development
 
-This repository is a pnpm workspace: the library at the root, a documentation site in `playground/`.
+This repository is a pnpm workspace: the library at the root, a documentation site in `docs/`.
 
 ```bash
 pnpm install

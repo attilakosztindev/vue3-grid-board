@@ -42,14 +42,14 @@ jobs:
         run: pnpm run build:lib
 
       - name: Generate
-        run: pnpm --filter playground generate
+        run: pnpm --filter docs generate
         env:
           NUXT_APP_BASE_URL: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: playground/.output/public
+          path: docs/.output/public
 
   deploy:
     needs: build

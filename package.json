@@ -65,8 +65,8 @@
   },
   "scripts": {
     "build:lib": "vite build",
-    "dev": "pnpm --filter playground dev",
-    "icons": "pnpm --filter playground icons",
+    "dev": "pnpm --filter docs dev",
+    "icons": "pnpm --filter docs icons",
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
