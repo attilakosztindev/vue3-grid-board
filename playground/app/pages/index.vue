@@ -16,7 +16,6 @@ import {
   nuxtModuleSnippet,
   overflowSnippet,
   persistenceSnippet,
-  pnpmAllowSnippet,
   slotsSnippet,
   ssrSnippet,
   stylingSnippet,
@@ -456,17 +455,6 @@ onBeforeUnmount(() => {
           </p>
           <div class="mt-6">
             <DocExample :code="installSnippet" lang="bash" />
-          </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">On pnpm, allow the build first</p>
-            <p class="mt-1">
-              pnpm 10 refuses to build a dependency installed from git, and the install fails. List
-              the package under <code class="doc-inline">onlyBuiltDependencies</code> in
-              <code class="doc-inline">pnpm-workspace.yaml</code>, then run the command above.
-            </p>
-          </div>
-          <div class="mt-4">
-            <DocExample :code="pnpmAllowSnippet" lang="yaml" />
           </div>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>

@@ -360,8 +360,6 @@ export const importSnippet = `import { GridBoard, GridTile } from '@attilakoszti
 export const importStandaloneSnippet = `import { GridBoard, GridTile } from '@attilakosztin/vue-grid/core'
 import '@attilakosztin/vue-grid/style.css'`
 
-export const pnpmAllowSnippet = `onlyBuiltDependencies:
-  - '@attilakosztin/vue-grid'`
 
 export const nuxtModuleSnippet = `export default defineNuxtConfig({
   modules: ['@attilakosztin/vue-grid/nuxt']

@@ -20,13 +20,6 @@ npm install github:attilakosztindev/vue3-grid
 
 Vue 3.5 or newer is a peer dependency.
 
-**On pnpm, allow the build first.** pnpm 10 refuses to build a dependency installed from git, and the install fails. List the package in `pnpm-workspace.yaml`, then install:
-
-```yaml
-onlyBuiltDependencies:
-  - '@attilakosztin/vue-grid'
-```
-
 ## Importing
 
 With Vite, Nuxt or webpack:

@@ -9,7 +9,6 @@ import css from 'shiki/langs/css.mjs'
 import html from 'shiki/langs/html.mjs'
 import typescript from 'shiki/langs/typescript.mjs'
 import vue from 'shiki/langs/vue.mjs'
-import yaml from 'shiki/langs/yaml.mjs'
 import vueGridDark from './theme.json'
 import { CODE_FG } from './code-theme'
 
@@ -23,7 +22,7 @@ function get(): HighlighterCore {
   if (!highlighter) {
     highlighter = createHighlighterCoreSync({
       themes: [vueGridDark as unknown as ThemeRegistrationRaw],
-      langs: [vue, typescript, css, bash, html, yaml],
+      langs: [vue, typescript, css, bash, html],
       langAlias: { ts: 'typescript', sh: 'bash', shell: 'bash' },
       engine: createJavaScriptRegexEngine({ forgiving: true })
     })
