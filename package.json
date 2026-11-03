@@ -1,37 +1,85 @@
 {
-  "name": "vue3-grid-test",
-  "private": true,
+  "name": "@attilakosztin/vue-grid",
+  "version": "0.1.0",
+  "description": "A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.",
+  "license": "MIT",
+  "author": "Attila Kosztin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/attilakosztindev/vue3-grid.git"
+  },
+  "homepage": "https://attilakosztindev.github.io/vue3-grid",
+  "bugs": {
+    "url": "https://github.com/attilakosztindev/vue3-grid/issues"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "grid",
+    "dashboard",
+    "draggable",
+    "resizable",
+    "layout"
+  ],
   "type": "module",
+  "sideEffects": [
+    "*.css",
+    "./dist/index.js"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./style.css": {
+      "types": "./dist/style.css.d.ts",
+      "default": "./dist/style.css"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
+    "build": "vite build",
+    "prepare": "vite build",
+    "dev": "pnpm --filter playground dev",
+    "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "nuxt typecheck",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@iconify-json/lucide": "^1.2.104",
-    "@iconify-json/simple-icons": "^1.2.80",
-    "@nuxt/ui": "^4.7.0",
-    "nuxt": "^4.4.2",
-    "tailwindcss": "^4.2.4"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.15.2",
-    "@nuxt/test-utils": "^4.1.0",
+    "@eslint/js": "^9.39.1",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.11",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.5.1",
+    "globals": "^16.5.0",
     "happy-dom": "^20.11.2",
     "prettier": "^3.9.6",
-    "shiki": "^4.4.3",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.48.1",
+    "vite": "^7.3.2",
     "vitest": "^4.1.10",
+    "vue": "^3.5.41",
+    "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^3.2.7"
   },
   "packageManager": "pnpm@10.33.2"

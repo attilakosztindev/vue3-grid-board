@@ -3,13 +3,13 @@ name: ci
 on: push
 
 jobs:
-  ci:
+  library:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [22]
+        node: [20, 22]
 
     steps:
       - name: Checkout
@@ -30,5 +30,36 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      - name: Format
+        run: pnpm run format:check
+
       - name: Typecheck
         run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+
+  playground:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm --filter playground build

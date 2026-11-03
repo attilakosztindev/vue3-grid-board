@@ -1,64 +1,128 @@
-# Nuxt Starter Template
+# Vue Grid
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+- No dependencies beyond Vue.
+- Renders the final layout on the server. No measure-then-jump on hydration.
+- Every gesture has a keyboard equivalent, announced to screen readers.
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+## Install
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
-  </picture>
-</a>
+The package is published from GitHub, not npm.
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t ui
+```bash
+pnpm add github:attilakosztindev/vue3-grid
 ```
 
-## Deploy your own
+```bash
+npm install github:attilakosztindev/vue3-grid
+```
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+To pin a release, append a tag or commit:
 
-## Setup
+```bash
+pnpm add github:attilakosztindev/vue3-grid#v0.1.0
+```
 
-Make sure to install the dependencies:
+`dist/` is not committed. It is built automatically by the `prepare` script when the dependency is installed, so the install needs the package's build dependencies available — a normal install does this for you.
+
+Vue 3.5 or newer is a peer dependency.
+
+## Importing
+
+With Vite, Nuxt or webpack:
+
+```js
+import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+```
+
+Without a bundler:
+
+```js
+import { GridBoard, GridTile } from '@attilakosztin/vue-grid/core'
+import '@attilakosztin/vue-grid/style.css'
+```
+
+## Usage
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+
+const tiles = ref([
+  { id: 'a', x: 0, y: 0, w: 4, h: 2 },
+  { id: 'b', x: 4, y: 0, w: 4, h: 2 },
+  { id: 'c', x: 8, y: 0, w: 4, h: 2 }
+])
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="150" :gap="10">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile">
+      {{ tile.id }}
+    </GridTile>
+  </GridBoard>
+</template>
+```
+
+Tile positions are yours. The board never mutates the array you pass — it emits `update:tiles` with a new one, which `v-model:tiles` writes back.
+
+## Keyboard
+
+Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow keys move it, <kbd>Shift</kbd> with the arrow keys resizes it. <kbd>Enter</kbd> drops it, <kbd>Escape</kbd> puts it back.
+
+## GridBoard
+
+| Prop         | Type                         | Default | Description                                          |
+| ------------ | ---------------------------- | ------- | ---------------------------------------------------- |
+| `tiles`      | `Tile[]`                     | —       | Required. The layout.                                |
+| `columns`    | `number`                     | `12`    | Column count.                                        |
+| `rowHeight`  | `number`                     | `150`   | Row height in pixels.                                |
+| `gap`        | `number \| [number, number]` | `10`    | Space between tiles. A pair sets the two axes apart. |
+| `draggable`  | `boolean`                    | `true`  | Whether tiles can be dragged.                        |
+| `resizable`  | `boolean`                    | `true`  | Whether tiles can be resized.                        |
+| `autoHeight` | `boolean`                    | `true`  | Grow the board to fit its tiles.                     |
+| `gravity`    | `boolean`                    | `true`  | Pull tiles upward into free space.                   |
+| `overflow`   | `boolean`                    | `false` | Allow tiles to be dragged past the last row.         |
+
+Emits `update:tiles` with the new layout, and `ready` once measured.
+
+Takes one default slot, for the tiles.
+
+## GridTile
+
+| Prop                           | Type               | Description                                    |
+| ------------------------------ | ------------------ | ---------------------------------------------- |
+| `id`                           | `number \| string` | Required. Matches the tile's `id`.             |
+| `x`, `y`, `w`, `h`             | `number`           | Required. Position and size, in grid units.    |
+| `minW`, `minH`, `maxW`, `maxH` | `number`           | Resize bounds.                                 |
+| `draggable`, `resizable`       | `boolean \| null`  | Override the board, per tile. `null` inherits. |
+| `frozen`                       | `boolean`          | Pin the tile. Others move around it.           |
+| `dragHandle`                   | `string \| null`   | Selector for the drag handle.                  |
+| `dragIgnore`, `resizeIgnore`   | `string`           | Selectors that will not start a gesture.       |
+| `radius`                       | `number`           | Corner radius in pixels.                       |
+| `label`                        | `string \| null`   | Screen-reader name for the tile.               |
+
+Emits `dragstart`, `drag`, `dragend`, `resizestart`, `resize`, `resizeend` and `size`.
+
+Slots: `default` for the tile's content, `handle` to replace the resize handle.
+
+## Helpers
+
+`applyGravity`, `copyTiles`, `getLastRow`, `getTileById`, `moveTile` and `validateTiles` are exported for working with a layout outside the board. `usePointerDragResize` is the gesture composable the tiles use. TypeScript types (`Tile`, `TileId`, `Gap` and the prop, emit and slot interfaces) ship with the package.
+
+## Development
+
+This repository is a pnpm workspace: the library at the root, a documentation site in `playground/`.
 
 ```bash
 pnpm install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
 pnpm dev
+pnpm test
+pnpm run build
 ```
 
-## Production
+## License
 
-Build the application for production:
-
-```bash
-pnpm build
-```
-
-Locally preview production build:
-
-```bash
-pnpm preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
-## Renovate integration
-
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+MIT
