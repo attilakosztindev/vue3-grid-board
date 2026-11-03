@@ -35,13 +35,23 @@ import type { Tile } from '@attilakosztin/vue-grid'
 
 const interactive = ref(true)
 const tiles = ref<Tile[]>([
-  { id: 'a', x: 0, y: 0, w: 6, h: 2 },
-  { id: 'b', x: 6, y: 0, w: 6, h: 2 }
+  { id: 'a', x: 0, y: 0, w: 4, h: 4 },
+  { id: 'b', x: 4, y: 0, w: 8, h: 2 },
+  { id: 'c', x: 4, y: 2, w: 4, h: 2 },
+  { id: 'd', x: 8, y: 2, w: 4, h: 2 },
+  { id: 'e', x: 0, y: 4, w: 6, h: 2 },
+  { id: 'f', x: 6, y: 4, w: 6, h: 2 }
 ])
 </script>
 
 <template>
-  <GridBoard v-model:tiles="tiles" :draggable="interactive" :resizable="interactive">
+  <GridBoard
+    v-model:tiles="tiles"
+    :columns="12"
+    :row-height="40"
+    :draggable="interactive"
+    :resizable="interactive"
+  >
     <GridTile
       v-for="tile in tiles"
       :key="tile.id"
@@ -57,15 +67,18 @@ const tiles = ref<Tile[]>([
 export const gravitySnippet = `<script setup lang="ts">
 import type { Tile } from '@attilakosztin/vue-grid'
 
-const gravity = ref(true)
+const gravity = ref(false)
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 1, w: 5, h: 3 },
-  { id: 'b', x: 5, y: 0, w: 7, h: 2 }
+  { id: 'b', x: 5, y: 0, w: 7, h: 2 },
+  { id: 'c', x: 5, y: 4, w: 4, h: 3 },
+  { id: 'd', x: 9, y: 3, w: 3, h: 3 },
+  { id: 'e', x: 0, y: 6, w: 5, h: 2 }
 ])
 </script>
 
 <template>
-  <GridBoard v-model:tiles="tiles" :gravity="gravity">
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :gravity="gravity">
     <GridTile
       v-for="tile in tiles"
       :key="tile.id"
@@ -79,9 +92,11 @@ const tiles = ref<Tile[]>([
 </template>`
 
 export const frozenSnippet = `const tiles = ref<Tile[]>([
-  { id: 'sidebar', x: 0, y: 0, w: 3, h: 6, frozen: true },
+  { id: 'nav', x: 0, y: 0, w: 3, h: 6, frozen: true },
   { id: 'a', x: 3, y: 0, w: 5, h: 3 },
-  { id: 'b', x: 8, y: 0, w: 4, h: 3 }
+  { id: 'b', x: 8, y: 0, w: 4, h: 3 },
+  { id: 'c', x: 3, y: 3, w: 4, h: 3 },
+  { id: 'd', x: 7, y: 3, w: 5, h: 3 }
 ])`
 
 export const slotsSnippet = `<script setup lang="ts">
@@ -133,24 +148,27 @@ const tile = reactive<TileWith<{ title: string; note: string }>>({
 export const overflowSnippet = `<script setup lang="ts">
 import type { Tile } from '@attilakosztin/vue-grid'
 
+const escape = ref(true)
 const tiles = ref<Tile[]>([
-  { id: 'a', x: 0, y: 0, w: 6, h: 2 },
-  { id: 'b', x: 6, y: 0, w: 6, h: 2 }
+  { id: 'a', x: 0, y: 0, w: 6, h: 3 },
+  { id: 'b', x: 6, y: 0, w: 6, h: 3 },
+  { id: 'c', x: 0, y: 3, w: 4, h: 3 },
+  { id: 'd', x: 4, y: 3, w: 8, h: 3 }
 ])
 </script>
 
 <template>
   <div class="panel">
-    <GridBoard v-model:tiles="tiles" overflow>
+    <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :overflow="escape">
       <GridTile
-      v-for="tile in tiles"
-      :key="tile.id"
-      :id="tile.id"
-      :x="tile.x"
-      :y="tile.y"
-      :w="tile.w"
-      :h="tile.h"
-    />
+        v-for="tile in tiles"
+        :key="tile.id"
+        :id="tile.id"
+        :x="tile.x"
+        :y="tile.y"
+        :w="tile.w"
+        :h="tile.h"
+      />
     </GridBoard>
   </div>
 </template>
@@ -166,15 +184,17 @@ export const dynamicSnippet = `import { getLastRow } from '@attilakosztin/vue-gr
 import type { Tile } from '@attilakosztin/vue-grid'
 
 const tiles = ref<Tile[]>([
-  { id: '1', x: 0, y: 0, w: 6, h: 2 },
-  { id: '2', x: 6, y: 0, w: 3, h: 2 },
-  { id: '3', x: 9, y: 0, w: 3, h: 2 }
+  { id: '1', x: 0, y: 0, w: 6, h: 3 },
+  { id: '2', x: 6, y: 0, w: 3, h: 3 },
+  { id: '3', x: 9, y: 0, w: 3, h: 3 },
+  { id: '4', x: 0, y: 3, w: 4, h: 2 },
+  { id: '5', x: 4, y: 3, w: 8, h: 2 }
 ])
 
-let seq = 4
+let seq = 6
 
 function add() {
-  const tile = { id: String(seq++), x: 0, y: getLastRow(tiles.value), w: 3, h: 2 }
+  const tile = { id: String(seq++), x: 0, y: getLastRow(tiles.value), w: 4, h: 2 }
   tiles.value = [...tiles.value, tile]
 }
 
@@ -199,6 +219,14 @@ import type { Tile } from '@attilakosztin/vue-grid'
 
 const KEY = 'dashboard'
 
+const defaults: Tile[] = [
+  { id: 'a', x: 0, y: 0, w: 8, h: 3 },
+  { id: 'b', x: 8, y: 0, w: 4, h: 3 },
+  { id: 'c', x: 0, y: 3, w: 4, h: 2 },
+  { id: 'd', x: 4, y: 3, w: 4, h: 2 },
+  { id: 'e', x: 8, y: 3, w: 4, h: 2 }
+]
+
 function restore(fallback: Tile[]): Tile[] {
   const raw = localStorage.getItem(KEY)
   if (!raw) return fallback
@@ -211,7 +239,7 @@ function restore(fallback: Tile[]): Tile[] {
   }
 }
 
-const tiles = ref<Tile[]>(restore([{ id: 'a', x: 0, y: 0, w: 4, h: 2 }]))
+const tiles = ref<Tile[]>(restore(defaults))
 
 watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))`
 
@@ -221,13 +249,15 @@ import type { TileWith } from '@attilakosztin/vue-grid'
 type Panel = TileWith<{ title: string }>
 
 const tiles = ref<Panel[]>([
-  { id: 'a', x: 0, y: 0, w: 6, h: 2, title: 'Revenue' },
-  { id: 'b', x: 6, y: 0, w: 6, h: 2, title: 'Signups' }
+  { id: 'one', x: 0, y: 0, w: 6, h: 4, title: 'Revenue' },
+  { id: 'two', x: 6, y: 0, w: 6, h: 2, title: 'Signups' },
+  { id: 'three', x: 6, y: 2, w: 3, h: 2, title: 'Churn' },
+  { id: 'four', x: 9, y: 2, w: 3, h: 2, title: 'Sessions' }
 ])
 </script>
 
 <template>
-  <GridBoard v-model:tiles="tiles">
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
     <GridTile
       v-for="tile in tiles"
       :key="tile.id"

@@ -65,7 +65,7 @@ async function copy(code: string) {
       <button
         v-if="hasPreview"
         type="button"
-        class="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-200 hover:text-neutral-800"
+        class="doc-btn doc-btn--quiet"
         :aria-expanded="open"
         :aria-controls="panelId"
         @click="open = !open"
@@ -78,7 +78,7 @@ async function copy(code: string) {
       <span class="ml-auto text-xs text-neutral-400">{{ lang ?? 'vue' }}</span>
       <button
         type="button"
-        class="rounded-md px-2 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-200 hover:text-neutral-800"
+        class="doc-btn doc-btn--quiet"
         @click="copy(code)"
       >
         {{ copied ? 'Copied ✓' : 'Copy' }}

@@ -463,7 +463,7 @@ onBeforeUnmount(() => {
           </p>
           <div class="mt-6">
             <DocExample :code="usageSnippet">
-              <GridBoard v-model:tiles="usageTiles" :columns="12" :row-height="40">
+              <GridBoard v-model:tiles="usageTiles" :columns="12" :row-height="40" :gap="10">
                 <GridTile v-for="tile in usageTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile">{{ tile.id }}</div>
                 </GridTile>
@@ -492,8 +492,8 @@ onBeforeUnmount(() => {
           </p>
           <div class="mt-6">
             <DocExample :code="interactiveSnippet">
-              <label class="mb-4 flex items-center gap-2 text-sm text-neutral-700">
-                <input v-model="interactive" type="checkbox" class="rounded" />
+              <label class="doc-check mb-4">
+                <input v-model="interactive" type="checkbox" />
                 Interactive
               </label>
               <GridBoard
@@ -687,7 +687,7 @@ onBeforeUnmount(() => {
               <div class="mb-4 flex items-center gap-2">
                 <button
                   type="button"
-                  class="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700"
+                  class="doc-btn doc-btn--primary"
                   @click="addTile"
                 >
                   Add tile
@@ -705,7 +705,7 @@ onBeforeUnmount(() => {
                     {{ index + 1 }}
                     <button
                       type="button"
-                      class="absolute right-6 top-1 rounded px-1.5 text-neutral-400 hover:text-neutral-900"
+                      class="doc-btn doc-btn--icon absolute right-6 top-1"
                       :aria-label="`Remove tile ${index + 1}`"
                       @click="removeTile(tile.id)"
                     >
@@ -749,21 +749,21 @@ onBeforeUnmount(() => {
               <div class="mb-4 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700"
+                  class="doc-btn doc-btn--primary"
                   @click="save"
                 >
                   Save
                 </button>
                 <button
                   type="button"
-                  class="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                  class="doc-btn doc-btn--secondary"
                   @click="restore"
                 >
                   Restore
                 </button>
                 <button
                   type="button"
-                  class="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                  class="doc-btn doc-btn--secondary"
                   @click="reset"
                 >
                   Reset
