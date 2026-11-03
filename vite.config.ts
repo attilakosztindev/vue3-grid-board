@@ -27,6 +27,7 @@ function declarations(): Plugin {
       })
       await cp(resolve(src, 'types.ts'), resolve(dist, 'types.d.ts'))
       await cp(resolve(dist, 'index.d.ts'), resolve(dist, 'core.d.ts'))
+      await cp(resolve(src, 'nuxt.js'), resolve(dist, 'nuxt.js'))
       await writeFile(
         resolve(dist, 'index.js'),
         "import './style.css'\nexport * from './core.js'\n"

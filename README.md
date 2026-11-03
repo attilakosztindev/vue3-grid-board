@@ -20,6 +20,13 @@ npm install github:attilakosztindev/vue3-grid
 
 Vue 3.5 or newer is a peer dependency.
 
+**On pnpm, allow the build first.** pnpm 10 refuses to build a dependency installed from git, and the install fails. List the package in `pnpm-workspace.yaml`, then install:
+
+```yaml
+onlyBuiltDependencies:
+  - '@attilakosztin/vue-grid'
+```
+
 ## Importing
 
 With Vite, Nuxt or webpack:
@@ -34,6 +41,24 @@ Without a bundler:
 import { GridBoard, GridTile } from '@attilakosztin/vue-grid/core'
 import '@attilakosztin/vue-grid/style.css'
 ```
+
+### Nuxt module
+
+Register the module instead of importing anything: `GridBoard`, `GridTile` and the layout helpers become auto-imports, and the stylesheet is added for you.
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@attilakosztin/vue-grid/nuxt']
+})
+```
+
+| Option        | Description                                                        | Type      | Default |
+| ------------- | ------------------------------------------------------------------ | --------- | ------- |
+| `prefix`      | Put in front of the component names: `'Ui'` gives `<UiGridBoard>`. | `string`  | `''`    |
+| `css`         | Add the stylesheet to the app.                                     | `boolean` | `true`  |
+| `autoImports` | Auto-import the layout helpers.                                    | `boolean` | `true`  |
+
+Set them under `vueGrid` in `nuxt.config`.
 
 ## Usage
 

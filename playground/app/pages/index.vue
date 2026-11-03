@@ -13,8 +13,10 @@ import {
   keyboardSnippet,
   methodsSnippet,
   mutationSnippet,
+  nuxtModuleSnippet,
   overflowSnippet,
   persistenceSnippet,
+  pnpmAllowSnippet,
   slotsSnippet,
   ssrSnippet,
   stylingSnippet,
@@ -271,6 +273,12 @@ const cssRows = [
   ['.grid-handle--chevron', 'The grip, when no #handle slot was given.', 'resizable']
 ]
 
+const nuxtOptionRows = [
+  ['prefix', "Put in front of the component names: 'Ui' gives <UiGridBoard>.", 'string', "''"],
+  ['css', 'Add the stylesheet to the app.', 'boolean', 'true'],
+  ['autoImports', 'Auto-import the layout helpers.', 'boolean', 'true']
+]
+
 const typeRows = [
   ['Tile', 'One tile: id, x, y, w, h, plus the optional bounds and flags.'],
   ['TileWith<T>', 'A tile carrying your own fields alongside the geometry.'],
@@ -448,6 +456,17 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="installSnippet" lang="bash" />
           </div>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">On pnpm, allow the build first</p>
+            <p class="mt-1">
+              pnpm 10 refuses to build a dependency installed from git, and the install fails. List
+              the package under <code class="doc-inline">onlyBuiltDependencies</code> in
+              <code class="doc-inline">pnpm-workspace.yaml</code>, then run the command above.
+            </p>
+          </div>
+          <div class="mt-4">
+            <DocExample :code="pnpmAllowSnippet" lang="yaml" />
+          </div>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>
           <p class="mt-3 text-sm font-medium text-neutral-900">With Vite, Nuxt or webpack</p>
@@ -457,6 +476,42 @@ onBeforeUnmount(() => {
           <p class="mt-6 text-sm font-medium text-neutral-900">Without a bundler</p>
           <div class="mt-2">
             <DocExample :code="importStandaloneSnippet" lang="ts" />
+          </div>
+
+          <h3 class="doc-h2-sub mt-8">Nuxt module</h3>
+          <p class="mt-2 max-w-[46rem] text-sm leading-relaxed text-neutral-600">
+            Register the module instead of importing anything:
+            <code class="doc-inline">GridBoard</code>, <code class="doc-inline">GridTile</code> and
+            the layout helpers become auto-imports, and the stylesheet is added for you.
+          </p>
+          <div class="mt-4">
+            <DocExample :code="nuxtModuleSnippet" lang="ts" />
+          </div>
+          <div class="doc-table-wrap mt-4">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th scope="col">Option</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in nuxtOptionRows" :key="row[0]">
+                  <th scope="row">
+                    <code class="doc-inline">{{ row[0] }}</code>
+                  </th>
+                  <td>{{ row[1] }}</td>
+                  <td>
+                    <code class="doc-inline">{{ row[2] }}</code>
+                  </td>
+                  <td>
+                    <code class="doc-inline">{{ row[3] }}</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div class="doc-note mt-6">

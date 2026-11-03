@@ -41,6 +41,10 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/core.js"
     },
+    "./nuxt": {
+      "types": "./dist/nuxt.d.ts",
+      "import": "./dist/nuxt.js"
+    },
     "./style.css": {
       "types": "./dist/style.css.d.ts",
       "default": "./dist/style.css"
@@ -51,7 +55,13 @@
     "node": ">=20"
   },
   "peerDependencies": {
+    "nuxt": ">=3.13.0",
     "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "nuxt": {
+      "optional": true
+    }
   },
   "scripts": {
     "build": "vite build",
