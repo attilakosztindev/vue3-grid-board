@@ -1,4 +1,4 @@
-# Vue Grid — design notes
+# vue3-grid-board — design notes
 
 Rationale extracted from the source before comments were stripped. Everything here
 was established by measurement, not assumption. Read before "optimising" anything
@@ -348,7 +348,7 @@ the pointer one.
 | Key                                 | While idle        | While grabbed             |
 | ----------------------------------- | ----------------- | ------------------------- |
 | <kbd>Enter</kbd> / <kbd>Space</kbd> | pick the item up  | drop it where it is       |
-| <kbd>↑↓←→</kbd>                     | _not intercepted_ | move one cell             |
+| <kbd>↑↓←→</kbd>                     | _not intercepted_ | move one cell (see below) |
 | <kbd>Shift</kbd> + <kbd>↑↓←→</kbd>  | _not intercepted_ | resize by one column/row  |
 | <kbd>Esc</kbd>                      | —                 | restore the original slot |
 
@@ -374,6 +374,21 @@ It also deliberately does **not** set the item's own `state.isDragging`. That le
 the existing `[x, y, w, h]` props watcher free to FLIP-animate the tile between slots,
 so keyboard moves glide exactly like pointer moves for free.
 
+### Vertical moves step past their neighbour
+
+With gravity on, a one-row step is almost always undone by the board: moving a tile down onto
+the tiles beneath it pushes them down, and `applyGravity()` then floats everything back to
+where it started. Moving up fails too: `moveTile()` only displaces the tile above once the
+moving tile's top edge comes within a quarter of that tile's height of its top, so a one-row
+step just overlaps it and `applyGravity()` drops the moving tile back below. A pointer drag
+never notices, because the pointer keeps travelling until the tile overlaps far enough to swap.
+
+So `keyMoveBy()` asks `findKeyboardSlot()` for its target instead of adding one to `y`. It
+replays the move on a copy of the layout with the same `moveTile()` and `applyGravity()` the
+board runs, one cell further each time, and returns the first slot that changes anything. The
+board then receives one ordinary `dragmove` tuple for that slot. With gravity off the first
+step always changes the layout, so moves stay exactly one cell.
+
 ### Lazy gesture start
 
 `grab()` only sets `state.grabbed`; it does not open a gesture. The `dragstart` /
@@ -395,7 +410,7 @@ so the width clamp (`cols - x`) is evaluated against the original width.
 `grid-board.vue` owns one visually-hidden `role="status" aria-live="polite"` region
 and listens for an `announce` event on the bus. Identical consecutive messages get a
 trailing zero-width space appended, otherwise a repeated string is not re-announced
-(e.g. pressing <kbd>↓</kbd> against vertical compaction, which is a legitimate no-op).
+(e.g. pressing <kbd>↓</kbd> on the bottom tile, which is a legitimate no-op).
 
 Each tile carries `role="group"`, `aria-roledescription="Draggable grid item"`, a live
 `aria-label` ("Item 0, column 5, row 1, 4 wide, 2 tall") and an `aria-describedby`

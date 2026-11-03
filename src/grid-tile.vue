@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, unref, watch, computed, onBeforeUnmount, onMounted, inject, nextTick } from 'vue'
-import { IS_BROWSER, getPointerOffset, getFrameDelta } from './helpers/helpers'
+import { IS_BROWSER, getPointerOffset, getFrameDelta, findKeyboardSlot } from './helpers/helpers'
 import { usePointerDragResize } from './helpers/usePointerDragResize'
 import { GRID_BOARD } from './context'
 
@@ -724,11 +724,17 @@ function keyMoveBy(dx, dy) {
   if (!dragEnabled.value || props.frozen) return
   beginKeyGesture('drag')
   const slot = currentSlot()
-  const x = Math.max(0, Math.min(columns.value - slot.w, slot.x + dx))
-  const y = Math.max(0, slot.y + dy)
-  if (x !== slot.x || y !== slot.y) {
-    board.dragEvent(['dragmove', props.id, x, y, slot.h, slot.w])
-    emit('drag', props.id, x, y)
+  const next = findKeyboardSlot(
+    board.state.tiles,
+    props.id,
+    dx,
+    dy,
+    columns.value,
+    board.props.gravity
+  )
+  if (next) {
+    board.dragEvent(['dragmove', props.id, next.x, next.y, slot.h, slot.w])
+    emit('drag', props.id, next.x, next.y)
   }
   nextTick(() => announceSlot())
 }

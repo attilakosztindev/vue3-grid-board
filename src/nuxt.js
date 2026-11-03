@@ -1,6 +1,6 @@
 import { addComponent, addImports, defineNuxtModule } from 'nuxt/kit'
 
-const PACKAGE = '@attilakosztin/vue-grid'
+const PACKAGE = 'vue3-grid-board'
 
 const COMPONENTS = ['GridBoard', 'GridTile']
 
@@ -16,7 +16,7 @@ const HELPERS = [
 export default defineNuxtModule({
   meta: {
     name: PACKAGE,
-    configKey: 'vueGrid',
+    configKey: 'vue3GridBoard',
     compatibility: { nuxt: '>=3.13.0' }
   },
   defaults: {

@@ -1,6 +1,6 @@
 <script setup>
 import { defineComponent } from 'vue'
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 
 const props = defineProps({
   endpoint: { type: String, default: '' },

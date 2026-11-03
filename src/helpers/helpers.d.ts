@@ -23,6 +23,15 @@ export declare function moveTile<T extends Tile>(
   preventOverlap: boolean
 ): T[]
 
+export declare function findKeyboardSlot(
+  tiles: Tile[],
+  id: TileId,
+  dx: number,
+  dy: number,
+  columns: number,
+  gravity: boolean
+): { x: number; y: number } | null
+
 export declare function validateTiles(tiles: unknown, context?: string): void
 
 export declare function getPointerOffset(

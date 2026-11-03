@@ -10,7 +10,7 @@ const dist = resolve(root, 'dist')
 
 function declarations(): Plugin {
   return {
-    name: 'vue-grid-declarations',
+    name: 'vue3-grid-board-declarations',
     apply: 'build',
     async closeBundle() {
       await cp(src, dist, {

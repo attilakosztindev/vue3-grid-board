@@ -2,8 +2,9 @@
 import { onMounted, ref, useId, useSlots } from 'vue'
 import { CODE_BG } from '~/docs/code-theme'
 
+// Without code it is a bare demo frame: for sections whose snippet would only repeat Usage
 const props = defineProps<{
-  code: string
+  code?: string
   lang?: string
 }>()
 
@@ -23,15 +24,15 @@ function hash(value: string): string {
 }
 
 const lang = props.lang ?? 'vue'
-const highlighted = useState(`code:${lang}:${hash(props.code)}`, () => '')
+const highlighted = useState(`code:${lang}:${hash(props.code ?? '')}`, () => '')
 
-if (import.meta.server && !highlighted.value) {
+if (import.meta.server && props.code && !highlighted.value) {
   const { highlight } = await import('~/docs/highlight')
   highlighted.value = highlight(props.code, lang)
 }
 
 onMounted(async () => {
-  if (highlighted.value) return
+  if (!props.code || highlighted.value) return
   const { highlight } = await import('~/docs/highlight')
   highlighted.value = highlight(props.code, lang)
 })
@@ -59,6 +60,7 @@ async function copy(code: string) {
     </div>
 
     <div
+      v-if="code"
       class="flex items-center gap-1 border-neutral-200 bg-neutral-50 px-2 py-1.5"
       :class="hasPreview ? 'border-t' : 'border-b'"
     >
@@ -85,11 +87,12 @@ async function copy(code: string) {
       </button>
     </div>
 
-    <p class="sr-only" role="status" aria-live="polite">{{ status }}</p>
+    <p v-if="code" class="sr-only" role="status" aria-live="polite">{{ status }}</p>
 
     <!-- eslint-disable vue/no-v-html -- shiki's output, built from a string
          literal in ~/docs/snippets.ts. No user input ever reaches it. -->
     <div
+      v-if="code"
       v-show="open"
       :id="panelId"
       tabindex="0"

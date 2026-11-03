@@ -1,4 +1,4 @@
-# Vue Grid
+# vue3-grid-board
 
 A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.
 
@@ -8,27 +8,17 @@ A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and 
 
 ## Install
 
-The package is published from GitHub, not npm.
-
-pnpm 7.32.2 or later:
-
 ```bash
-pnpm add github:attilakosztindev/vue3-grid
+pnpm add vue3-grid-board
 ```
 
-npm 7.0.0 or later:
-
 ```bash
-npm install github:attilakosztindev/vue3-grid
+npm install vue3-grid-board
 ```
 
-Yarn 1.0.0 or later, Yarn 1 only:
-
 ```bash
-yarn add github:attilakosztindev/vue3-grid
+yarn add vue3-grid-board
 ```
-
-**Yarn 2 and later cannot install it from GitHub.** They rebuild a git dependency with the package manager of the repository it comes from, and cannot drive pnpm, which this repository uses. Use Yarn 1, npm or pnpm.
 
 Vue 3.5 or newer is a peer dependency.
 
@@ -37,14 +27,14 @@ Vue 3.5 or newer is a peer dependency.
 With Vite, Nuxt or webpack:
 
 ```js
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 ```
 
 Without a bundler:
 
 ```js
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid/core'
-import '@attilakosztin/vue-grid/style.css'
+import { GridBoard, GridTile } from 'vue3-grid-board/core'
+import 'vue3-grid-board/style.css'
 ```
 
 ### Nuxt module
@@ -53,8 +43,8 @@ Register the module instead of importing anything: `GridBoard`, `GridTile` and t
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@attilakosztin/vue-grid/nuxt'],
-  vueGrid: {
+  modules: ['vue3-grid-board/nuxt'],
+  vue3GridBoard: {
     prefix: '',
     css: true,
     autoImports: true
@@ -73,7 +63,7 @@ export default defineNuxtConfig({
 ```vue
 <script setup>
 import { ref } from 'vue'
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 
 const tiles = ref([
   { id: 'a', x: 0, y: 0, w: 4, h: 2 },

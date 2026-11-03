@@ -9,20 +9,22 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "icons": "pwa-assets-generator"
+    "icons": "pwa-assets-generator && node scripts/favicon-ico.mjs"
   },
   "dependencies": {
-    "@attilakosztin/vue-grid": "workspace:*",
     "@iconify-json/lucide": "^1.2.104",
     "@iconify-json/simple-icons": "^1.2.80",
     "@nuxt/ui": "^4.7.0",
     "nuxt": "^4.4.2",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.2.4",
+    "vue3-grid-board": "workspace:*"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@vite-pwa/assets-generator": "^2.0.0",
     "eslint": "^10.2.1",
+    "sharp": "^0.35.5",
+    "sharp-ico": "^0.1.5",
     "shiki": "^4.4.3",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.2.7"

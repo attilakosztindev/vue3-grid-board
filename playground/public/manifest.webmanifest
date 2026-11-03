@@ -1,6 +1,6 @@
 {
-  "name": "Vue Grid",
-  "short_name": "Vue Grid",
+  "name": "vue3-grid-board",
+  "short_name": "vue3-grid-board",
   "start_url": ".",
   "background_color": "#ffffff",
   "icons": [

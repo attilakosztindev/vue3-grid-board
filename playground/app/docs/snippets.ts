@@ -1,7 +1,7 @@
 export const usageSnippet = `<script setup lang="ts">
 import { ref } from 'vue'
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
-import type { Tile } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 6, h: 4 },
@@ -31,7 +31,7 @@ const tiles = ref<Tile[]>([
 </template>`
 
 export const interactiveSnippet = `<script setup lang="ts">
-import type { Tile } from '@attilakosztin/vue-grid'
+import type { Tile } from 'vue3-grid-board'
 
 const interactive = ref(true)
 const tiles = ref<Tile[]>([
@@ -65,7 +65,7 @@ const tiles = ref<Tile[]>([
 </template>`
 
 export const gravitySnippet = `<script setup lang="ts">
-import type { Tile } from '@attilakosztin/vue-grid'
+import type { Tile } from 'vue3-grid-board'
 
 const gravity = ref(false)
 const tiles = ref<Tile[]>([
@@ -100,7 +100,7 @@ export const frozenSnippet = `const tiles = ref<Tile[]>([
 ])`
 
 export const slotsSnippet = `<script setup lang="ts">
-import type { TileWith } from '@attilakosztin/vue-grid'
+import type { TileWith } from 'vue3-grid-board'
 
 const tile = reactive<TileWith<{ title: string; note: string }>>({
   id: 'a',
@@ -146,7 +146,7 @@ const tile = reactive<TileWith<{ title: string; note: string }>>({
 </style>`
 
 export const overflowSnippet = `<script setup lang="ts">
-import type { Tile } from '@attilakosztin/vue-grid'
+import type { Tile } from 'vue3-grid-board'
 
 const escape = ref(true)
 const tiles = ref<Tile[]>([
@@ -180,8 +180,8 @@ const tiles = ref<Tile[]>([
 }
 </style>`
 
-export const dynamicSnippet = `import { getLastRow } from '@attilakosztin/vue-grid'
-import type { Tile } from '@attilakosztin/vue-grid'
+export const dynamicSnippet = `import { getLastRow } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
   { id: '1', x: 0, y: 0, w: 6, h: 3 },
@@ -202,7 +202,7 @@ function remove(id: string) {
   tiles.value = tiles.value.filter((t) => t.id !== id)
 }`
 
-export const mutationSnippet = `import type { Tile } from '@attilakosztin/vue-grid'
+export const mutationSnippet = `import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 4, h: 2 },
@@ -214,8 +214,8 @@ tiles.value = [...tiles.value, tile]
 tiles.value = tiles.value.map((t) => (t.id === 'a' ? { ...t, w: 6 } : t))
 tiles.value = tiles.value.filter((t) => t.id !== 'c')`
 
-export const persistenceSnippet = `import { validateTiles } from '@attilakosztin/vue-grid'
-import type { Tile } from '@attilakosztin/vue-grid'
+export const persistenceSnippet = `import { validateTiles } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
 
 const KEY = 'dashboard'
 
@@ -243,54 +243,7 @@ const tiles = ref<Tile[]>(restore(defaults))
 
 watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))`
 
-export const keyboardSnippet = `<script setup lang="ts">
-import type { TileWith } from '@attilakosztin/vue-grid'
-
-type Panel = TileWith<{ title: string }>
-
-const tiles = ref<Panel[]>([
-  { id: 'one', x: 0, y: 0, w: 6, h: 4, title: 'Revenue' },
-  { id: 'two', x: 6, y: 0, w: 6, h: 2, title: 'Signups' },
-  { id: 'three', x: 6, y: 2, w: 3, h: 2, title: 'Churn' },
-  { id: 'four', x: 9, y: 2, w: 3, h: 2, title: 'Sessions' }
-])
-</script>
-
-<template>
-  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
-    <GridTile
-      v-for="tile in tiles"
-      :key="tile.id"
-      :id="tile.id"
-      :x="tile.x"
-      :y="tile.y"
-      :w="tile.w"
-      :h="tile.h"
-      :label="tile.title"
-    />
-  </GridBoard>
-</template>`
-
-export const ssrSnippet = `<script setup lang="ts">
-const { data } = await useFetch('/api/grid-tiles')
-const tiles = ref(data.value?.tiles ?? [])
-</script>
-
-<template>
-  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
-    <GridTile
-      v-for="tile in tiles"
-      :key="tile.id"
-      :id="tile.id"
-      :x="tile.x"
-      :y="tile.y"
-      :w="tile.w"
-      :h="tile.h"
-    />
-  </GridBoard>
-</template>`
-
-export const typesSnippet = `import type { GridBoardExposed, Tile } from '@attilakosztin/vue-grid'
+export const typesSnippet = `import type { GridBoardExposed, Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([{ id: 'a', x: 0, y: 0, w: 2, h: 2 }])
 
@@ -299,8 +252,8 @@ const board = ref<GridBoardExposed | null>(null)
 board.value?.dispatch('dragEvent', ['dragmove', 'a', 3, 1, 2, 2])
 board.value?.dispatch('measure')`
 
-export const extendSnippet = `import type { TileWith } from '@attilakosztin/vue-grid'
-import { getTileById } from '@attilakosztin/vue-grid'
+export const extendSnippet = `import type { TileWith } from 'vue3-grid-board'
+import { getTileById } from 'vue3-grid-board'
 
 type Panel = TileWith<{
   title: string
@@ -319,8 +272,8 @@ export const methodsSnippet = `import {
   copyTiles,
   getTileById,
   moveTile
-} from '@attilakosztin/vue-grid'
-import type { Tile } from '@attilakosztin/vue-grid'
+} from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 4, h: 2 },
@@ -353,21 +306,20 @@ export const stylingSnippet = `.grid-tile {
   opacity: 0.2;
 }`
 
-export const installPnpmSnippet = `pnpm add github:attilakosztindev/vue3-grid`
+export const installPnpmSnippet = `pnpm add vue3-grid-board`
 
-export const installNpmSnippet = `npm install github:attilakosztindev/vue3-grid`
+export const installNpmSnippet = `npm install vue3-grid-board`
 
-export const installYarnSnippet = `yarn add github:attilakosztindev/vue3-grid`
+export const installYarnSnippet = `yarn add vue3-grid-board`
 
-export const importSnippet = `import { GridBoard, GridTile } from '@attilakosztin/vue-grid'`
+export const importSnippet = `import { GridBoard, GridTile } from 'vue3-grid-board'`
 
-export const importStandaloneSnippet = `import { GridBoard, GridTile } from '@attilakosztin/vue-grid/core'
-import '@attilakosztin/vue-grid/style.css'`
-
+export const importStandaloneSnippet = `import { GridBoard, GridTile } from 'vue3-grid-board/core'
+import 'vue3-grid-board/style.css'`
 
 export const nuxtModuleSnippet = `export default defineNuxtConfig({
-  modules: ['@attilakosztin/vue-grid/nuxt'],
-  vueGrid: {
+  modules: ['vue3-grid-board/nuxt'],
+  vue3GridBoard: {
     prefix: '',
     css: true,
     autoImports: true

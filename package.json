@@ -1,16 +1,16 @@
 {
-  "name": "@attilakosztin/vue-grid",
+  "name": "vue3-grid-board",
   "version": "0.1.0",
   "description": "A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.",
   "license": "MIT",
   "author": "Attila Kosztin",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/attilakosztindev/vue3-grid.git"
+    "url": "git+https://github.com/attilakosztindev/vue3-grid-board.git"
   },
-  "homepage": "https://attilakosztindev.github.io/vue3-grid",
+  "homepage": "https://attilakosztindev.github.io/vue3-grid-board",
   "bugs": {
-    "url": "https://github.com/attilakosztindev/vue3-grid/issues"
+    "url": "https://github.com/attilakosztindev/vue3-grid-board/issues"
   },
   "keywords": [
     "vue",
@@ -66,6 +66,7 @@
   "scripts": {
     "build:lib": "vite build",
     "dev": "pnpm --filter playground dev",
+    "icons": "pnpm --filter playground icons",
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

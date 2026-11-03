@@ -11,9 +11,9 @@ export default module
 
 declare module 'nuxt/schema' {
   interface NuxtConfig {
-    vueGrid?: ModuleOptions
+    vue3GridBoard?: ModuleOptions
   }
   interface NuxtOptions {
-    vueGrid?: ModuleOptions
+    vue3GridBoard?: ModuleOptions
   }
 }

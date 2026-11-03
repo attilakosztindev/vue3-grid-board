@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { GridBoard, GridTile } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 
 const dynamic = defineModel('dynamic', { type: Boolean, default: false })
 

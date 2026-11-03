@@ -140,29 +140,57 @@ export function moveTile(tiles, tile, x, y, isUserAction, preventOverlap) {
   return tiles
 }
 
+// With gravity on, moving a tile one row usually changes nothing: it shoves the tiles it lands on
+// down, then everything floats back up to where it started. A pointer drag gets past that by
+// travelling further, so a key press does the same: it keeps stepping in its direction and
+// returns the first slot that actually changes the layout, or null when none does.
+export function findKeyboardSlot(tiles, id, dx, dy, columns, gravity) {
+  const tile = getTileById(tiles, id)
+  if (!tile) return null
+
+  const lastRow = getLastRow(tiles)
+  let x = tile.x
+  let y = tile.y
+
+  for (;;) {
+    const nextX = Math.max(0, Math.min(columns - tile.w, x + dx))
+    const nextY = Math.max(0, Math.min(lastRow, y + dy))
+    if (nextX === x && nextY === y) return null
+    x = nextX
+    y = nextY
+
+    const trial = copyTiles(tiles)
+    moveTile(trial, getTileById(trial, id), x, y, true, false)
+    applyGravity(trial, gravity, id)
+    if (trial.some((t, i) => t.x !== tiles[i].x || t.y !== tiles[i].y)) return { x, y }
+  }
+}
+
 export function validateTiles(tiles, context = 'tiles') {
-  if (!Array.isArray(tiles)) throw new Error(`Vue Grid: ${context} must be an array.`)
+  if (!Array.isArray(tiles)) throw new Error(`vue3-grid-board: ${context} must be an array.`)
 
   const seen = new Set()
 
   tiles.forEach((tile, i) => {
     for (const key of ['x', 'y', 'w', 'h']) {
       if (typeof tile[key] !== 'number') {
-        throw new Error(`Vue Grid: ${context}[${i}].${key} must be a number.`)
+        throw new Error(`vue3-grid-board: ${context}[${i}].${key} must be a number.`)
       }
     }
     if (tile.id === undefined || tile.id === null) {
-      throw new Error(`Vue Grid: ${context}[${i}].id is required.`)
+      throw new Error(`vue3-grid-board: ${context}[${i}].id is required.`)
     }
     if (typeof tile.id !== 'number' && typeof tile.id !== 'string') {
-      throw new Error(`Vue Grid: ${context}[${i}].id must be a string or a number.`)
+      throw new Error(`vue3-grid-board: ${context}[${i}].id must be a string or a number.`)
     }
     if (seen.has(tile.id)) {
-      throw new Error(`Vue Grid: ${context}[${i}].id must be unique (saw "${tile.id}" twice).`)
+      throw new Error(
+        `vue3-grid-board: ${context}[${i}].id must be unique (saw "${tile.id}" twice).`
+      )
     }
     seen.add(tile.id)
     if (tile.frozen !== undefined && typeof tile.frozen !== 'boolean') {
-      throw new Error(`Vue Grid: ${context}[${i}].frozen must be a boolean.`)
+      throw new Error(`vue3-grid-board: ${context}[${i}].frozen must be a boolean.`)
     }
   })
 }

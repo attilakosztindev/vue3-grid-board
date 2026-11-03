@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { GridBoard, GridTile, getLastRow, validateTiles } from '@attilakosztin/vue-grid'
+import { GridBoard, GridTile, getLastRow, validateTiles } from 'vue3-grid-board'
 import {
   dynamicSnippet,
   extendSnippet,
@@ -12,24 +12,22 @@ import {
   installPnpmSnippet,
   installYarnSnippet,
   interactiveSnippet,
-  keyboardSnippet,
   methodsSnippet,
   mutationSnippet,
   nuxtModuleSnippet,
   overflowSnippet,
   persistenceSnippet,
   slotsSnippet,
-  ssrSnippet,
   stylingSnippet,
   typesSnippet,
   usageSnippet
 } from '~/docs/snippets'
 
-const logo = asset('/vue-grid-logo.svg')
+const logo = asset('/vue3-grid-board-logo.svg')
 
-definePageMeta({ title: 'Vue Grid' })
+definePageMeta({ title: 'vue3-grid-board' })
 useHead({
-  title: 'Vue Grid — a draggable, resizable board for Vue 3',
+  title: 'vue3-grid-board — a draggable, resizable board for Vue 3',
   bodyAttrs: { class: 'doc-body' }
 })
 
@@ -105,7 +103,7 @@ function removeTile(id) {
   dynamicTiles.value = dynamicTiles.value.filter((t) => t.id !== id)
 }
 
-const PERSIST_KEY = 'vue-grid-docs-demo'
+const PERSIST_KEY = 'vue3-grid-board-docs-demo'
 const persistDefault = [
   { id: 'a', x: 0, y: 0, w: 8, h: 3 },
   { id: 'b', x: 8, y: 0, w: 4, h: 3 },
@@ -317,7 +315,7 @@ const methodRows = [
 const keyboardRows = [
   ['Tab', 'Move focus between tiles. Frozen tiles are skipped.'],
   ['Enter or Space', 'Pick the focused tile up, and drop it again.'],
-  ['Arrow keys', 'Move the picked-up tile by one cell.'],
+  ['Arrow keys', 'Move the picked-up tile by one cell, or past the next tile when gravity is on.'],
   ['Shift + Arrows', 'Resize the picked-up tile by one cell.'],
   ['Escape', 'Cancel, putting every tile back where the gesture started.']
 ]
@@ -327,7 +325,6 @@ const nav = [
     title: 'Guide',
     items: [
       { id: 'installation', label: 'Installation' },
-      { id: 'nuxt', label: 'Nuxt' },
       { id: 'usage', label: 'Usage' },
       { id: 'gestures', label: 'Drag & resize' },
       { id: 'gravity', label: 'Gravity' },
@@ -412,14 +409,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="doc-root">
-    <div class="mx-auto flex max-w-7xl gap-10 px-6">
+    <div class="mx-auto flex max-w-7xl gap-16 px-6">
       <aside class="sticky top-0 -mx-2 hidden h-screen w-fit shrink-0 overflow-y-auto px-2 py-10 lg:block">
         <a
           href="#top"
           class="mb-6 flex flex-col items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900"
         >
           <img :src="logo" alt="" width="24" height="24" class="w-full max-w-56" />
-          <span class="text-2xl font-bold">Vue Grid</span>
+          <span class="text-2xl font-bold">vue3-grid-board</span>
         </a>
         <nav aria-label="Documentation">
           <div v-for="group in nav" :key="group.title" class="mb-6">
@@ -447,32 +444,25 @@ onBeforeUnmount(() => {
       </aside>
 
       <main id="top" class="min-w-0 flex-1 pb-24">
-        <h1 class="sr-only">Vue Grid</h1>
+        <h1 class="sr-only">vue3-grid-board</h1>
 
         <section id="installation" class="scroll-mt-20 border-b border-neutral-100 py-12">
           <h2 class="doc-h2">Installation</h2>
           <p class="doc-lead mt-2">
-            Vue Grid installs from GitHub. Vue 3.5 is the only peer dependency, and there is no
-            runtime dependency beyond it.
+            vue3-grid-board installs from npm. Vue 3.5 is the only peer dependency, and there is
+            no runtime dependency beyond it.
           </p>
-          <p class="mt-6 text-sm font-medium text-neutral-900">pnpm 7.32.2 or later</p>
+          <p class="mt-6 text-sm font-medium text-neutral-900">pnpm</p>
           <div class="mt-2">
             <DocExample :code="installPnpmSnippet" lang="bash" />
           </div>
-          <p class="mt-6 text-sm font-medium text-neutral-900">npm 7.0.0 or later</p>
+          <p class="mt-6 text-sm font-medium text-neutral-900">npm</p>
           <div class="mt-2">
             <DocExample :code="installNpmSnippet" lang="bash" />
           </div>
-          <p class="mt-6 text-sm font-medium text-neutral-900">Yarn 1.0.0 or later, Yarn 1 only</p>
+          <p class="mt-6 text-sm font-medium text-neutral-900">Yarn</p>
           <div class="mt-2">
             <DocExample :code="installYarnSnippet" lang="bash" />
-          </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Yarn 2 and later cannot install it from GitHub</p>
-            <p class="mt-1">
-              They rebuild a git dependency with the package manager of the repository it comes
-              from, and cannot drive pnpm, which this repository uses. Use Yarn 1, npm or pnpm.
-            </p>
           </div>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>
@@ -485,7 +475,6 @@ onBeforeUnmount(() => {
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-
           <div class="doc-note mt-6">
             <p class="font-medium text-neutral-900">One component, split in two</p>
             <p class="mt-1">
@@ -493,11 +482,9 @@ onBeforeUnmount(() => {
               board throws rather than silently laying itself out wrong. Import both, always.
             </p>
           </div>
-        </section>
 
-        <section id="nuxt" class="scroll-mt-20 border-b border-neutral-100 py-12">
-          <h2 class="doc-h2">Nuxt</h2>
-          <p class="doc-lead mt-2">
+          <h3 id="nuxt" class="doc-h2-sub mt-8 scroll-mt-20">Nuxt</h3>
+          <p class="doc-lead mt-3">
             Register the module instead of importing anything:
             <code class="doc-inline">GridBoard</code>, <code class="doc-inline">GridTile</code> and
             the layout helpers become auto-imports, and the stylesheet is added for you.
@@ -563,11 +550,11 @@ onBeforeUnmount(() => {
             back.
           </p>
           <div class="mt-6">
+            <label class="doc-check mb-3">
+              <input v-model="interactive" type="checkbox" />
+              Interactive
+            </label>
             <DocExample :code="interactiveSnippet">
-              <label class="doc-check mb-4">
-                <input v-model="interactive" type="checkbox" />
-                Interactive
-              </label>
               <GridBoard
                 v-model:tiles="liveTiles"
                 :columns="12"
@@ -590,21 +577,20 @@ onBeforeUnmount(() => {
             above it. Defaults to <code class="doc-inline">true</code>.
           </p>
           <div class="mt-6">
+            <div class="doc-tabs mb-3" role="tablist" aria-label="Gravity">
+              <button
+                v-for="tab in gravityTabs"
+                :key="tab.value"
+                type="button"
+                role="tab"
+                class="doc-tab"
+                :aria-selected="gravityMode === tab.value"
+                @click="gravityMode = tab.value"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
             <DocExample :code="gravitySnippet">
-              <div class="doc-tabs mb-4" role="tablist" aria-label="Gravity">
-                <button
-                  v-for="tab in gravityTabs"
-                  :key="tab.value"
-                  type="button"
-                  role="tab"
-                  class="doc-btn"
-                  :class="gravityMode === tab.value ? 'doc-btn--primary' : 'doc-btn--secondary'"
-                  :aria-selected="gravityMode === tab.value"
-                  @click="gravityMode = tab.value"
-                >
-                  {{ tab.label }}
-                </button>
-              </div>
               <GridBoard
                 v-model:tiles="gravityTiles"
                 :columns="12"
@@ -661,21 +647,20 @@ onBeforeUnmount(() => {
             past the edge instead of being sliced at it.
           </p>
           <div class="mt-6">
+            <div class="doc-tabs mb-3" role="tablist" aria-label="Overflow">
+              <button
+                v-for="tab in overflowTabs"
+                :key="String(tab.value)"
+                type="button"
+                role="tab"
+                class="doc-tab"
+                :aria-selected="escape === tab.value"
+                @click="escape = tab.value"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
             <DocExample :code="overflowSnippet">
-              <div class="doc-tabs mb-4" role="tablist" aria-label="Overflow">
-                <button
-                  v-for="tab in overflowTabs"
-                  :key="String(tab.value)"
-                  type="button"
-                  role="tab"
-                  class="doc-btn"
-                  :class="escape === tab.value ? 'doc-btn--primary' : 'doc-btn--secondary'"
-                  :aria-selected="escape === tab.value"
-                  @click="escape = tab.value"
-                >
-                  {{ tab.label }}
-                </button>
-              </div>
               <div class="doc-panel">
                 <GridBoard
                   v-model:tiles="overflowTiles"
@@ -720,17 +705,17 @@ onBeforeUnmount(() => {
             </p>
           </div>
           <div class="mt-6">
+            <div class="mb-3 flex items-center gap-2">
+              <button
+                type="button"
+                class="doc-btn doc-btn--primary"
+                @click="addTile"
+              >
+                Add tile
+              </button>
+              <span class="text-sm text-neutral-500">{{ dynamicTiles.length }} on the board</span>
+            </div>
             <DocExample :code="dynamicSnippet" lang="ts">
-              <div class="mb-4 flex items-center gap-2">
-                <button
-                  type="button"
-                  class="doc-btn doc-btn--primary"
-                  @click="addTile"
-                >
-                  Add tile
-                </button>
-                <span class="text-sm text-neutral-500">{{ dynamicTiles.length }} on the board</span>
-              </div>
               <GridBoard v-model:tiles="dynamicTiles" :columns="12" :row-height="40">
                 <GridTile
                   v-for="(tile, index) in dynamicTiles"
@@ -742,7 +727,7 @@ onBeforeUnmount(() => {
                     {{ index + 1 }}
                     <button
                       type="button"
-                      class="doc-btn doc-btn--icon absolute right-6 top-1"
+                      class="doc-btn doc-btn--icon absolute right-2 top-1 text-2xl!"
                       :aria-label="`Remove tile ${index + 1}`"
                       @click="removeTile(tile.id)"
                     >
@@ -779,33 +764,33 @@ onBeforeUnmount(() => {
             a watcher and <code class="doc-inline">JSON.stringify</code>.
           </p>
           <div class="mt-6">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="doc-btn doc-btn--primary"
+                @click="save"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                class="doc-btn doc-btn--secondary"
+                @click="restore"
+              >
+                Restore
+              </button>
+              <button
+                type="button"
+                class="doc-btn doc-btn--secondary"
+                @click="reset"
+              >
+                Reset
+              </button>
+              <span class="text-sm text-neutral-500" role="status" aria-live="polite">
+                {{ persistStatus }}
+              </span>
+            </div>
             <DocExample :code="persistenceSnippet" lang="ts">
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  class="doc-btn doc-btn--primary"
-                  @click="save"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  class="doc-btn doc-btn--secondary"
-                  @click="restore"
-                >
-                  Restore
-                </button>
-                <button
-                  type="button"
-                  class="doc-btn doc-btn--secondary"
-                  @click="reset"
-                >
-                  Reset
-                </button>
-                <span class="text-sm text-neutral-500" role="status" aria-live="polite">
-                  {{ persistStatus }}
-                </span>
-              </div>
               <GridBoard v-model:tiles="persistTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in persistTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile">{{ tile.id }}</div>
@@ -826,7 +811,7 @@ onBeforeUnmount(() => {
             configure.
           </p>
           <div class="mt-6">
-            <DocExample :code="keyboardSnippet">
+            <DocExample>
               <GridBoard v-model:tiles="keyboardTiles" :columns="12" :row-height="40">
                 <GridTile
                   v-for="tile in keyboardTiles"
@@ -865,9 +850,6 @@ onBeforeUnmount(() => {
             The server emits the real board — no
             <code class="doc-inline">&lt;ClientOnly&gt;</code>, no hydration mismatch, no flash.
           </p>
-          <div class="mt-6">
-            <DocExample :code="ssrSnippet" />
-          </div>
         </section>
 
         <section id="events" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -1158,7 +1140,7 @@ onBeforeUnmount(() => {
         <section id="api-css" class="scroll-mt-20 border-b border-neutral-100 py-12">
           <h2 class="doc-h2">CSS</h2>
           <p class="doc-lead mt-2">
-            Vue Grid ships structural CSS only — position, size, cursor and the settle transition.
+            vue3-grid-board ships structural CSS only — position, size, cursor and the settle transition.
             Every visual decision is yours.
           </p>
           <div class="doc-table-wrap mt-6">
