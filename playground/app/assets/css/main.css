@@ -229,36 +229,13 @@ html {
   width: 0.95rem;
   height: 0.95rem;
   border-radius: 0.25rem;
-  accent-color: #047857;
+  accent-color: #171717;
   cursor: pointer;
 }
 
 .doc-tabs {
   display: inline-flex;
-  gap: 0.25rem;
-  border: 1px solid #e5e5e5;
-  border-radius: 0.6rem;
-  background: #fafafa;
-  padding: 0.2rem;
-}
-.doc-tab {
-  border-radius: 0.45rem;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  color: #6b7280;
-  transition:
-    background 150ms ease,
-    color 150ms ease;
-}
-.doc-tab:hover {
-  color: #262626;
-}
-.doc-tab--active {
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-  color: #047857;
+  gap: 0.5rem;
 }
 
 .doc-panel {

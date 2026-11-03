@@ -532,8 +532,8 @@ onBeforeUnmount(() => {
                   :key="tab.value"
                   type="button"
                   role="tab"
-                  class="doc-tab"
-                  :class="{ 'doc-tab--active': gravityMode === tab.value }"
+                  class="doc-btn"
+                  :class="gravityMode === tab.value ? 'doc-btn--primary' : 'doc-btn--secondary'"
                   :aria-selected="gravityMode === tab.value"
                   @click="gravityMode = tab.value"
                 >
@@ -603,8 +603,8 @@ onBeforeUnmount(() => {
                   :key="String(tab.value)"
                   type="button"
                   role="tab"
-                  class="doc-tab"
-                  :class="{ 'doc-tab--active': escape === tab.value }"
+                  class="doc-btn"
+                  :class="escape === tab.value ? 'doc-btn--primary' : 'doc-btn--secondary'"
                   :aria-selected="escape === tab.value"
                   @click="escape = tab.value"
                 >
