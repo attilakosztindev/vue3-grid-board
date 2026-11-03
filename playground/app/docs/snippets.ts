@@ -16,7 +16,15 @@ const tiles = ref<Tile[]>([
 
 <template>
   <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :gap="10">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    >
       {{ tile.id }}
     </GridTile>
   </GridBoard>
@@ -34,7 +42,15 @@ const tiles = ref<Tile[]>([
 
 <template>
   <GridBoard v-model:tiles="tiles" :draggable="interactive" :resizable="interactive">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
   </GridBoard>
 </template>`
 
@@ -50,7 +66,15 @@ const tiles = ref<Tile[]>([
 
 <template>
   <GridBoard v-model:tiles="tiles" :gravity="gravity">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
   </GridBoard>
 </template>`
 
@@ -60,22 +84,45 @@ export const frozenSnippet = `const tiles = ref<Tile[]>([
   { id: 'b', x: 8, y: 0, w: 4, h: 3 }
 ])`
 
-export const slotsSnippet = `<GridTile v-bind="tile" drag-handle=".card-header">
-  <header class="card-header">{{ tile.title }}</header>
-  <input v-model="tile.note">
+export const slotsSnippet = `<script setup lang="ts">
+import type { TileWith } from '@attilakosztin/vue-grid'
 
-  <template #handle>
-    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-      <path
-        d="M3 13 L13 3 M13 3 H8 M13 3 V8"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-        stroke-linecap="round"
-      />
-    </svg>
-  </template>
-</GridTile>
+const tile = reactive<TileWith<{ title: string; note: string }>>({
+  id: 'a',
+  x: 0,
+  y: 0,
+  w: 4,
+  h: 3,
+  title: 'Notes',
+  note: ''
+})
+</script>
+
+<template>
+  <GridTile
+    :id="tile.id"
+    :x="tile.x"
+    :y="tile.y"
+    :w="tile.w"
+    :h="tile.h"
+    drag-handle=".card-header"
+  >
+    <header class="card-header">{{ tile.title }}</header>
+    <input v-model="tile.note">
+
+    <template #handle>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+        <path
+          d="M3 13 L13 3 M13 3 H8 M13 3 V8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+    </template>
+  </GridTile>
+</template>
 
 <style>
 .grid-tile > .grid-handle { color: var(--ui-primary); }
@@ -93,7 +140,15 @@ const tiles = ref<Tile[]>([
 <template>
   <div class="panel">
     <GridBoard v-model:tiles="tiles" overflow>
-      <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+      <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
     </GridBoard>
   </div>
 </template>
@@ -171,7 +226,16 @@ const tiles = ref<Panel[]>([
 
 <template>
   <GridBoard v-model:tiles="tiles">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" :label="tile.title" />
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+      :label="tile.title"
+    />
   </GridBoard>
 </template>`
 
@@ -182,7 +246,15 @@ const tiles = ref(data.value?.tiles ?? [])
 
 <template>
   <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
   </GridBoard>
 </template>`
 
