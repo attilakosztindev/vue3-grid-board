@@ -362,5 +362,10 @@ import '@attilakosztin/vue-grid/style.css'`
 
 
 export const nuxtModuleSnippet = `export default defineNuxtConfig({
-  modules: ['@attilakosztin/vue-grid/nuxt']
+  modules: ['@attilakosztin/vue-grid/nuxt'],
+  vueGrid: {
+    prefix: '',
+    css: true,
+    autoImports: true
+  }
 })`

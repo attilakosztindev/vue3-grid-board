@@ -41,7 +41,12 @@ Register the module instead of importing anything: `GridBoard`, `GridTile` and t
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@attilakosztin/vue-grid/nuxt']
+  modules: ['@attilakosztin/vue-grid/nuxt'],
+  vueGrid: {
+    prefix: '',
+    css: true,
+    autoImports: true
+  }
 })
 ```
 
@@ -50,8 +55,6 @@ export default defineNuxtConfig({
 | `prefix`      | Put in front of the component names: `'Ui'` gives `<UiGridBoard>`. | `string`  | `''`    |
 | `css`         | Add the stylesheet to the app.                                     | `boolean` | `true`  |
 | `autoImports` | Auto-import the layout helpers.                                    | `boolean` | `true`  |
-
-Set them under `vueGrid` in `nuxt.config`.
 
 ## Usage
 
