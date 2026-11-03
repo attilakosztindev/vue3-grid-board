@@ -40,6 +40,14 @@ html {
   outline-color: #047857;
 }
 
+.doc-code {
+  border-radius: 0 0 calc(0.75rem - 1px) calc(0.75rem - 1px);
+}
+
+.doc-code:focus-visible {
+  outline-offset: -2px;
+}
+
 .doc-root [tabindex='-1']:focus {
   outline: none;
 }
@@ -181,10 +189,6 @@ html {
     background 150ms ease,
     border-color 150ms ease,
     color 150ms ease;
-}
-.doc-btn:focus-visible {
-  outline: 2px solid #047857;
-  outline-offset: 2px;
 }
 .doc-btn--primary {
   background: #171717;

@@ -403,7 +403,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="doc-root">
     <div class="mx-auto flex max-w-7xl gap-10 px-6">
-      <aside class="sticky top-0 hidden h-screen w-fit shrink-0 overflow-y-auto py-10 lg:block">
+      <aside class="sticky top-0 -mx-2 hidden h-screen w-fit shrink-0 overflow-y-auto px-2 py-10 lg:block">
         <a
           href="#top"
           class="mb-6 flex flex-col items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900"
