@@ -32,15 +32,16 @@ jobs:
           cache: pnpm
 
       - name: Configure Pages
+        id: pages
         uses: actions/configure-pages@v5
-        with:
-          static_site_generator: nuxt
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Generate
         run: pnpm --filter playground generate
+        env:
+          NUXT_APP_BASE_URL: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

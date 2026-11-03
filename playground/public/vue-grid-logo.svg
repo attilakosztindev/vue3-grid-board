@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 448 448" width="448" height="448">
   <g fill="none" stroke-width="20">
-    <rect x="0" y="0" width="274" height="120" rx="12" stroke="#41B883" />
-    <rect x="308" y="0" width="120" height="120" rx="12" stroke="#34495E" />
-    <rect x="0" y="154" width="120" height="274" rx="12" stroke="#34495E" />
-    <rect x="154" y="154" width="274" height="120" rx="12" stroke="#41B883" />
-    <rect x="154" y="308" width="120" height="120" rx="12" stroke="#41B883" />
-    <rect x="308" y="308" width="120" height="120" rx="12" stroke="#34495E" />
+    <rect x="0" y="0" width="274" height="120" rx="22" stroke="#41B883" />
+    <rect x="308" y="0" width="120" height="120" rx="22" stroke="#34495E" />
+    <rect x="0" y="154" width="120" height="274" rx="22" stroke="#34495E" />
+    <rect x="154" y="154" width="274" height="120" rx="22" stroke="#41B883" />
+    <rect x="154" y="308" width="120" height="120" rx="22" stroke="#41B883" />
+    <rect x="308" y="308" width="120" height="120" rx="22" stroke="#34495E" />
   </g>
   <svg x="1.48" y="1.48" width="425.04" height="425.04" viewBox="-30 -30 560 560">
     <path d="M318.127,38.000A20,20 0 0 0 300.807,48.000L267.321,106.000A20,20 0 0 1 232.679,106.000L199.193,48.000A20,20 0 0 0 181.873,38.000L39.641,38.000A20,20 0 0 0 22.320,68.000L232.679,432.357A20,20 0 0 0 267.321,432.357L477.680,68.000A20,20 0 0 0 460.359,38.000Z" fill="#41B883" stroke="#ffffff" stroke-width="26.351" stroke-linejoin="round" />

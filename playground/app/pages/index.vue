@@ -385,13 +385,13 @@ onBeforeUnmount(() => {
 <template>
   <div class="doc-root">
     <div class="mx-auto flex max-w-7xl gap-10 px-6">
-      <aside class="sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto py-10 lg:block">
+      <aside class="sticky top-0 hidden h-screen w-fit shrink-0 overflow-y-auto py-10 lg:block">
         <a
           href="#top"
-          class="mb-6 flex items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900"
+          class="mb-6 flex flex-col items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900"
         >
-          <img :src="logo" alt="" width="24" height="24" class="h-6 w-6" />
-          Vue Grid
+          <img :src="logo" alt="" width="24" height="24" class="w-full max-w-56" />
+          <span class="text-2xl font-bold">Vue Grid</span>
         </a>
         <nav aria-label="Documentation">
           <div v-for="group in nav" :key="group.title" class="mb-6">
