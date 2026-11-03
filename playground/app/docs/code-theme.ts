@@ -1,2 +1,2 @@
-export const CODE_BG = '#1e1e2e'
-export const CODE_FG = '#cdd6f4'
+export const CODE_BG = '#0f111a'
+export const CODE_FG = '#babed8'

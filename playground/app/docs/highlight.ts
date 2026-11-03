@@ -1,20 +1,24 @@
-import { createHighlighterCoreSync, type HighlighterCore } from 'shiki/core'
+import {
+  createHighlighterCoreSync,
+  type HighlighterCore,
+  type ThemeRegistrationRaw
+} from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import bash from 'shiki/langs/bash.mjs'
 import css from 'shiki/langs/css.mjs'
 import typescript from 'shiki/langs/typescript.mjs'
 import vue from 'shiki/langs/vue.mjs'
-import catppuccinMocha from 'shiki/themes/catppuccin-mocha.mjs'
+import vueGridDark from './theme.json'
 import { CODE_FG } from './code-theme'
 
-const THEME = 'catppuccin-mocha'
+const THEME = 'vue-grid-dark'
 
 let highlighter: HighlighterCore | null = null
 
 function get(): HighlighterCore {
   if (!highlighter) {
     highlighter = createHighlighterCoreSync({
-      themes: [catppuccinMocha],
+      themes: [vueGridDark as unknown as ThemeRegistrationRaw],
       langs: [vue, typescript, css, bash],
       langAlias: { ts: 'typescript', sh: 'bash', shell: 'bash' },
       engine: createJavaScriptRegexEngine({ forgiving: true })
