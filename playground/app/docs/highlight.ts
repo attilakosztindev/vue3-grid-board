@@ -6,6 +6,7 @@ import {
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import bash from 'shiki/langs/bash.mjs'
 import css from 'shiki/langs/css.mjs'
+import html from 'shiki/langs/html.mjs'
 import typescript from 'shiki/langs/typescript.mjs'
 import vue from 'shiki/langs/vue.mjs'
 import vueGridDark from './theme.json'
@@ -13,13 +14,15 @@ import { CODE_FG } from './code-theme'
 
 const THEME = 'vue-grid-dark'
 
+const SFC_BLOCK = /^\s*<(?:template|script|style)[\s>]/
+
 let highlighter: HighlighterCore | null = null
 
 function get(): HighlighterCore {
   if (!highlighter) {
     highlighter = createHighlighterCoreSync({
       themes: [vueGridDark as unknown as ThemeRegistrationRaw],
-      langs: [vue, typescript, css, bash],
+      langs: [vue, typescript, css, bash, html],
       langAlias: { ts: 'typescript', sh: 'bash', shell: 'bash' },
       engine: createJavaScriptRegexEngine({ forgiving: true })
     })
@@ -35,6 +38,11 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function resolveLang(code: string, lang: string): string {
+  if (lang !== 'vue' || SFC_BLOCK.test(code)) return lang
+  return 'html'
+}
+
 export function highlight(code: string, lang = 'vue'): string {
   const shiki = get()
   if (!shiki.getLoadedLanguages().includes(lang)) {
@@ -42,7 +50,7 @@ export function highlight(code: string, lang = 'vue'): string {
   }
 
   return shiki.codeToHtml(code, {
-    lang,
+    lang: resolveLang(code, lang),
     theme: THEME,
     transformers: [
       {
