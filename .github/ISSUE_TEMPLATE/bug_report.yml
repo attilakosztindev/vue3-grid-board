@@ -1,0 +1,63 @@
+name: Bug report
+description: The board or a tile does not behave as documented.
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Versions
+      description: vue3-grid-board, and Vue or Nuxt.
+      placeholder: vue3-grid-board 0.1.0, Vue 3.5.13
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: A link to a minimal reproduction (StackBlitz, a repository), or the smallest code that shows the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      placeholder: |
+        1. Pick up tile "a" with Enter
+        2. Press the right arrow twice
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+
+  - type: dropdown
+    id: input
+    attributes:
+      label: Input
+      description: How you were moving or resizing tiles.
+      multiple: true
+      options:
+        - Mouse
+        - Touch
+        - Keyboard
+        - Screen reader
+        - Not a gesture
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: Firefox 140, macOS 15
