@@ -64,7 +64,7 @@
     }
   },
   "scripts": {
-    "build": "vite build",
+    "build:lib": "vite build",
     "dev": "pnpm --filter playground dev",
     "test": "vitest run",
     "lint": "eslint .",

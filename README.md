@@ -10,13 +10,25 @@ A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and 
 
 The package is published from GitHub, not npm.
 
+pnpm 7.32.2 or later:
+
 ```bash
 pnpm add github:attilakosztindev/vue3-grid
 ```
 
+npm 7.0.0 or later:
+
 ```bash
 npm install github:attilakosztindev/vue3-grid
 ```
+
+Yarn 1.0.0 or later, Yarn 1 only:
+
+```bash
+yarn add github:attilakosztindev/vue3-grid
+```
+
+**Yarn 2 and later cannot install it from GitHub.** They rebuild a git dependency with the package manager of the repository it comes from, and cannot drive pnpm, which this repository uses. Use Yarn 1, npm or pnpm.
 
 Vue 3.5 or newer is a peer dependency.
 
@@ -133,7 +145,7 @@ This repository is a pnpm workspace: the library at the root, a documentation si
 pnpm install
 pnpm dev
 pnpm test
-pnpm run build
+pnpm run build:lib
 ```
 
 ## License

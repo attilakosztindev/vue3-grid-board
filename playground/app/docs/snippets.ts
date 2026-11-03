@@ -353,7 +353,11 @@ export const stylingSnippet = `.grid-tile {
   opacity: 0.2;
 }`
 
-export const installSnippet = `pnpm add github:attilakosztindev/vue3-grid`
+export const installPnpmSnippet = `pnpm add github:attilakosztindev/vue3-grid`
+
+export const installNpmSnippet = `npm install github:attilakosztindev/vue3-grid`
+
+export const installYarnSnippet = `yarn add github:attilakosztindev/vue3-grid`
 
 export const importSnippet = `import { GridBoard, GridTile } from '@attilakosztin/vue-grid'`
 

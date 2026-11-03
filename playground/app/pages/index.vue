@@ -8,7 +8,9 @@ import {
   gravitySnippet,
   importSnippet,
   importStandaloneSnippet,
-  installSnippet,
+  installNpmSnippet,
+  installPnpmSnippet,
+  installYarnSnippet,
   interactiveSnippet,
   keyboardSnippet,
   methodsSnippet,
@@ -453,8 +455,24 @@ onBeforeUnmount(() => {
             Vue Grid installs from GitHub. Vue 3.5 is the only peer dependency, and there is no
             runtime dependency beyond it.
           </p>
-          <div class="mt-6">
-            <DocExample :code="installSnippet" lang="bash" />
+          <p class="mt-6 text-sm font-medium text-neutral-900">pnpm 7.32.2 or later</p>
+          <div class="mt-2">
+            <DocExample :code="installPnpmSnippet" lang="bash" />
+          </div>
+          <p class="mt-6 text-sm font-medium text-neutral-900">npm 7.0.0 or later</p>
+          <div class="mt-2">
+            <DocExample :code="installNpmSnippet" lang="bash" />
+          </div>
+          <p class="mt-6 text-sm font-medium text-neutral-900">Yarn 1.0.0 or later, Yarn 1 only</p>
+          <div class="mt-2">
+            <DocExample :code="installYarnSnippet" lang="bash" />
+          </div>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Yarn 2 and later cannot install it from GitHub</p>
+            <p class="mt-1">
+              They rebuild a git dependency with the package manager of the repository it comes
+              from, and cannot drive pnpm, which this repository uses. Use Yarn 1, npm or pnpm.
+            </p>
           </div>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>
