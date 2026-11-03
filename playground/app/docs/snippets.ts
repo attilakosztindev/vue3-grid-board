@@ -22,13 +22,37 @@ const tiles = ref<Tile[]>([
   </GridBoard>
 </template>`
 
-export const interactiveSnippet = `<GridBoard v-model:tiles="tiles" :draggable="live" :resizable="live">
-  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
-</GridBoard>`
+export const interactiveSnippet = `<script setup lang="ts">
+import type { Tile } from '@attilakosztin/vue-grid'
 
-export const gravitySnippet = `<GridBoard v-model:tiles="tiles" :gravity="gravity">
-  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
-</GridBoard>`
+const interactive = ref(true)
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 6, h: 2 },
+  { id: 'b', x: 6, y: 0, w: 6, h: 2 }
+])
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :draggable="interactive" :resizable="interactive">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  </GridBoard>
+</template>`
+
+export const gravitySnippet = `<script setup lang="ts">
+import type { Tile } from '@attilakosztin/vue-grid'
+
+const gravity = ref(true)
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 1, w: 5, h: 3 },
+  { id: 'b', x: 5, y: 0, w: 7, h: 2 }
+])
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :gravity="gravity">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  </GridBoard>
+</template>`
 
 export const frozenSnippet = `const tiles = ref<Tile[]>([
   { id: 'sidebar', x: 0, y: 0, w: 3, h: 6, frozen: true },
@@ -57,11 +81,22 @@ export const slotsSnippet = `<GridTile v-bind="tile" drag-handle=".card-header">
 .grid-tile > .grid-handle { color: var(--ui-primary); }
 </style>`
 
-export const overflowSnippet = `<div class="panel">
-  <GridBoard v-model:tiles="tiles" overflow>
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
-  </GridBoard>
-</div>
+export const overflowSnippet = `<script setup lang="ts">
+import type { Tile } from '@attilakosztin/vue-grid'
+
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 6, h: 2 },
+  { id: 'b', x: 6, y: 0, w: 6, h: 2 }
+])
+</script>
+
+<template>
+  <div class="panel">
+    <GridBoard v-model:tiles="tiles" overflow>
+      <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+    </GridBoard>
+  </div>
+</template>
 
 <style>
 .panel {
@@ -71,6 +106,13 @@ export const overflowSnippet = `<div class="panel">
 </style>`
 
 export const dynamicSnippet = `import { getLastRow } from '@attilakosztin/vue-grid'
+import type { Tile } from '@attilakosztin/vue-grid'
+
+const tiles = ref<Tile[]>([
+  { id: '1', x: 0, y: 0, w: 6, h: 2 },
+  { id: '2', x: 6, y: 0, w: 3, h: 2 },
+  { id: '3', x: 9, y: 0, w: 3, h: 2 }
+])
 
 let seq = 4
 
@@ -83,15 +125,22 @@ function remove(id: string) {
   tiles.value = tiles.value.filter((t) => t.id !== id)
 }`
 
-export const mutationSnippet = `tiles.value = [...tiles.value, tile]
+export const mutationSnippet = `import type { Tile } from '@attilakosztin/vue-grid'
+
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 4, h: 2 },
+  { id: 'c', x: 4, y: 0, w: 4, h: 2 }
+])
+const tile: Tile = { id: 'd', x: 0, y: 2, w: 4, h: 2 }
+
+tiles.value = [...tiles.value, tile]
 tiles.value = tiles.value.map((t) => (t.id === 'a' ? { ...t, w: 6 } : t))
 tiles.value = tiles.value.filter((t) => t.id !== 'c')`
 
 export const persistenceSnippet = `import { validateTiles } from '@attilakosztin/vue-grid'
+import type { Tile } from '@attilakosztin/vue-grid'
 
 const KEY = 'dashboard'
-
-watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))
 
 function restore(fallback: Tile[]): Tile[] {
   const raw = localStorage.getItem(KEY)
@@ -103,11 +152,28 @@ function restore(fallback: Tile[]): Tile[] {
   } catch {
     return fallback
   }
-}`
+}
 
-export const keyboardSnippet = `<GridBoard v-model:tiles="tiles">
-  <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" :label="tile.title" />
-</GridBoard>`
+const tiles = ref<Tile[]>(restore([{ id: 'a', x: 0, y: 0, w: 4, h: 2 }]))
+
+watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))`
+
+export const keyboardSnippet = `<script setup lang="ts">
+import type { TileWith } from '@attilakosztin/vue-grid'
+
+type Panel = TileWith<{ title: string }>
+
+const tiles = ref<Panel[]>([
+  { id: 'a', x: 0, y: 0, w: 6, h: 2, title: 'Revenue' },
+  { id: 'b', x: 6, y: 0, w: 6, h: 2, title: 'Signups' }
+])
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" :label="tile.title" />
+  </GridBoard>
+</template>`
 
 export const ssrSnippet = `<script setup lang="ts">
 const { data } = await useFetch('/api/grid-tiles')
@@ -158,6 +224,12 @@ export const methodsSnippet = `import {
   getTileById,
   moveTile
 } from '@attilakosztin/vue-grid'
+import type { Tile } from '@attilakosztin/vue-grid'
+
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 4, h: 2 },
+  { id: 'b', x: 4, y: 0, w: 4, h: 2 }
+])
 
 const next = copyTiles(tiles.value)
 const tile = getTileById(next, 'a')!

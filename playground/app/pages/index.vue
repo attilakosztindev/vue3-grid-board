@@ -40,7 +40,7 @@ const usageTiles = ref([
   { id: 'g', x: 8, y: 4, w: 4, h: 2 }
 ])
 
-const live = ref(true)
+const interactive = ref(true)
 const liveTiles = ref([
   { id: 'a', x: 0, y: 0, w: 4, h: 4 },
   { id: 'b', x: 4, y: 0, w: 8, h: 2 },
@@ -492,15 +492,15 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="interactiveSnippet">
               <label class="mb-4 flex items-center gap-2 text-sm text-neutral-700">
-                <input v-model="live" type="checkbox" class="rounded" />
+                <input v-model="interactive" type="checkbox" class="rounded" />
                 Interactive
               </label>
               <GridBoard
                 v-model:tiles="liveTiles"
                 :columns="12"
                 :row-height="40"
-                :draggable="live"
-                :resizable="live"
+                :draggable="interactive"
+                :resizable="interactive"
               >
                 <GridTile v-for="tile in liveTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile">{{ tile.id }}</div>
