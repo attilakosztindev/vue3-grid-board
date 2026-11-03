@@ -290,20 +290,12 @@ const tiles = ref(data.value?.tiles ?? [])
   </GridBoard>
 </template>`
 
-export const typesSnippet = `import type {
-  Tile,
-  TileId,
-  Gap,
-  GridBoardProps,
-  GridTileProps,
-  GridTileEmits,
-  GridTileSlots,
-  GridBoardExposed
-} from '@attilakosztin/vue-grid'
+export const typesSnippet = `import type { GridBoardExposed, Tile } from '@attilakosztin/vue-grid'
 
 const tiles = ref<Tile[]>([{ id: 'a', x: 0, y: 0, w: 2, h: 2 }])
 
 const board = ref<GridBoardExposed | null>(null)
+
 board.value?.dispatch('dragEvent', ['dragmove', 'a', 3, 1, 2, 2])
 board.value?.dispatch('measure')`
 

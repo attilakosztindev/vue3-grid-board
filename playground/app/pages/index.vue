@@ -271,6 +271,23 @@ const cssRows = [
   ['.grid-handle--chevron', 'The grip, when no #handle slot was given.', 'resizable']
 ]
 
+const typeRows = [
+  ['Tile', 'One tile: id, x, y, w, h, plus the optional bounds and flags.'],
+  ['TileWith<T>', 'A tile carrying your own fields alongside the geometry.'],
+  ['TileId', 'string | number.'],
+  ['Gap', 'number | [number, number].'],
+  ['GridBoardProps', "The board's props, if you wrap it in your own component."],
+  ['GridTileProps', "A tile's props, for the same reason."],
+  ['GridBoardEmits', 'update:tiles and ready, with their payloads.'],
+  ['GridTileEmits', 'The seven gesture events, with their payloads.'],
+  ['GridTileSlots', 'default and handle.'],
+  ['GridBoardExposed', 'What a board ref gives you: el and dispatch.'],
+  ['GridTileExposed', 'What a tile ref gives you: el.'],
+  ['GridDispatch', "The dispatch signature, overloaded per command."],
+  ['DragEventTuple', 'The payload dispatch takes for a drag, and ResizeEventTuple for a resize.'],
+  ['PointerDragResizeOptions', 'Options for usePointerDragResize, with its controller type.']
+]
+
 const methodRows = [
   ['getLastRow(tiles)', 'The first free row under everything. Where a new tile starts.', 'number'],
   ['copyTiles(tiles)', 'Shallow-copies every tile, your own keys included.', 'T[]'],
@@ -431,10 +448,6 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="installSnippet" lang="bash" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            Types ship with the package, so TypeScript consumers get a real surface out of the
-            plain-JavaScript engine.
-          </p>
 
           <h3 class="doc-h2-sub mt-8">Importing</h3>
           <p class="mt-3 text-sm font-medium text-neutral-900">With Vite, Nuxt or webpack</p>
@@ -446,12 +459,13 @@ onBeforeUnmount(() => {
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-          <p class="doc-note mt-6">
-            <code class="doc-inline">&lt;GridBoard&gt;</code> and
-            <code class="doc-inline">&lt;GridTile&gt;</code> are one component, split in two. A tile
-            reads its geometry from the board it is nested in, so rendering one outside a board
-            throws rather than silently laying itself out wrong. Import both, always.
-          </p>
+          <div class="doc-note mt-6">
+            <p class="font-medium text-neutral-900">One component, split in two</p>
+            <p class="mt-1">
+              A tile reads its geometry from the board it is nested in, so rendering one outside a
+              board throws rather than silently laying itself out wrong. Import both, always.
+            </p>
+          </div>
         </section>
 
         <section id="usage" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -470,17 +484,10 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            A tile's <code class="doc-inline">x</code>, <code class="doc-inline">y</code>,
-            <code class="doc-inline">w</code> and <code class="doc-inline">h</code> are grid cells,
-            never pixels. Only <code class="doc-inline">rowHeight</code> and
-            <code class="doc-inline">gap</code> are measured in pixels; column width is whatever a
-            twelfth of the board comes to.
-          </p>
-          <p class="mt-3 text-sm text-neutral-600">
-            There are no responsive breakpoints, by design. The layout is your data: swap the array
-            behind a media query and the board follows.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Cells, not pixels</p>
+            <p class="mt-1">A tile's <code class="doc-inline">x</code>, <code class="doc-inline">y</code>, <code class="doc-inline">w</code> and <code class="doc-inline">h</code> are grid cells. Only <code class="doc-inline">rowHeight</code> and <code class="doc-inline">gap</code> are measured in pixels; a column is whatever a twelfth of the board comes to.</p>
+          </div>
         </section>
 
         <section id="gestures" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -509,11 +516,6 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            Both are board-wide defaults that a tile can override. A frozen board is genuinely
-            inert: no pointer listeners are bound and no handles are rendered, so it costs no more
-            than the markup.
-          </p>
         </section>
 
         <section id="gravity" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -550,15 +552,10 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            The prop is reactive: switch it on and the holes close on the spot. Gravity only ever
-            pulls up, so switching it off puts nothing back — the off tab hands the board its gapped
-            layout again.
-          </p>
-          <p class="mt-3 text-sm text-neutral-600">
-            Off is not free positioning. Tiles keep the row you gave them and gaps survive, but they
-            still cannot overlap.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Off is not free positioning</p>
+            <p class="mt-1">Tiles keep the row you gave them and gaps survive, but they still cannot overlap.</p>
+          </div>
         </section>
 
         <section id="frozen" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -578,12 +575,6 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            Drag the other tiles at it. Gravity skips it, so it carves a permanent hole rather than
-            being lifted like everything else. Freeze a single tile with
-            <code class="doc-inline">&lt;GridTile frozen&gt;</code>, or the whole board with
-            <code class="doc-inline">:draggable="false"</code>.
-          </p>
         </section>
 
         <section id="slots" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -595,20 +586,6 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="slotsSnippet" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            The library keeps the wrapper that carries
-            <code class="doc-inline">.grid-handle</code>, so custom content cannot accidentally opt
-            itself out of the resize gesture. The wrapper sizes to what you put in it, with the
-            default corner as a floor, and inherits <code class="doc-inline">currentColor</code> —
-            reach it from your own stylesheet when a slot would be overkill.
-          </p>
-          <p class="mt-3 text-sm text-neutral-600">
-            The drag gesture is narrowed the same way, from props rather than a slot.
-            <code class="doc-inline">dragHandle</code> restricts a drag to one selector — above, the
-            card header, which is why the input beside it stays typable — and
-            <code class="doc-inline">dragIgnore</code> is its inverse. It defaults to
-            <code class="doc-inline">'a, button'</code>, so links and buttons are already safe.
-          </p>
         </section>
 
         <section id="overflow" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -648,13 +625,6 @@ onBeforeUnmount(() => {
               </div>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            The panel is narrower than the page and hides anything that leaves it, but nothing is
-            clipped while the tiles sit still. Drag one out sideways: with
-            <code class="doc-inline">overflow</code> off it is sliced at the dashed border, and with
-            it on the tile stays whole over the page for as long as you hold it, then drops back
-            into the board.
-          </p>
           <div class="doc-note mt-6">
             <p class="font-medium text-neutral-900">Self-contained, with one exception</p>
             <p class="mt-1">
@@ -675,13 +645,15 @@ onBeforeUnmount(() => {
             Replace the array to change the board.
             <code class="doc-inline">getLastRow()</code> gives a new tile somewhere to start.
           </p>
-          <p class="doc-note mt-4">
-            The number on a tile is its position in the array, not its
-            <code class="doc-inline">id</code>. Ids are identity: the board looks tiles up by them,
-            Vue keys the DOM on them, and a saved layout refers to them. Hand a new tile the id of
-            a deleted one and all three quietly point at the wrong tile, so the counter here only
-            ever climbs. Number what you render, never what you track.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Number what you render, never what you track</p>
+            <p class="mt-1">
+              The number on a tile is its position in the array, not its
+              <code class="doc-inline">id</code>. The board looks tiles up by id, Vue keys the DOM
+              on it, and a saved layout refers to it — hand a new tile the id of a deleted one and
+              all three quietly point at the wrong tile. The counter here only ever climbs.
+            </p>
+          </div>
           <div class="mt-6">
             <DocExample :code="dynamicSnippet" lang="ts">
               <div class="mb-4 flex items-center gap-2">
@@ -729,13 +701,10 @@ onBeforeUnmount(() => {
           <div class="mt-4">
             <DocExample :code="mutationSnippet" lang="ts" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            Those three forms are exactly what
-            <code class="doc-inline">update:tiles</code> hands back, so both directions of the
-            binding stay consistent. Give a new tile a finite <code class="doc-inline">y</code>:
-            <code class="doc-inline">Infinity</code> passes validation and then hangs the settle
-            loop.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Give a new tile a finite y</p>
+            <p class="mt-1"><code class="doc-inline">Infinity</code> passes validation and then hangs the settle loop. Use <code class="doc-inline">getLastRow()</code> for the first free row.</p>
+          </div>
         </section>
 
         <section id="persistence" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -779,11 +748,10 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            Drag a tile, reload the page, then press Restore. Run
-            <code class="doc-inline">validateTiles()</code> over anything you read back — tiles
-            written by an older build would otherwise throw from inside the engine on first render.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Validate what you read back</p>
+            <p class="mt-1">Run <code class="doc-inline">validateTiles()</code> over stored tiles — a layout written by an older build would otherwise throw from inside the engine on first render.</p>
+          </div>
         </section>
 
         <section id="keyboard" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -824,11 +792,6 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            The board is <code class="doc-inline">role="group"</code> and owns a polite live region
-            that reads each step back. Give a tile a <code class="doc-inline">label</code> to name
-            it for screen readers; it defaults to <code class="doc-inline">Tile {id}</code>.
-          </p>
         </section>
 
         <section id="ssr" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -840,12 +803,6 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="ssrSnippet" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            A tile's geometry is a CSS <code class="doc-inline">calc()</code> over
-            <code class="doc-inline">columns</code> and <code class="doc-inline">gap</code>, which
-            the browser resolves during the first layout pass. Nothing measures the board in
-            JavaScript, so there is no frame in which a tile sits at the wrong place.
-          </p>
         </section>
 
         <section id="events" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -895,6 +852,24 @@ onBeforeUnmount(() => {
           <p class="doc-lead mt-2">
             The components are plain JavaScript, so import the types to get inference back.
           </p>
+          <div class="doc-table-wrap mt-6">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th scope="col">Type</th>
+                  <th scope="col">What it is</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in typeRows" :key="row[0]">
+                  <th scope="row">
+                    <code class="doc-inline">{{ row[0] }}</code>
+                  </th>
+                  <td>{{ row[1] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div class="mt-6">
             <DocExample :code="typesSnippet" lang="ts" />
           </div>
@@ -909,13 +884,6 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="extendSnippet" lang="ts" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            The methods are generic over your tile type, so nothing widens:
-            <code class="doc-inline">getTileById()</code> above returns
-            <code class="doc-inline">Panel | undefined</code>, and
-            <code class="doc-inline">found?.title</code> is a
-            <code class="doc-inline">string</code>.
-          </p>
         </section>
 
         <section id="api-board" class="scroll-mt-20 border-b border-neutral-100 py-12">
@@ -1151,26 +1119,19 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="stylingSnippet" lang="css" />
           </div>
-          <h3 class="doc-h2-sub mt-8">Cursors</h3>
+                    <h3 class="doc-h2-sub mt-8">Cursors</h3>
           <p class="mt-2 max-w-[46rem] text-sm leading-relaxed text-neutral-600">
-            The board sets these for you, and only where the gesture is really available.
+            Set for you, and only where the gesture is available:
             <code class="doc-inline">grab</code> on a tile you can pick up,
-            <code class="doc-inline">grabbing</code> while it is held by pointer or keyboard, and
-            <code class="doc-inline">se-resize</code> on the grip and for the length of a resize.
-            A frozen tile, a board with
-            <code class="doc-inline">:draggable="false"</code>, and the drag shadow all keep the
-            default arrow. When you pass
-            <code class="doc-inline">dragHandle</code> the tile body is not the handle, so it
-            stays default too — style your own handle with
-            <code class="doc-inline">cursor: grab</code>.
+            <code class="doc-inline">grabbing</code> while it is held, and
+            <code class="doc-inline">se-resize</code> on the grip. With
+            <code class="doc-inline">dragHandle</code> the body is not the handle, so style
+            your own with <code class="doc-inline">cursor: grab</code>.
           </p>
-          <p class="mt-4 text-sm text-neutral-600">
-            Never transition <code class="doc-inline">top</code>,
-            <code class="doc-inline">left</code>, <code class="doc-inline">width</code> or
-            <code class="doc-inline">height</code> on a tile — the board already animates those to
-            settle it, and a second transition fights the first. Colour, shadow and opacity are
-            free.
-          </p>
+          <div class="doc-note mt-4">
+            <p class="font-medium text-neutral-900">Never transition top, left, width or height</p>
+            <p class="mt-1">The board already animates those to settle a tile, and a second transition fights the first. Colour, shadow and opacity are free.</p>
+          </div>
         </section>
 
         <section id="api-methods" class="scroll-mt-20 py-12">
@@ -1203,14 +1164,6 @@ onBeforeUnmount(() => {
           <div class="mt-6">
             <DocExample :code="methodsSnippet" lang="ts" />
           </div>
-          <p class="mt-4 text-sm text-neutral-600">
-            That is one drag frame, exactly as
-            <code class="doc-inline">grid-board.vue</code> runs it. The
-            <code class="doc-inline">priorityId</code> argument settles that tile ahead of anything
-            else sharing its row; without it a neighbour with a smaller
-            <code class="doc-inline">x</code> reclaims the row and the tile you are dragging is
-            shoved underneath it.
-          </p>
         </section>
       </main>
     </div>
