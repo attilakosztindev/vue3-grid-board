@@ -326,6 +326,7 @@ const nav = [
     title: 'Guide',
     items: [
       { id: 'installation', label: 'Installation' },
+      { id: 'nuxt', label: 'Nuxt' },
       { id: 'usage', label: 'Usage' },
       { id: 'gestures', label: 'Drag & resize' },
       { id: 'gravity', label: 'Gravity' },
@@ -478,13 +479,24 @@ onBeforeUnmount(() => {
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Nuxt module</h3>
-          <p class="mt-2 max-w-[46rem] text-sm leading-relaxed text-neutral-600">
+
+          <div class="doc-note mt-6">
+            <p class="font-medium text-neutral-900">One component, split in two</p>
+            <p class="mt-1">
+              A tile reads its geometry from the board it is nested in, so rendering one outside a
+              board throws rather than silently laying itself out wrong. Import both, always.
+            </p>
+          </div>
+        </section>
+
+        <section id="nuxt" class="scroll-mt-20 border-b border-neutral-100 py-12">
+          <h2 class="doc-h2">Nuxt</h2>
+          <p class="doc-lead mt-2">
             Register the module instead of importing anything:
             <code class="doc-inline">GridBoard</code>, <code class="doc-inline">GridTile</code> and
             the layout helpers become auto-imports, and the stylesheet is added for you.
           </p>
-          <div class="mt-4">
+          <div class="mt-6">
             <DocExample :code="nuxtModuleSnippet" lang="ts" />
           </div>
           <div class="doc-table-wrap mt-4">
@@ -512,14 +524,6 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <div class="doc-note mt-6">
-            <p class="font-medium text-neutral-900">One component, split in two</p>
-            <p class="mt-1">
-              A tile reads its geometry from the board it is nested in, so rendering one outside a
-              board throws rather than silently laying itself out wrong. Import both, always.
-            </p>
           </div>
         </section>
 
