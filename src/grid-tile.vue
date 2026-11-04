@@ -1001,7 +1001,7 @@ function onBlur() {
 }
 
 .grid-tile.grid-shadow {
-  background: red;
+  background: #62748e;
   border-radius: var(--grid-radius, 22px);
   opacity: 0.2;
   transition:

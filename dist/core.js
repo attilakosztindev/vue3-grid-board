@@ -1,4 +1,4 @@
-import { inject as mt, computed as D, reactive as tt, unref as ce, watch as K, onMounted as yt, onBeforeUnmount as nt, openBlock as Ne, createElementBlock as Ae, normalizeStyle as rt, normalizeClass as _e, renderSlot as Ge, createCommentVNode as it, nextTick as be, toRaw as ke, useId as qe, useSlots as vt, provide as wt, onBeforeMount as bt, onBeforeUpdate as xt, onUpdated as zt, withDirectives as Et, createVNode as Ue, vShow as Mt, createElementVNode as je, toDisplayString as Ye, Fragment as St } from "vue";
+import { inject as mt, computed as D, reactive as tt, unref as ce, watch as K, onMounted as yt, onBeforeUnmount as nt, openBlock as Ne, createElementBlock as Ae, normalizeStyle as rt, normalizeClass as _e, renderSlot as Ge, createCommentVNode as it, nextTick as xe, toRaw as ke, useId as qe, useSlots as vt, provide as wt, onBeforeMount as xt, onBeforeUpdate as bt, onUpdated as zt, withDirectives as Et, createVNode as Ue, vShow as Mt, createElementVNode as je, toDisplayString as Ye, Fragment as St } from "vue";
 const fe = typeof document < "u";
 function ot(o, a) {
   return !(o === a || o.x + o.w <= a.x || o.x >= a.x + a.w || o.y + o.h <= a.y || o.y >= a.y + a.h);
@@ -202,7 +202,7 @@ function At(o, a) {
         if (Math.hypot(T - q, H - C) < Nt) return;
         u = !0, Y(`${h}start`, q, C);
       }
-      y.preventDefault(), V(), h === "drag" && !X && xe() && $() && ue();
+      y.preventDefault(), V(), h === "drag" && !X && be() && $() && ue();
     }
   }
   function N(y) {
@@ -221,7 +221,7 @@ function At(o, a) {
   function le() {
     ie = window.innerWidth, n = window.innerHeight;
   }
-  function xe() {
+  function be() {
     return T < j || H < j || T > ie - j || H > n - j;
   }
   function ue() {
@@ -414,9 +414,9 @@ const ut = (o, a) => {
       (n.isDragging || n.isResizing) && B(), R();
     }), K([() => e.x, () => e.y, () => e.w, () => e.h], (t, r) => {
       if (n.innerX = e.x, n.innerY = e.y, n.innerW = e.w, n.innerH = e.h, B(), e.shadow || n.isDragging || n.isResizing || n.settling) return;
-      const [s, d, p, E] = t, [x, b, I, He] = r;
-      if (s === x && d === b) return;
-      const $e = v(x, b, I, He), Z = v(s, d, p, E);
+      const [s, d, p, E] = t, [b, x, I, He] = r;
+      if (s === b && d === x) return;
+      const $e = v(b, x, I, He), Z = v(s, d, p, E);
       Ee($e.left - Z.left, $e.top - Z.top, !1);
     }), K(ae, B), K(() => e.radius, B), K(X, (t, r) => {
       t[0] === r[0] && t[1] === r[1] || (B(), R());
@@ -447,7 +447,7 @@ const ut = (o, a) => {
     nt(() => {
       c.stopPlacing(e.id), ve(), De(), l(), k?.destroy();
     });
-    function xe(t) {
+    function be(t) {
       z.el = t;
     }
     function ue() {
@@ -460,8 +460,8 @@ const ut = (o, a) => {
     function B() {
       const t = C.value;
       e.x + e.w > t ? (n.innerX = 0, n.innerW = e.w > t ? t : e.w) : (n.innerX = e.x, n.innerW = e.w);
-      const { innerX: r, innerY: s, innerW: d, innerH: p } = n, E = T.value, [x, b] = X.value, I = `((100% - ${(t + 1) * x}px) / ${t})`;
-      let He = `${E * s + (s + 1) * b}px`, $e = `calc(${I} * ${r} + ${(r + 1) * x}px)`, Z = null;
+      const { innerX: r, innerY: s, innerW: d, innerH: p } = n, E = T.value, [b, x] = X.value, I = `((100% - ${(t + 1) * b}px) / ${t})`;
+      let He = `${E * s + (s + 1) * x}px`, $e = `calc(${I} * ${r} + ${(r + 1) * b}px)`, Z = null;
       if (n.isDragging) {
         const re = v(r, s, d, p);
         w = re, He = `${re.top}px`, $e = `${re.left}px`, Z = {
@@ -496,8 +496,8 @@ const ut = (o, a) => {
         position: "absolute",
         top: He,
         left: $e,
-        width: n.isResizing ? `${n.resizing.width}px` : d === 1 / 0 ? "auto" : `calc(${I} * ${d} + ${Math.max(0, d - 1) * x}px)`,
-        height: n.isResizing ? `${n.resizing.height}px` : p === 1 / 0 ? "auto" : `${E * p + Math.max(0, p - 1) * b}px`,
+        width: n.isResizing ? `${n.resizing.width}px` : d === 1 / 0 ? "auto" : `calc(${I} * ${d} + ${Math.max(0, d - 1) * b}px)`,
+        height: n.isResizing ? `${n.resizing.height}px` : p === 1 / 0 ? "auto" : `${E * p + Math.max(0, p - 1) * x}px`,
         ...Z ? {
           transform: `translate3d(${Z.dx}px, ${Z.dy}px, 0)`,
           transition: "none",
@@ -527,10 +527,10 @@ const ut = (o, a) => {
       const r = g(t);
       if (r == null) return;
       const { x: s, y: d } = r, p = { width: 0, height: 0 };
-      let E = null, x;
+      let E = null, b;
       switch (t.type) {
         case "resizestart": {
-          c.cancelPlacing(), n.resizeMin = v(0, 0, e.minW, e.minH), n.resizeMax = v(0, 0, e.maxW, e.maxH), n.previousW = n.innerW, n.previousH = n.innerH, x = v(n.innerX, n.innerY, n.innerW, n.innerH), p.width = x.width, p.height = x.height, n.resizing = p, n.isResizing = !0, m("resizestart", e.id, n.innerW, n.innerH);
+          c.cancelPlacing(), n.resizeMin = v(0, 0, e.minW, e.minH), n.resizeMax = v(0, 0, e.maxW, e.maxH), n.previousW = n.innerW, n.previousH = n.innerH, b = v(n.innerX, n.innerY, n.innerW, n.innerH), p.width = b.width, p.height = b.height, n.resizing = p, n.isResizing = !0, m("resizestart", e.id, n.innerW, n.innerH);
           break;
         }
         case "resizemove": {
@@ -545,13 +545,13 @@ const ut = (o, a) => {
           break;
         }
         case "resizeend": {
-          E = n.resizing, x = v(n.innerX, n.innerY, n.innerW, n.innerH), p.width = x.width, p.height = x.height, n.resizing = null, n.isResizing = !1;
+          E = n.resizing, b = v(n.innerX, n.innerY, n.innerW, n.innerH), p.width = b.width, p.height = b.height, n.resizing = null, n.isResizing = !1;
           break;
         }
       }
-      B(), x = A(L(p.height, p.width));
-      const b = E ? A(L(E.height, E.width)) : x;
-      n.lastW = s, n.lastH = d, (n.innerW !== x.w || n.innerH !== x.h) && m("resize", e.id, x.w, x.h), t.type === "resizeend" && (n.previousW !== b.w || n.previousH !== b.h) && m("resizeend", e.id, b.w, b.h), c.resizeEvent([t.type, e.id, n.innerX, n.innerY, b.h, b.w]), t.type === "resizeend" && l();
+      B(), b = A(L(p.height, p.width));
+      const x = E ? A(L(E.height, E.width)) : b;
+      n.lastW = s, n.lastH = d, (n.innerW !== b.w || n.innerH !== b.h) && m("resize", e.id, b.w, b.h), t.type === "resizeend" && (n.previousW !== x.w || n.previousH !== x.h) && m("resizeend", e.id, x.w, x.h), c.resizeEvent([t.type, e.id, n.innerX, n.innerY, x.h, x.w]), t.type === "resizeend" && l();
     }
     function ee(t) {
       if (n.isResizing || e.frozen && !(t.type === "dragend" && n.isDragging)) return;
@@ -564,23 +564,23 @@ const ut = (o, a) => {
         case "dragend": {
           if (t.type === "dragend" && !n.isDragging) return;
           t.type === "dragstart" && (c.cancelPlacing(), n.previousX = n.innerX, n.previousY = n.innerY, De());
-          const b = ue() ?? { left: 0, top: 0 }, I = t.target.getBoundingClientRect();
-          p.left = I.left - b.left, p.top = I.top - b.top, n.dragging = t.type === "dragstart" ? p : null, n.isDragging = t.type === "dragstart", t.type === "dragstart" && m("dragstart", e.id, n.innerX, n.innerY);
+          const x = ue() ?? { left: 0, top: 0 }, I = t.target.getBoundingClientRect();
+          p.left = I.left - x.left, p.top = I.top - x.top, n.dragging = t.type === "dragstart" ? p : null, n.isDragging = t.type === "dragstart", t.type === "dragstart" && m("dragstart", e.id, n.innerX, n.innerY);
           break;
         }
         case "dragmove": {
-          const b = Ze(n.lastX, n.lastY, s, d);
-          p.left = n.dragging.left + b.deltaX, p.top = n.dragging.top + b.deltaY, n.dragging = p;
+          const x = Ze(n.lastX, n.lastY, s, d);
+          p.left = n.dragging.left + x.deltaX, p.top = n.dragging.top + x.deltaY, n.dragging = p;
           break;
         }
       }
       t.type !== "dragmove" && B();
-      const E = W(p.top, p.left), x = n.innerX !== E.x || n.innerY !== E.y;
-      if (t.type === "dragmove" && (x ? B() : _(p)), n.lastX = s, n.lastY = d, x && m("drag", e.id, E.x, E.y), t.type === "dragend" && (n.previousX !== n.innerX || n.previousY !== n.innerY) && m("dragend", e.id, E.x, E.y), c.dragEvent([t.type, e.id, E.x, E.y, n.innerH, n.innerW]), t.type === "dragend") {
+      const E = W(p.top, p.left), b = n.innerX !== E.x || n.innerY !== E.y;
+      if (t.type === "dragmove" && (b ? B() : _(p)), n.lastX = s, n.lastY = d, b && m("drag", e.id, E.x, E.y), t.type === "dragend" && (n.previousX !== n.innerX || n.previousY !== n.innerY) && m("dragend", e.id, E.x, E.y), c.dragEvent([t.type, e.id, E.x, E.y, n.innerH, n.innerW]), t.type === "dragend") {
         if (fe && z.el) {
-          const b = c.state.tiles.find((I) => I.id === e.id);
-          if (b) {
-            const I = v(b.x, b.y, b.w, b.h);
+          const x = c.state.tiles.find((I) => I.id === e.id);
+          if (x) {
+            const I = v(x.x, x.y, x.w, x.h);
             Ee(p.left - I.left, p.top - I.top), B();
           }
         }
@@ -604,17 +604,17 @@ const ut = (o, a) => {
       if (!d || typeof d.animate != "function") return;
       const p = Re(d);
       if (t += p.dx, r += p.dy, Math.abs(t) < 0.5 && Math.abs(r) < 0.5) return;
-      const { duration: E, easing: x } = c.settleTiming();
+      const { duration: E, easing: b } = c.settleTiming();
       if (E === 0) return;
-      const b = d.animate(
+      const x = d.animate(
         [{ transform: `translate3d(${t}px, ${r}px, 0)` }, { transform: "translate3d(0px, 0px, 0)" }],
-        { duration: E, easing: x, composite: "add" }
+        { duration: E, easing: b, composite: "add" }
       );
-      $.add(b), s && (n.settling = !0);
+      $.add(x), s && (n.settling = !0);
       const I = () => {
-        $.delete(b), $.size === 0 && (n.settling = !1);
+        $.delete(x), $.size === 0 && (n.settling = !1);
       };
-      b.onfinish = I, b.oncancel = I;
+      x.onfinish = I, x.oncancel = I;
     }
     function De() {
       for (const t of $)
@@ -636,19 +636,19 @@ const ut = (o, a) => {
       return S ? { x: t.clientX - S.left, y: t.clientY - S.top } : Tt(t);
     }
     function v(t, r, s, d) {
-      const p = G(), E = T.value, [x, b] = X.value;
+      const p = G(), E = T.value, [b, x] = X.value;
       return {
-        left: Math.round(p * t + (t + 1) * x),
-        top: Math.round(E * r + (r + 1) * b),
-        width: s === 1 / 0 ? s : Math.round(p * s + Math.max(0, s - 1) * x),
-        height: d === 1 / 0 ? d : Math.round(E * d + Math.max(0, d - 1) * b)
+        left: Math.round(p * t + (t + 1) * b),
+        top: Math.round(E * r + (r + 1) * x),
+        width: s === 1 / 0 ? s : Math.round(p * s + Math.max(0, s - 1) * b),
+        height: d === 1 / 0 ? d : Math.round(E * d + Math.max(0, d - 1) * x)
       };
     }
     function W(t, r) {
-      const s = G(), [d, p] = X.value, E = Math.round((r - d) / (s + d)), x = Math.round((t - p) / (T.value + p));
+      const s = G(), [d, p] = X.value, E = Math.round((r - d) / (s + d)), b = Math.round((t - p) / (T.value + p));
       return {
         x: Math.max(Math.min(E, C.value - n.innerW), 0),
-        y: Math.max(x, 0)
+        y: Math.max(b, 0)
       };
     }
     function G() {
@@ -656,10 +656,10 @@ const ut = (o, a) => {
       return (H.value - X.value[0] * (t + 1)) / t;
     }
     function L(t, r) {
-      const s = G(), [d, p] = X.value, E = Math.round((r + d) / (s + d)), x = Math.round((t + p) / (T.value + p));
+      const s = G(), [d, p] = X.value, E = Math.round((r + d) / (s + d)), b = Math.round((t + p) / (T.value + p));
       return {
         w: Math.max(Math.min(E, C.value - n.innerX), 0),
-        h: Math.max(x, 0)
+        h: Math.max(b, 0)
       };
     }
     function A(t) {
@@ -712,13 +712,13 @@ const ut = (o, a) => {
         C.value,
         c.props.gravity
       );
-      d && (c.dragEvent(["dragmove", e.id, d.x, d.y, s.h, s.w]), m("drag", e.id, d.x, d.y)), be(() => Me());
+      d && (c.dragEvent(["dragmove", e.id, d.x, d.y, s.h, s.w]), m("drag", e.id, d.x, d.y)), xe(() => Me());
     }
     function ct(t, r) {
       if (!U.value || e.frozen) return;
       ye("resize");
       const s = ne(), d = Math.max(e.minW, Math.min(e.maxW, C.value - s.x, s.w + t)), p = Math.max(e.minH, Math.min(e.maxH, s.h + r));
-      (d !== s.w || p !== s.h) && (c.resizeEvent(["resizemove", e.id, s.x, s.y, p, d]), m("resize", e.id, d, p)), be(() => Me());
+      (d !== s.w || p !== s.h) && (c.resizeEvent(["resizemove", e.id, s.x, s.y, p, d]), m("resize", e.id, d, p)), xe(() => Me());
     }
     function Le(t = N.value.pickedUp) {
       u = ne(), n.grabbed = !0, Me(t);
@@ -726,7 +726,7 @@ const ut = (o, a) => {
     function Se() {
       if (!n.grabbed) return;
       const t = h !== null;
-      ve(), Oe(), n.grabbed = !1, u = null, be(() => Me(t ? N.value.dropped : N.value.putDown));
+      ve(), Oe(), n.grabbed = !1, u = null, xe(() => Me(t ? N.value.dropped : N.value.putDown));
     }
     function ft({ mode: t, target: r }) {
       if (!c.props.tapToMove || !ce(Y)) return;
@@ -765,7 +765,7 @@ const ut = (o, a) => {
         let s = ne();
         (s.w !== r.w || s.h !== r.h) && (ye("resize"), c.resizeEvent(["resizemove", e.id, s.x, s.y, r.h, r.w]), ve(), s = ne()), (s.x !== r.x || s.y !== r.y) && (ye("drag"), c.dragEvent(["dragmove", e.id, r.x, r.y, r.h, r.w]), ve());
       }
-      n.grabbed = !1, u = null, t && be(() => Me(N.value.returned));
+      n.grabbed = !1, u = null, t && xe(() => Me(N.value.returned));
     }
     function pt(t) {
       if (!ce(V) || t.target !== z.el || t.altKey || t.ctrlKey || t.metaKey) return;
@@ -791,7 +791,7 @@ const ut = (o, a) => {
       n.grabbed && Se();
     }
     return (t, r) => (Ne(), Ae("div", {
-      ref: xe,
+      ref: be,
       class: _e(["grid-tile", he.value]),
       style: rt([n.style, de.value]),
       "data-tile": o.id,
@@ -815,7 +815,7 @@ const ut = (o, a) => {
       ], 10, It)) : it("", !0)
     ], 46, Bt));
   }
-}, _t = /* @__PURE__ */ ut(Yt, [["__scopeId", "data-v-9e785bb3"]]), Ct = ["id", "lang"], Lt = ["id", "lang"], Ot = ["lang"], Qe = 220, et = "cubic-bezier(0.2, 0, 0, 1)", Ft = {
+}, _t = /* @__PURE__ */ ut(Yt, [["__scopeId", "data-v-0c5666d8"]]), Ct = ["id", "lang"], Lt = ["id", "lang"], Ot = ["lang"], Qe = 220, et = "cubic-bezier(0.2, 0, 0, 1)", Ft = {
   __name: "grid-board",
   props: {
     tiles: {
@@ -956,7 +956,7 @@ const ut = (o, a) => {
     )), K(
       () => u.width,
       async (i, l) => {
-        R(), l === null && (await be(), m("ready", u.tiles));
+        R(), l === null && (await xe(), m("ready", u.tiles));
       }
     ), K(
       () => e.gravity,
@@ -964,7 +964,7 @@ const ut = (o, a) => {
         const i = ke(u.tiles).slice();
         we(i, e.gravity), u.tiles = i, R(), fe && y();
       }
-    ), K(q, R), bt(R), xt(() => {
+    ), K(q, R), xt(R), bt(() => {
       const i = fe ? document.activeElement : null;
       S = i && h.el?.contains(i) ? i : null, P = S ? J() : [];
     }), zt(() => {
@@ -1000,7 +1000,7 @@ const ut = (o, a) => {
       return h.el ? [...h.el.querySelectorAll(":scope > .grid-tile:not(.grid-shadow)")] : [];
     }
     function Y(i, l) {
-      M = { id: i, name: l }, m("remove", i), be(() => {
+      M = { id: i, name: l }, m("remove", i), xe(() => {
         M?.id === i && (M = null);
       });
     }
@@ -1051,10 +1051,10 @@ const ut = (o, a) => {
       const l = Q(i.target);
       if (!l || l.inside) return;
       i.preventDefault(), i.stopPropagation();
-      const { x: g, y: v } = xe(i.clientX, i.clientY);
+      const { x: g, y: v } = be(i.clientX, i.clientY);
       w.place(g, v);
     }
-    function xe(i, l) {
+    function be(i, l) {
       const g = h.el.getBoundingClientRect(), [v, W] = q.value, G = e.columns, L = (g.width - v * (G + 1)) / G, A = Math.floor((i - g.left - v / 2) / (L + v)), te = Math.floor((l - g.top - W / 2) / (e.rowHeight + W));
       return { x: Math.min(Math.max(A, 0), G - 1), y: Math.max(te, 0) };
     }
