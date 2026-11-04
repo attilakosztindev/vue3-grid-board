@@ -617,13 +617,14 @@ onBeforeUnmount(() => {
           <p class="doc-lead">
             Put <code class="doc-inline">&lt;GridTile&gt;</code> children inside a
             <code class="doc-inline">&lt;GridBoard&gt;</code> and bind
-            <code class="doc-inline">v-model:tiles</code>.
+            <code class="doc-inline">v-model:tiles</code>. A tile is an empty container: what you
+            put inside it is its content.
           </p>
           <div class="doc-demo">
             <DocExample :code="usageSnippet">
               <GridBoard v-model:tiles="usageTiles" :columns="12" :row-height="40" :gap="10">
                 <GridTile v-for="tile in usageTiles" :key="tile.id" v-bind="tile">
-                  <div class="doc-tile">{{ tile.id }}</div>
+                  <div class="doc-tile" />
                 </GridTile>
               </GridBoard>
             </DocExample>
@@ -655,7 +656,7 @@ onBeforeUnmount(() => {
                 :resizable="interactive"
               >
                 <GridTile v-for="tile in liveTiles" :key="tile.id" v-bind="tile">
-                  <div class="doc-tile">{{ tile.id }}</div>
+                  <div class="doc-tile" />
                 </GridTile>
               </GridBoard>
             </DocExample>
@@ -690,7 +691,7 @@ onBeforeUnmount(() => {
                 :gravity="gravityMode === 'on'"
               >
                 <GridTile v-for="tile in gravityTiles" :key="tile.id" v-bind="tile">
-                  <div class="doc-tile">{{ tile.id }}</div>
+                  <div class="doc-tile" />
                 </GridTile>
               </GridBoard>
             </DocExample>
@@ -712,7 +713,7 @@ onBeforeUnmount(() => {
               <GridBoard v-model:tiles="frozenTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in frozenTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile" :class="{ 'doc-tile--locked': tile.frozen }">
-                    {{ tile.frozen ? 'Frozen' : tile.id }}
+                    <span v-if="tile.frozen">Frozen</span>
                   </div>
                 </GridTile>
               </GridBoard>
@@ -761,7 +762,7 @@ onBeforeUnmount(() => {
                   :overflow="escape"
                 >
                   <GridTile v-for="tile in overflowTiles" :key="tile.id" v-bind="tile">
-                    <div class="doc-tile">{{ tile.id }}</div>
+                    <div class="doc-tile" />
                   </GridTile>
                 </GridBoard>
               </div>
@@ -895,7 +896,7 @@ onBeforeUnmount(() => {
             <DocExample :code="persistenceSnippet">
               <GridBoard v-model:tiles="persistTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in persistTiles" :key="tile.id" v-bind="tile">
-                  <div class="doc-tile">{{ tile.id }}</div>
+                  <div class="doc-tile" />
                 </GridTile>
               </GridBoard>
             </DocExample>

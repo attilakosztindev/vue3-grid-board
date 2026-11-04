@@ -20,16 +20,13 @@ const tiles = ref<Tile[]>([
       :w="tile.w"
       :h="tile.h"
     >
-      <div class="tile">{{ tile.id }}</div>
+      <div class="tile" />
     </GridTile>
   </GridBoard>
 </template>
 
 <style>
 .tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
   border-radius: inherit;
   background: #d1fae5;

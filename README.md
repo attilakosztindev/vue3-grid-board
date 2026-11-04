@@ -86,14 +86,12 @@ const tiles = ref([
 
 <template>
   <GridBoard v-model:tiles="tiles" :columns="12" :row-height="150" :gap="10">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile">
-      {{ tile.id }}
-    </GridTile>
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
   </GridBoard>
 </template>
 ```
 
-Tile positions are yours. The board never mutates the array you pass — it emits `update:tiles` with a new one, which `v-model:tiles` writes back.
+A tile is an empty container: what you put inside it is its content. Tile positions are yours. The board never mutates the array you pass — it emits `update:tiles` with a new one, which `v-model:tiles` writes back.
 
 ## Accessibility
 

@@ -24,9 +24,7 @@ const tiles = ref<Tile[]>([
       :y="tile.y"
       :w="tile.w"
       :h="tile.h"
-    >
-      {{ tile.id }}
-    </GridTile>
+    />
   </GridBoard>
 </template>`
 
@@ -131,7 +129,7 @@ const tiles = ref<Tile[]>([
       :h="tile.h"
       :frozen="tile.frozen"
     >
-      {{ tile.frozen ? 'Frozen' : tile.id }}
+      <span v-if="tile.frozen">Frozen</span>
     </GridTile>
   </GridBoard>
 </template>`
@@ -264,7 +262,7 @@ function remove(id: Tile['id']) {
       :h="tile.h"
       :label="\`Tile \${index + 1}\`"
     >
-      {{ index + 1 }}
+      <span>{{ index + 1 }}</span>
       <button type="button" :aria-label="\`Remove tile \${index + 1}\`" @click="remove(tile.id)">
         ×
       </button>
@@ -377,9 +375,7 @@ const { data: tiles } = await useFetch<Tile[]>('/api/grid', { default: () => [] 
       :y="tile.y"
       :w="tile.w"
       :h="tile.h"
-    >
-      {{ tile.id }}
-    </GridTile>
+    />
   </GridBoard>
 </template>`
 
@@ -456,7 +452,8 @@ const firstTitle = computed(() => getTileById(tiles.value, 'a')?.title)
       :w="tile.w"
       :h="tile.h"
     >
-      {{ tile.title }} ({{ tile.kind }})
+      <h3>{{ tile.title }}</h3>
+      <p>{{ tile.kind }}</p>
     </GridTile>
   </GridBoard>
 </template>`
