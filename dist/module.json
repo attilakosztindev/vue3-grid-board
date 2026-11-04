@@ -4,6 +4,6 @@
   "compatibility": {
     "nuxt": ">=3.13.0"
   },
-  "version": "0.5.0",
+  "version": "0.5.1",
   "docs": "https://attilakosztindev.github.io/vue3-grid-board"
 }
