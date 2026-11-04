@@ -123,8 +123,6 @@ With `tapToMove` on, the board meets the WCAG 2.2 AA criteria that concern a wid
 
 Three things depend on your page: `tapToMove`, or another single-click way to move and resize a tile (2.5.7); the contrast of your tile's text against its background (1.4.3); and `a11y` in the page's language when it is not English (3.1.2).
 
-WAI-ARIA has no pattern for a draggable grid: `aria-grabbed` and `aria-dropeffect` were deprecated in ARIA 1.1, and screen readers ignore them.
-
 ### Screen-reader text
 
 The `a11y` prop holds everything the board reads out: the role description, the tile labels, the instructions and the announcements. Keys you leave out keep their English default:

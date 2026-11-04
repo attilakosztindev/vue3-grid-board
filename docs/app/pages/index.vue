@@ -1020,17 +1020,6 @@ onBeforeUnmount(() => {
           <div class="doc-demo">
             <DocExample :code="a11ySnippet" />
           </div>
-
-          <div class="doc-note">
-            <p class="doc-note__title">There is no WAI-ARIA pattern for a draggable grid</p>
-            <p class="doc-note__body">
-              <code class="doc-inline">aria-grabbed</code> and
-              <code class="doc-inline">aria-dropeffect</code>, ARIA's drag-and-drop attributes, were
-              deprecated in ARIA 1.1 and screen readers ignore them. The board does what replaced
-              them in practice: a role description, a name that carries the position, instructions,
-              and a live region for every change.
-            </p>
-          </div>
         </section>
 
         <section id="ssr" class="doc-section">
