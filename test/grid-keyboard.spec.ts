@@ -6,7 +6,6 @@ import GridTile from '../src/grid-tile.vue'
 
 type T = { id: string; x: number; y: number; w: number; h: number }
 
-// The layout of the Keyboard example in the docs
 const layout: T[] = [
   { id: 'revenue', x: 0, y: 0, w: 6, h: 4 },
   { id: 'signups', x: 6, y: 0, w: 6, h: 2 },
@@ -14,7 +13,6 @@ const layout: T[] = [
   { id: 'sessions', x: 9, y: 2, w: 3, h: 2 }
 ]
 
-// Bound like v-model:tiles, so the board compares each move against the layout it last emitted
 function mountBoard(tiles: T[] = layout, gravity = true) {
   const wrapper = mount(GridBoard, {
     attachTo: document.body,

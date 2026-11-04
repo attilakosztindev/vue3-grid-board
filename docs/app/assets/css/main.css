@@ -53,7 +53,6 @@ html {
 }
 
 .doc-root {
-  /* One green for every accent on the page: tiles, notes, inline code and the demo controls */
   --doc-accent: #10b981;
   --doc-accent-strong: #047857;
   --doc-accent-deep: #065f46;

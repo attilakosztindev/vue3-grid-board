@@ -1,4 +1,3 @@
-# Nuxt dev/build outputs
 .output
 .data
 .nuxt
@@ -7,23 +6,18 @@
 dist
 !/dist
 
-# Node dependencies
 node_modules
 
-# Logs
 logs
 *.log
 
-# Misc
 .DS_Store
 .fleet
 .idea
 .claude
 
-# Local env files
 .env
 .env.*
 !.env.example
 
-# Editor scratch files
 Untitled-*

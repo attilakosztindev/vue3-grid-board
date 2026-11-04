@@ -140,10 +140,6 @@ export function moveTile(tiles, tile, x, y, isUserAction, preventOverlap) {
   return tiles
 }
 
-// With gravity on, moving a tile one row usually changes nothing: it shoves the tiles it lands on
-// down, then everything floats back up to where it started. A pointer drag gets past that by
-// travelling further, so a key press does the same: it keeps stepping in its direction and
-// returns the first slot that actually changes the layout, or null when none does.
 export function findKeyboardSlot(tiles, id, dx, dy, columns, gravity) {
   const tile = getTileById(tiles, id)
   if (!tile) return null

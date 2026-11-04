@@ -5,7 +5,6 @@ const description =
   'A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.'
 
 const route = useRoute()
-// Pages serves every route as a folder and redirects the bare path, so the slash belongs in the URL
 const url = computed(() => site + route.path.replace(/\/?$/, '/'))
 
 useHead({

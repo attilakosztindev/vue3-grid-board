@@ -2,7 +2,6 @@
 import { onMounted, ref, useId, useSlots } from 'vue'
 import { CODE_BG } from '~/docs/code-theme'
 
-// Without code it is a bare demo frame: for sections whose snippet would only repeat Usage
 const props = defineProps<{
   code?: string
   lang?: string
@@ -89,8 +88,6 @@ async function copy(code: string) {
 
     <p v-if="code" class="sr-only" role="status" aria-live="polite">{{ status }}</p>
 
-    <!-- eslint-disable vue/no-v-html -- shiki's output, built from a string
-         literal in ~/docs/snippets.ts. No user input ever reaches it. -->
     <div
       v-if="code"
       v-show="open"
@@ -101,6 +98,5 @@ async function copy(code: string) {
       :style="{ backgroundColor: CODE_BG }"
       v-html="highlighted"
     />
-    <!-- eslint-enable vue/no-v-html -->
   </div>
 </template>
