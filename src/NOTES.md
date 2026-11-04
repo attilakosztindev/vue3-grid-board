@@ -754,3 +754,24 @@ it is never called (the shadow glides by transition, not FLIP), and parses the S
 stylesheet to assert the shadow's z-index is above 0 and below the dragging one. It
 reads the stylesheet because scoped SFC styles are not injected under test, so a
 computed-style assertion would silently pass on an empty string.
+
+---
+
+## 16. `GridBoard` is typed as a generic component
+
+`index.d.ts` declares `GridBoard` as a generic function signature, the shape vue-tsc
+generates for `<script setup generic="T">`, not as a `DefineComponent`. A
+`DefineComponent` cannot carry a type parameter, so its `update:tiles` and `ready`
+were typed `Tile[]`, and `v-model:tiles` on a `TileWith<T>[]` ref failed under
+`strictTemplates`: Vue compiles the binding to `tiles = $event`, and a `Tile[]` cannot
+be assigned to the narrower array. Default template checking never looks at that
+assignment, which is why it went unnoticed.
+
+The signature infers `T` from the `tiles` prop and types both events with it. The
+runtime component is untouched. `h()` cannot infer a generic component's parameter
+through its overloads and falls back to `Tile`, as the old declaration did; a render
+function names it instead: `h(GridBoard<Panel>, …)`.
+
+`test/types/custom-tiles.vue` is type-checked with `strictTemplates` as part of
+`pnpm typecheck`. Against the old declaration it fails on the `v-model:tiles`
+binding, the `@ready` handler and two type-level assertions.

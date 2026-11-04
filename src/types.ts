@@ -20,8 +20,8 @@ export interface Tile {
 
 export type TileWith<T> = Tile & T
 
-export interface GridBoardProps {
-  tiles: Tile[]
+export interface GridBoardProps<T extends Tile = Tile> {
+  tiles: T[]
   columns?: number
   rowHeight?: number
   gap?: Gap
@@ -74,9 +74,9 @@ export interface GridTileProps {
   label?: string | null
 }
 
-export interface GridBoardEmits {
-  'update:tiles': [tiles: Tile[]]
-  ready: [tiles: Tile[]]
+export interface GridBoardEmits<T extends Tile = Tile> {
+  'update:tiles': [tiles: T[]]
+  ready: [tiles: T[]]
 }
 
 export interface GridTileEmits {
