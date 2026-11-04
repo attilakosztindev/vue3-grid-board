@@ -62,7 +62,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  messages: {
+  a11y: {
     type: Object,
     default: null
   }
@@ -70,7 +70,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:tiles', 'ready'])
 
-const DEFAULT_MESSAGES = {
+const DEFAULT_A11Y = {
   roleDescription: 'Draggable tile',
   tileName: (id) => `Tile ${id}`,
   tileLabel: ({ name, column, row, w, h }) =>
@@ -120,7 +120,7 @@ const gap = computed(() => {
 
 const instructionsId = useId()
 
-const messages = computed(() => ({ ...DEFAULT_MESSAGES, ...props.messages }))
+const a11y = computed(() => ({ ...DEFAULT_A11Y, ...props.a11y }))
 
 const slots = useSlots()
 
@@ -162,7 +162,7 @@ provide(GRID_BOARD, {
   resizeEvent: onResizeEvent,
   announce: onAnnounce,
   settleTiming,
-  messages,
+  a11y,
   startPlacing,
   stopPlacing,
   cancelPlacing,
@@ -467,15 +467,15 @@ function setRef(e) {
       shadow
     />
     <OrderedTiles />
-    <p :id="instructionsId" class="grid-sr" :lang="props.messages ? undefined : 'en'">
-      {{ messages.instructions }}
+    <p :id="instructionsId" class="grid-sr" :lang="props.a11y ? undefined : 'en'">
+      {{ a11y.instructions }}
     </p>
     <p
       class="grid-sr"
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      :lang="props.messages ? undefined : 'en'"
+      :lang="props.a11y ? undefined : 'en'"
     >
       {{ state.announcement }}
     </p>

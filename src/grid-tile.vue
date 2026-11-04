@@ -178,12 +178,12 @@ const classObj = computed(() => ({
   'grid-tile--grabbed': state.grabbed
 }))
 
-const messages = computed(() => board.messages.value)
+const a11y = computed(() => board.a11y.value)
 
-const tileName = computed(() => props.label || messages.value.tileName(props.id))
+const tileName = computed(() => props.label || a11y.value.tileName(props.id))
 
 const tileLabel = computed(() =>
-  messages.value.tileLabel({
+  a11y.value.tileLabel({
     name: tileName.value,
     column: state.innerX + 1,
     row: state.innerY + 1,
@@ -704,7 +704,7 @@ function currentSlot() {
 
 function announceSlot(suffix) {
   const slot = currentSlot()
-  const where = messages.value.tileLabel({
+  const where = a11y.value.tileLabel({
     name: tileName.value,
     column: slot.x + 1,
     row: slot.y + 1,
@@ -772,7 +772,7 @@ function keyResizeBy(dw, dh) {
   nextTick(() => announceSlot())
 }
 
-function grab(message = messages.value.pickedUp) {
+function grab(message = a11y.value.pickedUp) {
   grabOrigin = currentSlot()
   state.grabbed = true
   announceSlot(message)
@@ -785,7 +785,7 @@ function releaseGrab() {
   endTap()
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot(moved ? messages.value.dropped : messages.value.putDown))
+  nextTick(() => announceSlot(moved ? a11y.value.dropped : a11y.value.putDown))
 }
 
 function handleTap({ mode, target }) {
@@ -801,7 +801,7 @@ function handleTap({ mode, target }) {
   }
   tapMode = mode
   exposeObj.el.focus({ preventScroll: true })
-  grab(mode === 'resize' ? messages.value.pickedUpToResize : messages.value.pickedUpToMove)
+  grab(mode === 'resize' ? a11y.value.pickedUpToResize : a11y.value.pickedUpToMove)
   board.startPlacing(props.id, placeAt, releaseGrab)
 }
 
@@ -858,7 +858,7 @@ function cancelGrab() {
 
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot(messages.value.returned))
+  nextTick(() => announceSlot(a11y.value.returned))
 }
 
 function onKeydown(e) {
@@ -901,7 +901,7 @@ function onBlur() {
     :data-tile="id"
     :tabindex="interactive ? 0 : undefined"
     :role="interactive ? 'group' : undefined"
-    :aria-roledescription="interactive ? messages.roleDescription : undefined"
+    :aria-roledescription="interactive ? a11y.roleDescription : undefined"
     :aria-label="interactive ? tileLabel : undefined"
     :aria-describedby="interactive ? board.instructionsId : undefined"
     :aria-hidden="shadow ? 'true' : undefined"

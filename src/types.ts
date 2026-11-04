@@ -30,7 +30,7 @@ export interface GridBoardProps {
   autoHeight?: boolean
   gravity?: boolean
   overflow?: boolean
-  messages?: Partial<GridMessages> | null
+  a11y?: Partial<GridA11y> | null
 }
 
 export interface GridTileDescription {
@@ -41,7 +41,7 @@ export interface GridTileDescription {
   h: number
 }
 
-export interface GridMessages {
+export interface GridA11y {
   roleDescription: string
   tileName: (id: TileId) => string
   tileLabel: (tile: GridTileDescription) => string
@@ -134,7 +134,7 @@ export interface GridBoardContext {
   resizeEvent: (event: ResizeEventTuple) => void
   announce: (message: string) => void
   settleTiming: () => { duration: number; easing: string }
-  messages: ComputedRef<GridMessages>
+  a11y: ComputedRef<GridA11y>
   startPlacing: (
     id: TileId,
     place: (column: number, row: number) => void,

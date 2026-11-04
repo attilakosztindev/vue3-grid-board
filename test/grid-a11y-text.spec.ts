@@ -6,10 +6,10 @@ import GridTile from '../src/grid-tile.vue'
 
 const tiles = [{ id: 'a', x: 0, y: 0, w: 2, h: 2 }]
 
-function mountBoard(messages?: Record<string, unknown>) {
+function mountBoard(a11y?: Record<string, unknown>) {
   return mount(GridBoard, {
     attachTo: document.body,
-    props: { tiles, ...(messages ? { messages } : {}) },
+    props: { tiles, ...(a11y ? { a11y } : {}) },
     slots: { default: () => tiles.map((t) => h(GridTile, { key: t.id, ...t })) }
   })
 }
@@ -25,7 +25,7 @@ describe('the text the board reads out', () => {
     wrapper.unmount()
   })
 
-  it('comes from messages, in the language of the page', async () => {
+  it('comes from a11y, in the language of the page', async () => {
     const wrapper = mountBoard({
       roleDescription: 'Verschiebbare Kachel',
       tileName: (id: string) => `Kachel ${id}`,

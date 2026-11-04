@@ -385,7 +385,7 @@ const et = (o, a) => {
       "grid-tile--resizing": n.isResizing,
       "grid-tile--settling": n.settling,
       "grid-tile--grabbed": n.grabbed
-    })), I = A(() => f.messages.value), ie = A(() => e.label || I.value.tileName(e.id)), ce = A(
+    })), I = A(() => f.a11y.value), ie = A(() => e.label || I.value.tileName(e.id)), ce = A(
       () => I.value.tileLabel({
         name: ie.value,
         column: n.innerX + 1,
@@ -795,7 +795,7 @@ const et = (o, a) => {
       ], 10, Dt)) : ct("", !0)
     ], 46, Wt));
   }
-}, Pt = /* @__PURE__ */ et(Tt, [["__scopeId", "data-v-e5c2946e"]]), Xt = ["id", "lang"], At = ["lang"], Ge = 220, qe = "cubic-bezier(0.2, 0, 0, 1)", Yt = {
+}, Pt = /* @__PURE__ */ et(Tt, [["__scopeId", "data-v-5f01b9bd"]]), Xt = ["id", "lang"], At = ["lang"], Ge = 220, qe = "cubic-bezier(0.2, 0, 0, 1)", Yt = {
   __name: "grid-board",
   props: {
     tiles: {
@@ -834,7 +834,7 @@ const et = (o, a) => {
       type: Boolean,
       default: !1
     },
-    messages: {
+    a11y: {
       type: Object,
       default: null
     }
@@ -871,7 +871,7 @@ const et = (o, a) => {
       if (Array.isArray(i)) return [Number(i[0]) || 0, Number(i[1]) || 0];
       const u = Number(i) || 0;
       return [u, u];
-    }), W = ft(), j = A(() => ({ ...E, ...e.messages })), L = gt();
+    }), W = ft(), j = A(() => ({ ...E, ...e.a11y })), L = gt();
     let D = /* @__PURE__ */ new Map();
     const _ = A(() => {
       if (s.busy) return D;
@@ -899,7 +899,7 @@ const et = (o, a) => {
       resizeEvent: T,
       announce: oe,
       settleTiming: se,
-      messages: j,
+      a11y: j,
       startPlacing: Y,
       stopPlacing: Z,
       cancelPlacing: re,
@@ -1078,18 +1078,18 @@ const et = (o, a) => {
       Le("p", {
         id: me(W),
         class: "grid-sr",
-        lang: e.messages ? void 0 : "en"
+        lang: e.a11y ? void 0 : "en"
       }, _e(j.value.instructions), 9, Xt),
       Le("p", {
         class: "grid-sr",
         role: "status",
         "aria-live": "polite",
         "aria-atomic": "true",
-        lang: e.messages ? void 0 : "en"
+        lang: e.a11y ? void 0 : "en"
       }, _e(s.announcement), 9, At)
     ], 38));
   }
-}, Lt = /* @__PURE__ */ et(Yt, [["__scopeId", "data-v-cc7b2a14"]]);
+}, Lt = /* @__PURE__ */ et(Yt, [["__scopeId", "data-v-79f153cf"]]);
 export {
   Qe as GRID_BOARD,
   Lt as GridBoard,

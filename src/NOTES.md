@@ -458,14 +458,14 @@ Three details keep it from fighting the rest:
 - Taps on controls inside a tile (`a, button, input, select, textarea, label,
 [contenteditable]`) are left to the control, whatever `dragIgnore` says.
 
-### Messages
+### Screen-reader text
 
-Every string the board reads out comes from `messages`, merged over English defaults.
+Every string the board reads out comes from the `a11y` prop, merged over English defaults.
 `tileLabel` receives a 1-based column and row. Without the prop, the instructions and
 the live region carry `lang="en"` (WCAG 3.1.2); with it, they inherit the page's
 language. The tile's `aria-label` and `aria-roledescription` are attributes, which
 `lang` cannot mark without also marking the tile's content, so on a page that is not in
-English only `messages` fixes them.
+English only `a11y` fixes them.
 
 ### Focus survives a reorder
 
