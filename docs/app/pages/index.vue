@@ -27,8 +27,7 @@ const logo = asset('/vue3-grid-board-logo.svg')
 
 definePageMeta({ title: 'vue3-grid-board' })
 useHead({
-  title: 'vue3-grid-board — a draggable, resizable board for Vue 3',
-  bodyAttrs: { class: 'doc-body' }
+  title: 'vue3-grid-board — a draggable, resizable board for Vue 3'
 })
 
 const usageTiles = ref([
@@ -414,30 +413,26 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="doc-root">
-    <div class="mx-auto flex max-w-7xl gap-16 px-6">
-      <aside class="sticky top-0 -mx-2 hidden h-screen w-fit shrink-0 overflow-y-auto px-2 py-10 lg:block">
+    <div class="doc-layout">
+      <aside class="doc-sidebar">
         <a
           href="#top"
-          class="mb-6 flex flex-col items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900"
+          class="doc-sidebar__brand"
         >
-          <img :src="logo" alt="" width="24" height="24" class="w-full max-w-56" />
-          <span class="text-2xl font-bold">vue3-grid-board</span>
+          <img :src="logo" alt="" width="24" height="24" class="doc-sidebar__logo" />
+          <span class="doc-sidebar__name">vue3-grid-board</span>
         </a>
         <nav aria-label="Documentation">
-          <div v-for="group in nav" :key="group.title" class="mb-6">
-            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          <div v-for="group in nav" :key="group.title" class="doc-nav__group">
+            <p class="doc-nav__title">
               {{ group.title }}
             </p>
-            <ul class="space-y-0.5">
-              <li v-for="item in group.items" :key="item.id">
+            <ul>
+              <li v-for="item in group.items" :key="item.id" class="doc-nav__item">
                 <a
                   :href="`#${item.id}`"
-                  class="block rounded-md px-2 py-1 text-sm transition"
-                  :class="
-                    activeSection === item.id
-                      ? 'bg-primary-50 font-medium text-primary-700'
-                      : 'text-neutral-600 hover:text-neutral-900'
-                  "
+                  class="doc-nav__link"
+                  :class="{ 'doc-nav__link--active': activeSection === item.id }"
                   :aria-current="activeSection === item.id ? 'true' : undefined"
                 >
                   {{ item.label }}
@@ -448,56 +443,56 @@ onBeforeUnmount(() => {
         </nav>
       </aside>
 
-      <main id="top" class="min-w-0 flex-1 pb-24">
-        <h1 class="sr-only">vue3-grid-board</h1>
+      <main id="top" class="doc-main">
+        <h1 class="doc-sr">vue3-grid-board</h1>
 
-        <section id="installation" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="installation" class="doc-section">
           <h2 class="doc-h2">Installation</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             vue3-grid-board installs from npm. Vue 3.5 is the only peer dependency, and there is
             no runtime dependency beyond it.
           </p>
-          <p class="mt-6 text-sm font-medium text-neutral-900">pnpm</p>
-          <div class="mt-2">
+          <p class="doc-label">pnpm</p>
+          <div class="doc-demo">
             <DocExample :code="installPnpmSnippet" lang="bash" />
           </div>
-          <p class="mt-6 text-sm font-medium text-neutral-900">npm</p>
-          <div class="mt-2">
+          <p class="doc-label">npm</p>
+          <div class="doc-demo">
             <DocExample :code="installNpmSnippet" lang="bash" />
           </div>
-          <p class="mt-6 text-sm font-medium text-neutral-900">Yarn</p>
-          <div class="mt-2">
+          <p class="doc-label">Yarn</p>
+          <div class="doc-demo">
             <DocExample :code="installYarnSnippet" lang="bash" />
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Importing</h3>
-          <p class="mt-3 text-sm font-medium text-neutral-900">With Vite, Nuxt or webpack</p>
-          <div class="mt-2">
+          <h3 class="doc-h2-sub">Importing</h3>
+          <p class="doc-label">With Vite, Nuxt or webpack</p>
+          <div class="doc-demo">
             <DocExample :code="importSnippet" lang="ts" />
           </div>
-          <p class="mt-6 text-sm font-medium text-neutral-900">Without a bundler</p>
-          <div class="mt-2">
+          <p class="doc-label">Without a bundler</p>
+          <div class="doc-demo">
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-          <div class="doc-note mt-6">
-            <p class="font-medium text-neutral-900">One component, split in two</p>
-            <p class="mt-1">
+          <div class="doc-note">
+            <p class="doc-note__title">One component, split in two</p>
+            <p class="doc-note__body">
               A tile reads its geometry from the board it is nested in, so rendering one outside a
               board throws rather than silently laying itself out wrong. Import both, always.
             </p>
           </div>
 
-          <h3 id="nuxt" class="doc-h2-sub mt-8 scroll-mt-20">Nuxt</h3>
-          <p class="doc-lead mt-3">
+          <h3 id="nuxt" class="doc-h2-sub">Nuxt</h3>
+          <p class="doc-lead">
             Register the module instead of importing anything:
             <code class="doc-inline">GridBoard</code>, <code class="doc-inline">GridTile</code> and
             the layout helpers become auto-imports, and the stylesheet is added for you.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="nuxtModuleSnippet" lang="ts" />
           </div>
-          <div class="doc-table-wrap mt-4">
+          <div class="doc-table-wrap doc-table-wrap--compact" tabindex="0" role="region" aria-label="Nuxt module options">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -525,14 +520,14 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="usage" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="usage" class="doc-section">
           <h2 class="doc-h2">Usage</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Put <code class="doc-inline">&lt;GridTile&gt;</code> children inside a
             <code class="doc-inline">&lt;GridBoard&gt;</code> and bind
             <code class="doc-inline">v-model:tiles</code>.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="usageSnippet">
               <GridBoard v-model:tiles="usageTiles" :columns="12" :row-height="40" :gap="10">
                 <GridTile v-for="tile in usageTiles" :key="tile.id" v-bind="tile">
@@ -541,21 +536,21 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Cells, not pixels</p>
-            <p class="mt-1">A tile's <code class="doc-inline">x</code>, <code class="doc-inline">y</code>, <code class="doc-inline">w</code> and <code class="doc-inline">h</code> are grid cells. Only <code class="doc-inline">rowHeight</code> and <code class="doc-inline">gap</code> are measured in pixels; a column is whatever a twelfth of the board comes to.</p>
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Cells, not pixels</p>
+            <p class="doc-note__body">A tile's <code class="doc-inline">x</code>, <code class="doc-inline">y</code>, <code class="doc-inline">w</code> and <code class="doc-inline">h</code> are grid cells. Only <code class="doc-inline">rowHeight</code> and <code class="doc-inline">gap</code> are measured in pixels; a column is whatever a twelfth of the board comes to.</p>
           </div>
         </section>
 
-        <section id="gestures" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="gestures" class="doc-section">
           <h2 class="doc-h2">Drag &amp; resize</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Use <code class="doc-inline">draggable</code> and
             <code class="doc-inline">resizable</code> to freeze the board or bring the gestures
             back.
           </p>
-          <div class="mt-6">
-            <label class="doc-check mb-3">
+          <div class="doc-demo">
+            <label class="doc-check">
               <input v-model="interactive" type="checkbox" />
               Interactive
             </label>
@@ -575,14 +570,14 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="gravity" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="gravity" class="doc-section">
           <h2 class="doc-h2">Gravity</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             <code class="doc-inline">gravity</code> pulls every tile up until it rests on the tile
             above it. Defaults to <code class="doc-inline">true</code>.
           </p>
-          <div class="mt-6">
-            <div class="doc-tabs mb-3" role="tablist" aria-label="Gravity">
+          <div class="doc-demo">
+            <div class="doc-tabs" role="tablist" aria-label="Gravity">
               <button
                 v-for="tab in gravityTabs"
                 :key="tab.value"
@@ -608,19 +603,19 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Off is not free positioning</p>
-            <p class="mt-1">Tiles keep the row you gave them and gaps survive, but they still cannot overlap.</p>
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Off is not free positioning</p>
+            <p class="doc-note__body">Tiles keep the row you gave them and gaps survive, but they still cannot overlap.</p>
           </div>
         </section>
 
-        <section id="frozen" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="frozen" class="doc-section">
           <h2 class="doc-h2">Frozen tiles</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             A <code class="doc-inline">frozen</code> tile is a wall: it never moves, and the rest of
             the board settles around it.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="frozenSnippet" lang="ts">
               <GridBoard v-model:tiles="frozenTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in frozenTiles" :key="tile.id" v-bind="tile">
@@ -633,26 +628,26 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="slots" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="slots" class="doc-section">
           <h2 class="doc-h2">Slots</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             A tile has two slots: <code class="doc-inline">default</code> for its content, and
             <code class="doc-inline">#handle</code> for the corner grip that starts a resize.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="slotsSnippet" />
           </div>
         </section>
 
-        <section id="overflow" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="overflow" class="doc-section">
           <h2 class="doc-h2">Overflow</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Boards live inside cards, drawers and scroll panes that clip whatever leaves them.
             <code class="doc-inline">overflow</code> lets the tile you are dragging stay visible
             past the edge instead of being sliced at it.
           </p>
-          <div class="mt-6">
-            <div class="doc-tabs mb-3" role="tablist" aria-label="Overflow">
+          <div class="doc-demo">
+            <div class="doc-tabs" role="tablist" aria-label="Overflow">
               <button
                 v-for="tab in overflowTabs"
                 :key="String(tab.value)"
@@ -680,9 +675,9 @@ onBeforeUnmount(() => {
               </div>
             </DocExample>
           </div>
-          <div class="doc-note mt-6">
-            <p class="font-medium text-neutral-900">Self-contained, with one exception</p>
-            <p class="mt-1">
+          <div class="doc-note">
+            <p class="doc-note__title">Self-contained, with one exception</p>
+            <p class="doc-note__body">
               You add no CSS: for the length of the gesture the tile pins itself to the viewport and
               takes the top of the stacking order, and it tracks the page as you scroll. The one
               thing it cannot escape is an ancestor with
@@ -694,23 +689,23 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="dynamic" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="dynamic" class="doc-section">
           <h2 class="doc-h2">Add &amp; remove</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Replace the array to change the board.
             <code class="doc-inline">getLastRow()</code> gives a new tile somewhere to start.
           </p>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Number what you render, never what you track</p>
-            <p class="mt-1">
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Number what you render, never what you track</p>
+            <p class="doc-note__body">
               The number on a tile is its position in the array, not its
               <code class="doc-inline">id</code>. The board looks tiles up by id, Vue keys the DOM
               on it, and a saved layout refers to it — hand a new tile the id of a deleted one and
               all three quietly point at the wrong tile. The counter here only ever climbs.
             </p>
           </div>
-          <div class="mt-6">
-            <div class="mb-3 flex items-center gap-2">
+          <div class="doc-demo">
+            <div class="doc-controls">
               <button
                 type="button"
                 class="doc-btn doc-btn--primary"
@@ -718,7 +713,7 @@ onBeforeUnmount(() => {
               >
                 Add tile
               </button>
-              <span class="text-sm text-neutral-500">{{ dynamicTiles.length }} on the board</span>
+              <span class="doc-controls__status">{{ dynamicTiles.length }} on the board</span>
             </div>
             <DocExample :code="dynamicSnippet" lang="ts">
               <GridBoard v-model:tiles="dynamicTiles" :columns="12" :row-height="40">
@@ -732,7 +727,7 @@ onBeforeUnmount(() => {
                     {{ index + 1 }}
                     <button
                       type="button"
-                      class="doc-btn doc-btn--icon absolute right-2 top-1 text-2xl!"
+                      class="doc-btn doc-btn--icon doc-tile__remove"
                       :aria-label="`Remove tile ${index + 1}`"
                       @click="removeTile(tile.id)"
                     >
@@ -743,9 +738,9 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <div class="doc-note mt-6">
-            <p class="font-medium text-neutral-900">Replace the array, never mutate it</p>
-            <p class="mt-1">
+          <div class="doc-note">
+            <p class="doc-note__title">Replace the array, never mutate it</p>
+            <p class="doc-note__body">
               The board watches <code class="doc-inline">tiles</code> by identity, not deeply. A
               <code class="doc-inline">push</code>, a <code class="doc-inline">splice</code> or an
               assignment to <code class="doc-inline">tiles[0].w</code> renders, but the engine never
@@ -753,23 +748,23 @@ onBeforeUnmount(() => {
               height.
             </p>
           </div>
-          <div class="mt-4">
+          <div class="doc-demo doc-demo--compact">
             <DocExample :code="mutationSnippet" lang="ts" />
           </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Give a new tile a finite y</p>
-            <p class="mt-1"><code class="doc-inline">Infinity</code> passes validation and then hangs the settle loop. Use <code class="doc-inline">getLastRow()</code> for the first free row.</p>
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Give a new tile a finite y</p>
+            <p class="doc-note__body"><code class="doc-inline">Infinity</code> passes validation and then hangs the settle loop. Use <code class="doc-inline">getLastRow()</code> for the first free row.</p>
           </div>
         </section>
 
-        <section id="persistence" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="persistence" class="doc-section">
           <h2 class="doc-h2">Save &amp; restore</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             <code class="doc-inline">update:tiles</code> fires with a plain array, so persistence is
             a watcher and <code class="doc-inline">JSON.stringify</code>.
           </p>
-          <div class="mt-6">
-            <div class="mb-3 flex flex-wrap items-center gap-2">
+          <div class="doc-demo">
+            <div class="doc-controls">
               <button
                 type="button"
                 class="doc-btn doc-btn--primary"
@@ -791,7 +786,7 @@ onBeforeUnmount(() => {
               >
                 Reset
               </button>
-              <span class="text-sm text-neutral-500" role="status" aria-live="polite">
+              <span class="doc-controls__status" role="status" aria-live="polite">
                 {{ persistStatus }}
               </span>
             </div>
@@ -803,19 +798,19 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Validate what you read back</p>
-            <p class="mt-1">Run <code class="doc-inline">validateTiles()</code> over stored tiles — a layout written by an older build would otherwise throw from inside the engine on first render.</p>
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Validate what you read back</p>
+            <p class="doc-note__body">Run <code class="doc-inline">validateTiles()</code> over stored tiles — a layout written by an older build would otherwise throw from inside the engine on first render.</p>
           </div>
         </section>
 
-        <section id="keyboard" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="keyboard" class="doc-section">
           <h2 class="doc-h2">Keyboard</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Every unfrozen tile is focusable and fully operable from the keyboard. Nothing to
             configure.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample>
               <GridBoard v-model:tiles="keyboardTiles" :columns="12" :row-height="40">
                 <GridTile
@@ -829,7 +824,7 @@ onBeforeUnmount(() => {
               </GridBoard>
             </DocExample>
           </div>
-          <div class="doc-table-wrap mt-6">
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="Keyboard commands">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -849,23 +844,23 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="ssr" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="ssr" class="doc-section">
           <h2 class="doc-h2">Server rendering</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             The server emits the real board — no
             <code class="doc-inline">&lt;ClientOnly&gt;</code>, no hydration mismatch, no flash.
           </p>
         </section>
 
-        <section id="events" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="events" class="doc-section">
           <h2 class="doc-h2">Events</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Tiles report their own gestures. Each one is bracketed — a
             <code class="doc-inline">start</code> and an <code class="doc-inline">end</code> once
             apiece, with the continuous event between them every time the tile crosses into a new
             cell. The keyboard raises the same events as the pointer.
           </p>
-          <div class="doc-table-wrap mt-6">
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="Tile events">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -887,11 +882,11 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-          <div class="doc-note mt-6">
-            <p class="font-medium text-neutral-900">
+          <div class="doc-note">
+            <p class="doc-note__title">
               <code class="doc-inline">dragend</code> is the drop, not the destination
             </p>
-            <p class="mt-1">
+            <p class="doc-note__body">
               Gravity runs after the drop, so the tile may settle several rows higher than the
               coordinates <code class="doc-inline">dragend</code> reports. Persist from
               <code class="doc-inline">update:tiles</code> instead.
@@ -899,12 +894,12 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="types" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="types" class="doc-section">
           <h2 class="doc-h2">Types</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             The components are plain JavaScript, so import the types to get inference back.
           </p>
-          <div class="doc-table-wrap mt-6">
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="Types">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -922,27 +917,27 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="typesSnippet" lang="ts" />
           </div>
         </section>
 
-        <section id="custom-fields" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="custom-fields" class="doc-section">
           <h2 class="doc-h2">Custom fields</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             Put your own data on a tile with <code class="doc-inline">TileWith&lt;T&gt;</code>. The
             engine carries unknown keys through untouched.
           </p>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="extendSnippet" lang="ts" />
           </div>
         </section>
 
-        <section id="api-board" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="api-board" class="doc-section">
           <h2 class="doc-h2">GridBoard</h2>
 
-          <h3 class="doc-h2-sub mt-6">Props</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Props</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridBoard props">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -969,8 +964,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Events</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Events</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridBoard events">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -993,8 +988,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Slots</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Slots</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridBoard slots">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1015,8 +1010,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Exposed</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Exposed</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridBoard exposed">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1040,11 +1035,11 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="api-tile" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="api-tile" class="doc-section">
           <h2 class="doc-h2">GridTile</h2>
 
-          <h3 class="doc-h2-sub mt-6">Props</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Props</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridTile props">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1071,8 +1066,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Events</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Events</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridTile events">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1095,8 +1090,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Slots</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Slots</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridTile slots">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1117,8 +1112,8 @@ onBeforeUnmount(() => {
             </table>
           </div>
 
-          <h3 class="doc-h2-sub mt-8">Exposed</h3>
-          <div class="doc-table-wrap mt-3">
+          <h3 class="doc-h2-sub">Exposed</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="GridTile exposed">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1142,13 +1137,13 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="api-css" class="scroll-mt-20 border-b border-neutral-100 py-12">
+        <section id="api-css" class="doc-section">
           <h2 class="doc-h2">CSS</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             vue3-grid-board ships structural CSS only — position, size, cursor and the settle transition.
             Every visual decision is yours.
           </p>
-          <div class="doc-table-wrap mt-6">
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="CSS classes">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1163,16 +1158,16 @@ onBeforeUnmount(() => {
                     <code class="doc-inline">{{ row[0] }}</code>
                   </th>
                   <td>{{ row[1] }}</td>
-                  <td class="text-neutral-500">{{ row[2] }}</td>
+                  <td>{{ row[2] }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="stylingSnippet" lang="css" />
           </div>
-                    <h3 class="doc-h2-sub mt-8">Cursors</h3>
-          <p class="mt-2 max-w-[46rem] text-sm leading-relaxed text-neutral-600">
+          <h3 class="doc-h2-sub">Cursors</h3>
+          <p class="doc-text">
             Set for you, and only where the gesture is available:
             <code class="doc-inline">grab</code> on a tile you can pick up,
             <code class="doc-inline">grabbing</code> while it is held, and
@@ -1180,18 +1175,18 @@ onBeforeUnmount(() => {
             <code class="doc-inline">dragHandle</code> the body is not the handle, so style
             your own with <code class="doc-inline">cursor: grab</code>.
           </p>
-          <div class="doc-note mt-4">
-            <p class="font-medium text-neutral-900">Never transition top, left, width or height</p>
-            <p class="mt-1">The board already animates those to settle a tile, and a second transition fights the first. Colour, shadow and opacity are free.</p>
+          <div class="doc-note doc-note--compact">
+            <p class="doc-note__title">Never transition top, left, width or height</p>
+            <p class="doc-note__body">The board already animates those to settle a tile, and a second transition fights the first. Colour, shadow and opacity are free.</p>
           </div>
         </section>
 
-        <section id="api-methods" class="scroll-mt-20 py-12">
+        <section id="api-methods" class="doc-section">
           <h2 class="doc-h2">Methods</h2>
-          <p class="doc-lead mt-2">
+          <p class="doc-lead">
             The layout engine is pure and importable on its own, with no component involved.
           </p>
-          <div class="doc-table-wrap mt-6">
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="Methods">
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1213,7 +1208,7 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-          <div class="mt-6">
+          <div class="doc-demo">
             <DocExample :code="methodsSnippet" lang="ts" />
           </div>
         </section>

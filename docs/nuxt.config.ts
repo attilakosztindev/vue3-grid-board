@@ -1,11 +1,21 @@
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxt/ui'],
+  modules: ['@nuxt/eslint', '@nuxt/fonts'],
+
+  fonts: {
+    defaults: {
+      weights: [400, 500, 600, 700]
+    }
+  },
 
   devtools: {
     enabled: true
   },
 
   css: ['~/assets/css/main.css'],
+
+  features: {
+    inlineStyles: true
+  },
 
   compatibilityDate: '2025-01-15',
 

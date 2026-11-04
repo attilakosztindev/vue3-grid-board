@@ -12,11 +12,8 @@
     "icons": "pwa-assets-generator && node scripts/favicon-ico.mjs"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.104",
-    "@iconify-json/simple-icons": "^1.2.80",
-    "@nuxt/ui": "^4.7.0",
+    "@nuxt/fonts": "^0.14.0",
     "nuxt": "^4.4.2",
-    "tailwindcss": "^4.2.4",
     "vue3-grid-board": "workspace:*"
   },
   "devDependencies": {

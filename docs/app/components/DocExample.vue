@@ -53,16 +53,12 @@ async function copy(code: string) {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-xl border border-neutral-200">
-    <div v-if="hasPreview" class="bg-white p-6">
+  <div class="doc-example" :class="{ 'doc-example--with-preview': hasPreview }">
+    <div v-if="hasPreview" class="doc-example__preview">
       <slot />
     </div>
 
-    <div
-      v-if="code"
-      class="flex items-center gap-1 border-neutral-200 bg-neutral-50 px-2 py-1.5"
-      :class="hasPreview ? 'border-t' : 'border-b'"
-    >
+    <div v-if="code" class="doc-example__toolbar">
       <button
         v-if="hasPreview"
         type="button"
@@ -71,12 +67,16 @@ async function copy(code: string) {
         :aria-controls="panelId"
         @click="open = !open"
       >
-        <span aria-hidden="true" class="transition-transform" :class="open ? 'rotate-90' : ''">
+        <span
+          aria-hidden="true"
+          class="doc-example__chevron"
+          :class="{ 'doc-example__chevron--open': open }"
+        >
           ›
         </span>
         {{ open ? 'Hide code' : 'Show code' }}
       </button>
-      <span class="ml-auto text-xs text-neutral-400">{{ lang ?? 'vue' }}</span>
+      <span class="doc-example__lang">{{ lang ?? 'vue' }}</span>
       <button
         type="button"
         class="doc-btn doc-btn--quiet"
@@ -86,15 +86,14 @@ async function copy(code: string) {
       </button>
     </div>
 
-    <p v-if="code" class="sr-only" role="status" aria-live="polite">{{ status }}</p>
+    <p v-if="code" class="doc-sr" role="status" aria-live="polite">{{ status }}</p>
 
     <div
       v-if="code"
       v-show="open"
       :id="panelId"
       tabindex="0"
-      class="doc-code max-h-[30rem] overflow-auto"
-      :class="hasPreview ? 'border-t border-neutral-200' : ''"
+      class="doc-example__code"
       :style="{ backgroundColor: CODE_BG }"
       v-html="highlighted"
     />
