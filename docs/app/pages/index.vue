@@ -221,7 +221,12 @@ const tileProps = [
   ['draggable', 'Overrides the board. null inherits it.', 'boolean | null', 'null'],
   ['resizable', 'Overrides the board. null inherits it.', 'boolean | null', 'null'],
   ['frozen', 'Fix the tile in place and take it out of the reflow.', 'boolean', 'false'],
-  ['dragHandle', 'CSS selector. When set, only a press inside it drags.', 'string | null', 'null'],
+  [
+    'dragHandle',
+    'Class name, without the dot. When set, only a press inside an element with that class drags.',
+    'string | null',
+    'null'
+  ],
   ['dragIgnore', 'CSS selector for descendants that never drag.', 'string', "'a, button'"],
   ['resizeIgnore', 'The same, for descendants of the resize handle.', 'string', "'a, button'"],
   ['radius', 'Corner radius in pixels, published to CSS as --grid-radius.', 'number', '22'],

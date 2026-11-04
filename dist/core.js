@@ -411,7 +411,7 @@ const qe = (i, o) => {
           draggable: () => L.value && !e.frozen,
           resizable: () => _.value && !e.frozen,
           dragIgnore: () => e.dragIgnore,
-          dragHandle: () => e.dragHandle,
+          dragHandle: () => e.dragHandle && `.${CSS.escape(e.dragHandle)}`,
           resizeIgnore: () => e.resizeIgnore,
           autoScroll: () => !0,
           onDrag: be,
@@ -748,7 +748,7 @@ const qe = (i, o) => {
       ], 10, xt)) : rt("", !0)
     ], 46, bt));
   }
-}, Mt = /* @__PURE__ */ qe(St, [["__scopeId", "data-v-bae245ff"]]), Rt = ["id"], Ht = {
+}, Mt = /* @__PURE__ */ qe(St, [["__scopeId", "data-v-96c402c2"]]), Rt = ["id"], Ht = {
   class: "grid-sr",
   role: "status",
   "aria-live": "polite",

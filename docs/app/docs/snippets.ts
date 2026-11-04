@@ -120,7 +120,7 @@ const tile = reactive<TileWith<{ title: string; note: string }>>({
     :y="tile.y"
     :w="tile.w"
     :h="tile.h"
-    drag-handle=".card-header"
+    drag-handle="card-header"
   >
     <header class="card-header">{{ tile.title }}</header>
     <input v-model="tile.note">

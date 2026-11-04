@@ -38,7 +38,7 @@ describe('the grab cursor', () => {
   })
 
   it('is withheld when only a handle starts the drag', () => {
-    expect(classes(mountTile({ dragHandle: '.card-header' }))).not.toContain('grid-tile--draggable')
+    expect(classes(mountTile({ dragHandle: 'card-header' }))).not.toContain('grid-tile--draggable')
   })
 
   it('never marks the drag shadow', () => {

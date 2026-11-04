@@ -109,17 +109,17 @@ Takes one default slot, for the tiles.
 
 ## GridTile
 
-| Prop                           | Type               | Description                                    |
-| ------------------------------ | ------------------ | ---------------------------------------------- |
-| `id`                           | `number \| string` | Required. Matches the tile's `id`.             |
-| `x`, `y`, `w`, `h`             | `number`           | Required. Position and size, in grid units.    |
-| `minW`, `minH`, `maxW`, `maxH` | `number`           | Resize bounds.                                 |
-| `draggable`, `resizable`       | `boolean \| null`  | Override the board, per tile. `null` inherits. |
-| `frozen`                       | `boolean`          | Pin the tile. Others move around it.           |
-| `dragHandle`                   | `string \| null`   | Selector for the drag handle.                  |
-| `dragIgnore`, `resizeIgnore`   | `string`           | Selectors that will not start a gesture.       |
-| `radius`                       | `number`           | Corner radius in pixels.                       |
-| `label`                        | `string \| null`   | Screen-reader name for the tile.               |
+| Prop                           | Type               | Description                                     |
+| ------------------------------ | ------------------ | ----------------------------------------------- |
+| `id`                           | `number \| string` | Required. Matches the tile's `id`.              |
+| `x`, `y`, `w`, `h`             | `number`           | Required. Position and size, in grid units.     |
+| `minW`, `minH`, `maxW`, `maxH` | `number`           | Resize bounds.                                  |
+| `draggable`, `resizable`       | `boolean \| null`  | Override the board, per tile. `null` inherits.  |
+| `frozen`                       | `boolean`          | Pin the tile. Others move around it.            |
+| `dragHandle`                   | `string \| null`   | Class name of the drag handle, without the dot. |
+| `dragIgnore`, `resizeIgnore`   | `string`           | Selectors that will not start a gesture.        |
+| `radius`                       | `number`           | Corner radius in pixels.                        |
+| `label`                        | `string \| null`   | Screen-reader name for the tile.                |
 
 Emits `dragstart`, `drag`, `dragend`, `resizestart`, `resize`, `resizeend` and `size`.
 

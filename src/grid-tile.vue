@@ -250,7 +250,7 @@ function syncPointerCtl() {
     draggable: () => dragEnabled.value && !props.frozen,
     resizable: () => resizeEnabled.value && !props.frozen,
     dragIgnore: () => props.dragIgnore,
-    dragHandle: () => props.dragHandle,
+    dragHandle: () => props.dragHandle && `.${CSS.escape(props.dragHandle)}`,
     resizeIgnore: () => props.resizeIgnore,
     autoScroll: () => true,
     onDrag: handleDrag,
