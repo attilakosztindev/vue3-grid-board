@@ -28,12 +28,13 @@ const tiles = ref<Tile[]>([
   </GridBoard>
 </template>`
 
-export const interactiveSnippet = `<script setup lang="ts">
+export const gesturesSnippet = `<script setup lang="ts">
 import { ref } from 'vue'
 import { GridBoard, GridTile } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
-const interactive = ref(true)
+const draggable = ref(true)
+const resizable = ref(true)
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 4, h: 4 },
   { id: 'b', x: 4, y: 0, w: 8, h: 2 },
@@ -46,16 +47,20 @@ const tiles = ref<Tile[]>([
 
 <template>
   <label>
-    <input v-model="interactive" type="checkbox">
-    Interactive
+    <input v-model="draggable" type="checkbox">
+    Draggable
+  </label>
+  <label>
+    <input v-model="resizable" type="checkbox">
+    Resizable
   </label>
 
   <GridBoard
     v-model:tiles="tiles"
     :columns="12"
     :row-height="40"
-    :draggable="interactive"
-    :resizable="interactive"
+    :draggable="draggable"
+    :resizable="resizable"
   >
     <GridTile
       v-for="tile in tiles"
@@ -185,7 +190,7 @@ import { ref } from 'vue'
 import { GridBoard, GridTile } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
-const escape = ref(true)
+const overflow = ref(true)
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 6, h: 3 },
   { id: 'b', x: 6, y: 0, w: 6, h: 3 },
@@ -196,12 +201,12 @@ const tiles = ref<Tile[]>([
 
 <template>
   <label>
-    <input v-model="escape" type="checkbox">
+    <input v-model="overflow" type="checkbox">
     Overflow
   </label>
 
   <div class="panel">
-    <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :overflow="escape">
+    <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :overflow="overflow">
       <GridTile
         v-for="tile in tiles"
         :key="tile.id"

@@ -12,7 +12,7 @@ import {
   installNpmSnippet,
   installPnpmSnippet,
   installYarnSnippet,
-  interactiveSnippet,
+  gesturesSnippet,
   methodsSnippet,
   motionSnippet,
   mutationSnippet,
@@ -39,8 +39,9 @@ const usageTiles = ref([
   { id: 'g', x: 8, y: 4, w: 4, h: 2 }
 ])
 
-const interactive = ref(true)
-const liveTiles = ref([
+const draggable = ref(true)
+const resizable = ref(true)
+const gestureTiles = ref([
   { id: 'a', x: 0, y: 0, w: 4, h: 4 },
   { id: 'b', x: 4, y: 0, w: 8, h: 2 },
   { id: 'c', x: 4, y: 2, w: 4, h: 2 },
@@ -57,10 +58,10 @@ const gravityGaps = [
   { id: 'e', x: 0, y: 6, w: 5, h: 2 }
 ]
 const gravityTiles = ref(gravityGaps.map((t) => ({ ...t })))
-const gravityMode = ref('off')
+const gravity = ref(false)
 const gravityTabs = [
-  { value: 'off', label: 'Gravity off' },
-  { value: 'on', label: 'Gravity on' }
+  { value: false, label: 'Gravity off' },
+  { value: true, label: 'Gravity on' }
 ]
 
 const frozenTiles = ref([
@@ -71,7 +72,7 @@ const frozenTiles = ref([
   { id: 'd', x: 7, y: 3, w: 5, h: 3 }
 ])
 
-const escape = ref(true)
+const overflow = ref(true)
 const overflowTabs = [
   { value: false, label: 'Clipped' },
   { value: true, label: 'Overflow' }
@@ -91,13 +92,13 @@ const dynamicTiles = ref([
   { id: '4', x: 0, y: 3, w: 4, h: 2 },
   { id: '5', x: 4, y: 3, w: 8, h: 2 }
 ])
-function addTile() {
+function add() {
   dynamicTiles.value = [
     ...dynamicTiles.value,
     { id: String(seq++), x: 0, y: getLastRow(dynamicTiles.value), w: 4, h: 2 }
   ]
 }
-function removeTile(id) {
+function remove(id) {
   dynamicTiles.value = dynamicTiles.value.filter((t) => t.id !== id)
 }
 
@@ -158,10 +159,10 @@ function reset() {
 }
 
 const keyboardTiles = ref([
-  { id: 'one', x: 0, y: 0, w: 6, h: 4, title: 'Revenue' },
-  { id: 'two', x: 6, y: 0, w: 6, h: 2, title: 'Signups' },
-  { id: 'three', x: 6, y: 2, w: 3, h: 2, title: 'Churn' },
-  { id: 'four', x: 9, y: 2, w: 3, h: 2, title: 'Sessions' }
+  { id: 'one', x: 0, y: 0, w: 6, h: 4, label: 'Revenue' },
+  { id: 'two', x: 6, y: 0, w: 6, h: 2, label: 'Signups' },
+  { id: 'three', x: 6, y: 2, w: 3, h: 2, label: 'Churn' },
+  { id: 'four', x: 9, y: 2, w: 3, h: 2, label: 'Sessions' }
 ])
 
 
@@ -643,19 +644,25 @@ onBeforeUnmount(() => {
             back.
           </p>
           <div class="doc-demo">
-            <label class="doc-check">
-              <input v-model="interactive" type="checkbox" />
-              Interactive
-            </label>
-            <DocExample :code="interactiveSnippet">
+            <div class="doc-controls">
+              <label class="doc-check">
+                <input v-model="draggable" type="checkbox" />
+                Draggable
+              </label>
+              <label class="doc-check">
+                <input v-model="resizable" type="checkbox" />
+                Resizable
+              </label>
+            </div>
+            <DocExample :code="gesturesSnippet">
               <GridBoard
-                v-model:tiles="liveTiles"
+                v-model:tiles="gestureTiles"
                 :columns="12"
                 :row-height="40"
-                :draggable="interactive"
-                :resizable="interactive"
+                :draggable="draggable"
+                :resizable="resizable"
               >
-                <GridTile v-for="tile in liveTiles" :key="tile.id" v-bind="tile">
+                <GridTile v-for="tile in gestureTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile" />
                 </GridTile>
               </GridBoard>
@@ -673,12 +680,12 @@ onBeforeUnmount(() => {
             <div class="doc-tabs" role="tablist" aria-label="Gravity">
               <button
                 v-for="tab in gravityTabs"
-                :key="tab.value"
+                :key="String(tab.value)"
                 type="button"
                 role="tab"
                 class="doc-tab"
-                :aria-selected="gravityMode === tab.value"
-                @click="gravityMode = tab.value"
+                :aria-selected="gravity === tab.value"
+                @click="gravity = tab.value"
               >
                 {{ tab.label }}
               </button>
@@ -688,7 +695,7 @@ onBeforeUnmount(() => {
                 v-model:tiles="gravityTiles"
                 :columns="12"
                 :row-height="40"
-                :gravity="gravityMode === 'on'"
+                :gravity="gravity"
               >
                 <GridTile v-for="tile in gravityTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile" />
@@ -747,8 +754,8 @@ onBeforeUnmount(() => {
                 type="button"
                 role="tab"
                 class="doc-tab"
-                :aria-selected="escape === tab.value"
-                @click="escape = tab.value"
+                :aria-selected="overflow === tab.value"
+                @click="overflow = tab.value"
               >
                 {{ tab.label }}
               </button>
@@ -759,7 +766,7 @@ onBeforeUnmount(() => {
                   v-model:tiles="overflowTiles"
                   :columns="12"
                   :row-height="40"
-                  :overflow="escape"
+                  :overflow="overflow"
                 >
                   <GridTile v-for="tile in overflowTiles" :key="tile.id" v-bind="tile">
                     <div class="doc-tile" />
@@ -806,7 +813,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="doc-btn doc-btn--primary"
-                @click="addTile"
+                @click="add"
               >
                 Add tile
               </button>
@@ -818,7 +825,7 @@ onBeforeUnmount(() => {
                 :columns="12"
                 :row-height="40"
                 removable
-                @remove="removeTile"
+                @remove="remove"
               >
                 <GridTile
                   v-for="(tile, index) in dynamicTiles"
@@ -832,7 +839,7 @@ onBeforeUnmount(() => {
                       type="button"
                       class="doc-btn doc-btn--icon doc-tile__remove"
                       :aria-label="`Remove tile ${index + 1}`"
-                      @click="removeTile(tile.id)"
+                      @click="remove(tile.id)"
                     >
                       ×
                     </button>
@@ -931,9 +938,8 @@ onBeforeUnmount(() => {
                   v-for="tile in keyboardTiles"
                   :key="tile.id"
                   v-bind="tile"
-                  :label="tile.title"
                 >
-                  <div class="doc-tile">{{ tile.title }}</div>
+                  <div class="doc-tile">{{ tile.label }}</div>
                 </GridTile>
               </GridBoard>
             </DocExample>
