@@ -1,5 +1,5 @@
-import { cp, readdir, writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { cp, readFile, readdir, writeFile } from 'node:fs/promises'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -7,6 +7,14 @@ import vue from '@vitejs/plugin-vue'
 const root = dirname(fileURLToPath(import.meta.url))
 const src = resolve(root, 'src')
 const dist = resolve(root, 'dist')
+
+async function writeModuleJson() {
+  const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
+  const module = (await import(pathToFileURL(resolve(src, 'nuxt.js')).href)).default
+  const { name, configKey, compatibility } = await module.getMeta()
+  const json = { name, configKey, compatibility, version: pkg.version, docs: pkg.homepage }
+  await writeFile(resolve(dist, 'module.json'), `${JSON.stringify(json, null, 2)}\n`)
+}
 
 function declarations(): Plugin {
   return {
@@ -28,6 +36,7 @@ function declarations(): Plugin {
       await cp(resolve(src, 'types.ts'), resolve(dist, 'types.d.ts'))
       await cp(resolve(dist, 'index.d.ts'), resolve(dist, 'core.d.ts'))
       await cp(resolve(src, 'nuxt.js'), resolve(dist, 'nuxt.js'))
+      await writeModuleJson()
       await writeFile(
         resolve(dist, 'index.js'),
         "import './style.css'\nexport * from './core.js'\n"

@@ -1,0 +1,9 @@
+{
+  "name": "vue3-grid-board",
+  "configKey": "vue3GridBoard",
+  "compatibility": {
+    "nuxt": ">=3.13.0"
+  },
+  "version": "0.2.0",
+  "docs": "https://attilakosztindev.github.io/vue3-grid-board"
+}
