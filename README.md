@@ -4,7 +4,7 @@
 
 <h1 align="center" style="text-align: center">vue3-grid-board</h1>
 
-A draggable, resizable board for Vue 3. SSR friendly and accessible.
+A draggable, resizable board for Vue 3
 
 **[Documentation and live demos](https://attilakosztindev.github.io/vue3-grid-board/)**
 

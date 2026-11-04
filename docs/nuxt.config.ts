@@ -1,7 +1,7 @@
 const site = 'https://attilakosztindev.github.io/vue3-grid-board'
 const base = (process.env.NUXT_APP_BASE_URL ?? '/').replace(/\/?$/, '/')
 const title = 'vue3-grid-board — a draggable, resizable board for Vue 3'
-const description = 'A draggable, resizable board for Vue 3. SSR friendly and accessible.'
+const description = 'A draggable, resizable board for Vue 3'
 const image = `${site}/og-image.png`
 const imageAlt =
   'The vue3-grid-board logo and name, above the line: A draggable, resizable board for Vue 3'
