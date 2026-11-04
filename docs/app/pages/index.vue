@@ -191,6 +191,12 @@ const boardProps = [
     'false'
   ],
   [
+    'tapToMove',
+    'Move and resize tiles with taps instead of a drag. Needed for WCAG 2.2 AA (2.5.7).',
+    'boolean',
+    'false'
+  ],
+  [
     'a11y',
     'The text the board gives screen readers: role description, tile labels, instructions and announcements. Keys left out stay English.',
     'Partial<GridA11y>',
@@ -346,11 +352,6 @@ const keyboardRows = [
 
 const a11yRows = [
   ['Keyboard', '2.1.1', 'Every unfrozen tile is a tab stop, and every gesture has a key.'],
-  [
-    'Dragging movements',
-    '2.5.7',
-    'Tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down.'
-  ],
   ['No keyboard trap', '2.1.2', 'Tabbing away from a picked-up tile drops it where it is.'],
   [
     'Name and role',
@@ -380,6 +381,11 @@ const a11yRows = [
 ]
 
 const a11yGaps = [
+  [
+    'Dragging movements',
+    '2.5.7',
+    'Turn on tapToMove, or offer another way to move and resize a tile with single clicks.'
+  ],
   [
     'Text contrast',
     '1.4.3',
@@ -873,8 +879,9 @@ onBeforeUnmount(() => {
         <section id="accessibility" class="doc-section">
           <h2 class="doc-h2">Accessibility</h2>
           <p class="doc-lead">
-            Every gesture works from the keyboard and without dragging, with nothing to configure.
-            The board meets the WCAG 2.2 AA criteria that concern a widget like it.
+            Every gesture works from the keyboard, with nothing to configure. Turn on
+            <code class="doc-inline">tapToMove</code> and every gesture works without dragging too,
+            and the board meets the WCAG 2.2 AA criteria that concern a widget like it.
           </p>
 
           <h3 id="keyboard" class="doc-h2-sub">Keyboard</h3>
@@ -883,7 +890,12 @@ onBeforeUnmount(() => {
           </p>
           <div class="doc-demo">
             <DocExample>
-              <GridBoard v-model:tiles="keyboardTiles" :columns="12" :row-height="40">
+              <GridBoard
+                v-model:tiles="keyboardTiles"
+                :columns="12"
+                :row-height="40"
+                tap-to-move
+              >
                 <GridTile
                   v-for="tile in keyboardTiles"
                   :key="tile.id"
@@ -916,8 +928,9 @@ onBeforeUnmount(() => {
 
           <h3 class="doc-h2-sub">Without dragging</h3>
           <p class="doc-text">
-            Tap a tile, then tap where it should go. Tap its grip, then tap where its corner should
-            go. Tap it again to put it down. The board above works this way too.
+            With <code class="doc-inline">tap-to-move</code> on the board, tap a tile, then tap where
+            it should go. Tap its grip, then tap where its corner should go. Tap it again to put it
+            down. The board above has it turned on.
           </p>
 
           <h3 class="doc-h2-sub">WCAG 2.2</h3>

@@ -436,6 +436,11 @@ the shadow is additionally `aria-hidden`, as is the resize handle.
 
 ### Moving without dragging
 
+It is opt-in, through `tapToMove` on the board. With it on by default, a plain click
+changed a tile's state, which surprised mouse users who were only clicking, so the page
+decides. Without the prop the tile ignores taps, and the instructions leave out the
+`tapInstructions` sentence.
+
 WCAG 2.5.7 asks for a single-pointer alternative to every drag, and keyboard support
 does not count. A press that never passes the drag threshold is reported by the pointer
 engine as a tap (`onTap`, only on a real `pointerup`, after `teardown`). The tile then

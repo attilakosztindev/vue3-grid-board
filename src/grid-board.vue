@@ -62,6 +62,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  tapToMove: {
+    type: Boolean,
+    default: false
+  },
   a11y: {
     type: Object,
     default: null
@@ -76,7 +80,9 @@ const DEFAULT_A11Y = {
   tileLabel: ({ name, column, row, w, h }) =>
     `${name}, column ${column}, row ${row}, ${w} wide, ${h} tall`,
   instructions:
-    'Press Enter or Space to pick the tile up. Then use the arrow keys to move it, or hold Shift with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back. Without a keyboard, tap the tile and then tap where it should go, or tap its corner grip and then tap where that corner should go.',
+    'Press Enter or Space to pick the tile up. Then use the arrow keys to move it, or hold Shift with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back.',
+  tapInstructions:
+    'Without a keyboard, tap the tile and then tap where it should go, or tap its corner grip and then tap where that corner should go.',
   pickedUp:
     'Picked up. Arrow keys move, Shift plus arrow keys resize, Enter drops, Escape cancels.',
   pickedUpToMove: 'Picked up. Tap where it should go, or tap it again to put it down.',
@@ -468,7 +474,7 @@ function setRef(e) {
     />
     <OrderedTiles />
     <p :id="instructionsId" class="grid-sr" :lang="props.a11y ? undefined : 'en'">
-      {{ a11y.instructions }}
+      {{ props.tapToMove ? `${a11y.instructions} ${a11y.tapInstructions}` : a11y.instructions }}
     </p>
     <p
       class="grid-sr"

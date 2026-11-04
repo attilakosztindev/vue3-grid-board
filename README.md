@@ -10,7 +10,7 @@ A draggable, resizable board for Vue 3
 
 - No dependencies beyond Vue.
 - SSR friendly: the layout is already final in the server's HTML, so nothing moves when the page hydrates.
-- Every gesture works from the keyboard and without dragging, and is announced to screen readers.
+- Every gesture works from the keyboard, and without dragging when you turn on `tapToMove`. Every change is announced to screen readers.
 
 ## Install
 
@@ -103,11 +103,11 @@ Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow
 
 ### Without dragging
 
-Tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down.
+Set `tap-to-move` on the board, and tiles move with taps instead of a drag: tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down. It is off by default, so a plain click on a tile does nothing unless you ask for it.
 
 ### WCAG 2.2
 
-The board meets the WCAG 2.2 AA criteria that concern a widget like it:
+With `tapToMove` on, the board meets the WCAG 2.2 AA criteria that concern a widget like it:
 
 - Every unfrozen tile is a tab stop, and tabbing away from a picked-up tile drops it.
 - Each tile is a group described as "Draggable tile" and named by its position and size, with the keys explained through `aria-describedby`.
@@ -117,7 +117,7 @@ The board meets the WCAG 2.2 AA criteria that concern a widget like it:
 - The board's own text is marked as English. Pass `a11y` to give it in the page's language.
 - Every animation turns off with the [transition variables](#transitions).
 
-Two things depend on your page: the contrast of your tile's text against its background (1.4.3), and `a11y` in the page's language when it is not English (3.1.2).
+Three things depend on your page: `tapToMove`, or another single-click way to move and resize a tile (2.5.7); the contrast of your tile's text against its background (1.4.3); and `a11y` in the page's language when it is not English (3.1.2).
 
 WAI-ARIA has no pattern for a draggable grid: `aria-grabbed` and `aria-dropeffect` were deprecated in ARIA 1.1, and screen readers ignore them.
 
@@ -176,6 +176,7 @@ A duration of `0ms` turns that animation off:
 | `autoHeight` | `boolean`                    | `true`  | Grow the board to fit its tiles.                                         |
 | `gravity`    | `boolean`                    | `true`  | Pull tiles upward into free space.                                       |
 | `overflow`   | `boolean`                    | `false` | Allow tiles to be dragged past the last row.                             |
+| `tapToMove`  | `boolean`                    | `false` | Move and resize tiles with taps instead of a drag (WCAG 2.5.7).          |
 | `a11y`       | `Partial<GridA11y>`          | `null`  | The text read to screen readers: labels, instructions and announcements. |
 
 Emits `update:tiles` with the new layout, and `ready` once measured.

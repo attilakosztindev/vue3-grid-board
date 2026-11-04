@@ -26,7 +26,7 @@ function cellCentre(column: number, row: number) {
   }
 }
 
-async function mountBoard(tiles: T[], content?: () => unknown) {
+async function mountBoard(tiles: T[], content?: () => unknown, tapToMove = true) {
   const wrapper = mount(GridBoard, {
     attachTo: document.body,
     props: {
@@ -35,6 +35,7 @@ async function mountBoard(tiles: T[], content?: () => unknown) {
       rowHeight: ROW_HEIGHT,
       gap: GAP,
       gravity: false,
+      tapToMove,
       'onUpdate:tiles': (next: T[]) => wrapper.setProps({ tiles: next })
     },
     slots: {
@@ -84,6 +85,23 @@ const pair: T[] = [
 ]
 
 describe('moving a tile without dragging', () => {
+  it('is off unless tapToMove is set: a tap leaves the tile alone', async () => {
+    const { wrapper, board } = await mountBoard(pair, undefined, false)
+    await tap(tileEl(wrapper, 'a'))
+
+    expect(tileEl(wrapper, 'a').dataset.grabbed).toBeUndefined()
+    expect(board.querySelector('.grid-sr')!.textContent).not.toContain('tap')
+    wrapper.unmount()
+  })
+
+  it('tells screen readers about tapping only when tapToMove is set', async () => {
+    const { wrapper, board } = await mountBoard(pair)
+    expect(board.querySelector('.grid-sr')!.textContent).toContain(
+      'Without a keyboard, tap the tile'
+    )
+    wrapper.unmount()
+  })
+
   it('picks a tile up on a tap, and moves it to the next cell tapped', async () => {
     const { wrapper, board } = await mountBoard(pair)
     await tap(tileEl(wrapper, 'a'))

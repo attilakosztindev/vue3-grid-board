@@ -789,7 +789,7 @@ function releaseGrab() {
 }
 
 function handleTap({ mode, target }) {
-  if (!unref(interactive)) return
+  if (!board.props.tapToMove || !unref(interactive)) return
   const waiting = board.placingId()
   if (waiting !== null && waiting !== props.id) return
   const control = target.closest?.(TAP_IGNORE)

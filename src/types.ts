@@ -30,6 +30,7 @@ export interface GridBoardProps<T extends Tile = Tile> {
   autoHeight?: boolean
   gravity?: boolean
   overflow?: boolean
+  tapToMove?: boolean
   a11y?: Partial<GridA11y> | null
 }
 
@@ -46,6 +47,7 @@ export interface GridA11y {
   tileName: (id: TileId) => string
   tileLabel: (tile: GridTileDescription) => string
   instructions: string
+  tapInstructions: string
   pickedUp: string
   pickedUpToMove: string
   pickedUpToResize: string
