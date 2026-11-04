@@ -28,6 +28,44 @@ import {
 } from '~/docs/snippets'
 
 const logo = asset('/vue3-grid-board-logo.svg')
+const logoDark = asset('/vue3-grid-board-logo-dark.svg')
+
+const THEME_KEY = 'vue3-grid-board-theme'
+const dark = ref(false)
+let colorScheme = null
+
+function storedTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY)
+  } catch {
+    return null
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme
+  dark.value = theme === 'dark'
+}
+
+function saveTheme(theme) {
+  try {
+    localStorage.setItem(THEME_KEY, theme)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function toggleTheme() {
+  const theme = dark.value ? 'light' : 'dark'
+  applyTheme(theme)
+  saveTheme(theme)
+}
+
+function followSystemTheme(e) {
+  if (storedTheme()) return
+  applyTheme(e.matches ? 'dark' : 'light')
+}
 
 const usageTiles = ref([
   { id: 'a', x: 0, y: 0, w: 6, h: 4 },
@@ -484,6 +522,10 @@ function measureSections() {
 }
 
 onMounted(() => {
+  dark.value = document.documentElement.dataset.theme === 'dark'
+  colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+  colorScheme.addEventListener('change', followSystemTheme)
+
   measureSections()
   window.addEventListener('scroll', readActiveSection, { passive: true })
   window.addEventListener('resize', measureSections, { passive: true })
@@ -496,6 +538,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  colorScheme?.removeEventListener('change', followSystemTheme)
   window.removeEventListener('scroll', readActiveSection)
   window.removeEventListener('resize', measureSections)
   spyResizeObserver?.disconnect()
@@ -510,7 +553,20 @@ onBeforeUnmount(() => {
           href="#top"
           class="doc-sidebar__brand"
         >
-          <img :src="logo" alt="" width="24" height="24" class="doc-sidebar__logo" />
+          <img
+            :src="logo"
+            alt=""
+            width="24"
+            height="24"
+            class="doc-sidebar__logo doc-sidebar__logo--light"
+          />
+          <img
+            :src="logoDark"
+            alt=""
+            width="24"
+            height="24"
+            class="doc-sidebar__logo doc-sidebar__logo--dark"
+          />
           <span class="doc-sidebar__name">vue3-grid-board</span>
         </a>
         <nav aria-label="Documentation">
@@ -532,6 +588,20 @@ onBeforeUnmount(() => {
             </ul>
           </div>
         </nav>
+        <div class="doc-theme">
+          <button
+            type="button"
+            role="switch"
+            class="doc-switch"
+            :aria-checked="dark ? 'true' : 'false'"
+            @click="toggleTheme"
+          >
+            <span class="doc-switch__track" aria-hidden="true">
+              <span class="doc-switch__thumb" />
+            </span>
+            Dark mode
+          </button>
+        </div>
       </aside>
 
       <main id="top" class="doc-main">

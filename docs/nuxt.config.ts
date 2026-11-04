@@ -3,6 +3,7 @@ const base = (process.env.NUXT_APP_BASE_URL ?? '/').replace(/\/?$/, '/')
 const title = 'vue3-grid-board — a draggable, resizable board for Vue 3'
 const description = 'A draggable, resizable board for Vue 3'
 const image = `${site}/og-image.png`
+const themeScript = `try{var t=localStorage.getItem('vue3-grid-board-theme')}catch(e){}document.documentElement.dataset.theme=t==='dark'||t==='light'?t:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'`
 const imageAlt =
   'The vue3-grid-board logo and name, above the line: A draggable, resizable board for Vue 3'
 
@@ -28,7 +29,8 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: description },
         { name: 'author', content: 'Attila Kosztin' },
-        { name: 'theme-color', content: '#ffffff' },
+        { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: '#14161b', media: '(prefers-color-scheme: dark)' },
         { name: 'google-site-verification', content: 'TvB5BEa-XBjy9F6iDmrTCkAZ7y7d-cvOp2J3ZLE20yw' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'vue3-grid-board' },
@@ -47,6 +49,7 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: image },
         { name: 'twitter:image:alt', content: imageAlt }
       ],
+      script: [{ innerHTML: themeScript, tagPosition: 'head' }],
       link: [
         { rel: 'canonical', href: `${site}/` },
         { rel: 'icon', href: `${base}favicon.ico`, sizes: '16x16 32x32 48x48' },
