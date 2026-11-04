@@ -28,11 +28,6 @@ import {
 
 const logo = asset('/vue3-grid-board-logo.svg')
 
-definePageMeta({ title: 'vue3-grid-board' })
-useHead({
-  title: 'vue3-grid-board — a draggable, resizable board for Vue 3'
-})
-
 const usageTiles = ref([
   { id: 'a', x: 0, y: 0, w: 6, h: 4 },
   { id: 'b', x: 6, y: 0, w: 3, h: 2 },
