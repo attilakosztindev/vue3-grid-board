@@ -97,12 +97,6 @@ A tile is an empty container: what you put inside it is its content. Tile positi
 
 Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow keys move it, <kbd>Shift</kbd> with the arrow keys resizes it. <kbd>Enter</kbd> drops it, <kbd>Escape</kbd> puts it back.
 
-<kbd>Delete</kbd> or <kbd>Backspace</kbd> removes the focused tile, if it is removable. That is off by default: set `removable` on the tiles your own `remove()` would take away, and call it from `remove`. The board never edits the array itself, so a tile your handler keeps stays where it is. A picked-up tile is put back first, the removal is announced, and focus moves to the next tile, or the one before it.
-
-```vue
-<GridBoard v-model:tiles="tiles" removable @remove="remove">
-```
-
 ### Without dragging
 
 Set `tap-to-move` on the board, and tiles move with taps instead of a drag: tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down. It is off by default, so a plain click on a tile does nothing unless you ask for it.
@@ -113,7 +107,7 @@ With `tapToMove` on, the board meets the WCAG 2.2 AA criteria that concern a wid
 
 - Every unfrozen tile is a tab stop, and tabbing away from a picked-up tile drops it.
 - Each tile is a group described as "Draggable tile" and named by its position and size, with the keys explained through `aria-describedby`.
-- A polite live region announces the pick-up, every move, the drop, a cancel and a removal.
+- A polite live region announces the pick-up, every move, the drop and a cancel.
 - Tiles sit in the DOM by row, then column, so Tab and screen readers follow the layout. A tile keeps focus when a move reorders it, and when a tile is removed, focus moves to the next one.
 - The resize grip is at least 24 by 24 pixels. It and the focus outline are drawn in the tile's text colour, so they are as visible as your text.
 - The board's own text is marked as English. Pass `a11y` to give it in the page's language.
@@ -173,14 +167,13 @@ A duration of `0ms` turns that animation off:
 | `gap`        | `number \| [number, number]` | `10`    | Space between tiles. A pair sets the two axes apart.                     |
 | `draggable`  | `boolean`                    | `true`  | Whether tiles can be dragged.                                            |
 | `resizable`  | `boolean`                    | `true`  | Whether tiles can be resized.                                            |
-| `removable`  | `boolean`                    | `false` | Whether Delete removes a focused tile, through the `remove` event.       |
 | `autoHeight` | `boolean`                    | `true`  | Grow the board to fit its tiles.                                         |
 | `gravity`    | `boolean`                    | `true`  | Pull tiles upward into free space.                                       |
 | `overflow`   | `boolean`                    | `false` | Allow tiles to be dragged past the last row.                             |
 | `tapToMove`  | `boolean`                    | `false` | Move and resize tiles with taps instead of a drag (WCAG 2.5.7).          |
 | `a11y`       | `Partial<GridA11y>`          | `null`  | The text read to screen readers: labels, instructions and announcements. |
 
-Emits `update:tiles` with the new layout, `ready` once measured, and `remove` with a tile's id when Delete is pressed on a removable tile.
+Emits `update:tiles` with the new layout, and `ready` once measured.
 
 Takes one default slot, for the tiles.
 
@@ -192,7 +185,6 @@ Takes one default slot, for the tiles.
 | `x`, `y`, `w`, `h`             | `number`           | Required. Position and size, in grid units.     |
 | `minW`, `minH`, `maxW`, `maxH` | `number`           | Resize bounds.                                  |
 | `draggable`, `resizable`       | `boolean \| null`  | Override the board, per tile. `null` inherits.  |
-| `removable`                    | `boolean \| null`  | The same, for Delete.                           |
 | `frozen`                       | `boolean`          | Pin the tile. Others move around it.            |
 | `dragHandle`                   | `string \| null`   | Class name of the drag handle, without the dot. |
 | `dragIgnore`, `resizeIgnore`   | `string`           | Selectors that will not start a gesture.        |

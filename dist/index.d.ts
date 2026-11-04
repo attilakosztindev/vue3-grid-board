@@ -16,7 +16,6 @@ export { GRID_BOARD } from './context'
 type GridBoardPublicProps<T extends Tile> = GridBoardProps<T> & {
   'onUpdate:tiles'?: (tiles: T[]) => void
   onReady?: (tiles: T[]) => void
-  onRemove?: (id: T['id']) => void
 } & PublicProps
 
 interface GridBoardInstance<T extends Tile> {

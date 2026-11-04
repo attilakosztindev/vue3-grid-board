@@ -256,7 +256,7 @@ function remove(id: Tile['id']) {
   <button type="button" @click="add">Add tile</button>
   <span>{{ tiles.length }} on the board</span>
 
-  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" removable @remove="remove">
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
     <GridTile
       v-for="(tile, index) in tiles"
       :key="tile.id"

@@ -27,7 +27,6 @@ export interface GridBoardProps<T extends Tile = Tile> {
   gap?: Gap
   draggable?: boolean
   resizable?: boolean
-  removable?: boolean
   autoHeight?: boolean
   gravity?: boolean
   overflow?: boolean
@@ -49,14 +48,12 @@ export interface GridA11y {
   tileLabel: (tile: GridTileDescription) => string
   instructions: string
   tapInstructions: string
-  removeInstructions: string
   pickedUp: string
   pickedUpToMove: string
   pickedUpToResize: string
   dropped: string
   putDown: string
   returned: string
-  removed: string
 }
 
 export interface GridTileProps {
@@ -71,7 +68,6 @@ export interface GridTileProps {
   maxH?: number
   draggable?: boolean | null
   resizable?: boolean | null
-  removable?: boolean | null
   frozen?: boolean
   dragHandle?: string | null
   dragIgnore?: string
@@ -83,7 +79,6 @@ export interface GridTileProps {
 export interface GridBoardEmits<T extends Tile = Tile> {
   'update:tiles': [tiles: T[]]
   ready: [tiles: T[]]
-  remove: [id: T['id']]
 }
 
 export interface GridTileEmits {
@@ -137,9 +132,6 @@ export interface GridBoardContext {
   state: GridBoardState
   gap: ComputedRef<[number, number]>
   instructionsId: string
-  removeInstructionsId: string
-  listensForRemove: () => boolean
-  remove: (id: TileId, name: string) => void
   dragEvent: (event: DragEventTuple) => void
   resizeEvent: (event: ResizeEventTuple) => void
   announce: (message: string) => void

@@ -21,15 +21,11 @@ function titles(tiles: Panel[]) {
   return tiles.map((tile) => tile.title)
 }
 
-function remove(id: Panel['id']) {
-  panels.value = panels.value.filter((tile) => tile.id !== id)
-}
-
 defineExpose({ updatesKeepTheTileType, plainTilesStillWork })
 </script>
 
 <template>
-  <GridBoard v-model:tiles="panels" removable @ready="titles" @remove="remove">
+  <GridBoard v-model:tiles="panels" @ready="titles">
     <GridTile
       v-for="tile in panels"
       :id="tile.id"
@@ -38,7 +34,6 @@ defineExpose({ updatesKeepTheTileType, plainTilesStillWork })
       :y="tile.y"
       :w="tile.w"
       :h="tile.h"
-      :removable="tile.id !== 'a'"
     >
       {{ tile.title }}
     </GridTile>
