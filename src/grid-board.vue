@@ -62,6 +62,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  removable: {
+    type: Boolean,
+    default: false
+  },
   tapToMove: {
     type: Boolean,
     default: false
@@ -69,10 +73,14 @@ const props = defineProps({
   a11y: {
     type: Object,
     default: null
+  },
+  onRemove: {
+    type: [Function, Array],
+    default: null
   }
 })
 
-const emit = defineEmits(['update:tiles', 'ready'])
+const emit = defineEmits(['update:tiles', 'ready', 'remove'])
 
 const DEFAULT_A11Y = {
   roleDescription: 'Draggable tile',
@@ -83,6 +91,7 @@ const DEFAULT_A11Y = {
     'Press Enter or Space to pick the tile up. Then use the arrow keys to move it, or hold Shift with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back.',
   tapInstructions:
     'Without a keyboard, tap the tile and then tap where it should go, or tap its corner grip and then tap where that corner should go.',
+  removeInstructions: 'Press Delete to remove the tile.',
   pickedUp:
     'Picked up. Arrow keys move, Shift plus arrow keys resize, Enter drops, Escape cancels.',
   pickedUpToMove: 'Picked up. Tap where it should go, or tap it again to put it down.',
@@ -90,7 +99,8 @@ const DEFAULT_A11Y = {
     'Picked up to resize. Tap where its corner should go, or tap it again to put it down.',
   dropped: 'Dropped.',
   putDown: 'Put down.',
-  returned: 'Returned to where it started.'
+  returned: 'Returned to where it started.',
+  removed: 'Removed.'
 }
 
 const SETTLE_MS = 220
@@ -100,6 +110,8 @@ let resizeObserver = null
 let lastEmitted = null
 let settleCache = null
 let focusedTile = null
+let tilesBefore = []
+let removing = null
 let placing = null
 
 const exposeObj = {
@@ -125,6 +137,7 @@ const gap = computed(() => {
 })
 
 const instructionsId = useId()
+const removeInstructionsId = useId()
 
 const a11y = computed(() => ({ ...DEFAULT_A11Y, ...props.a11y }))
 
@@ -164,6 +177,9 @@ provide(GRID_BOARD, {
   state,
   gap,
   instructionsId,
+  removeInstructionsId,
+  listensForRemove: () => !!props.onRemove,
+  remove: requestRemove,
   dragEvent: onDragEvent,
   resizeEvent: onResizeEvent,
   announce: onAnnounce,
@@ -227,14 +243,27 @@ onBeforeMount(updateHeight)
 onBeforeUpdate(() => {
   const active = IS_BROWSER ? document.activeElement : null
   focusedTile = active && exposeObj.el?.contains(active) ? active : null
+  tilesBefore = focusedTile ? tileElements() : []
 })
 
 onUpdated(() => {
-  const tile = focusedTile
+  const focused = focusedTile
+  const before = tilesBefore
   focusedTile = null
-  if (!tile || !tile.isConnected || document.activeElement === tile) return
+  tilesBefore = []
+  announceRemoval()
+  if (!focused || document.activeElement === focused) return
   if (document.activeElement && document.activeElement !== document.body) return
-  tile.focus({ preventScroll: true })
+  if (focused.isConnected) {
+    focused.focus({ preventScroll: true })
+    return
+  }
+  const index = before.findIndex((tile) => tile.contains(focused))
+  if (index === -1) return
+  const next = [...before.slice(index + 1), ...before.slice(0, index).reverse()].find(
+    (tile) => tile.isConnected && tile.tabIndex >= 0
+  )
+  next?.focus({ preventScroll: true })
 })
 
 onBeforeUnmount(() => {
@@ -255,6 +284,28 @@ function dispatch(type, payload) {
     default:
       throw new Error(`GridBoard: dispatch received an unknown command "${String(type)}".`)
   }
+}
+
+function tileElements() {
+  return exposeObj.el
+    ? [...exposeObj.el.querySelectorAll(':scope > .grid-tile:not(.grid-shadow)')]
+    : []
+}
+
+function requestRemove(id, name) {
+  removing = { id, name }
+  emit('remove', id)
+  nextTick(() => {
+    if (removing?.id === id) removing = null
+  })
+}
+
+function announceRemoval() {
+  if (!removing) return
+  const id = String(removing.id)
+  if (tileElements().some((tile) => tile.dataset.tile === id)) return
+  onAnnounce(`${removing.name}. ${a11y.value.removed}`)
+  removing = null
 }
 
 function preventSelection(e) {
@@ -475,6 +526,14 @@ function setRef(e) {
     <OrderedTiles />
     <p :id="instructionsId" class="grid-sr" :lang="props.a11y ? undefined : 'en'">
       {{ props.tapToMove ? `${a11y.instructions} ${a11y.tapInstructions}` : a11y.instructions }}
+    </p>
+    <p
+      v-if="props.onRemove"
+      :id="removeInstructionsId"
+      class="grid-sr"
+      :lang="props.a11y ? undefined : 'en'"
+    >
+      {{ a11y.removeInstructions }}
     </p>
     <p
       class="grid-sr"

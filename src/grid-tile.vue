@@ -49,6 +49,10 @@ const props = defineProps({
     type: Boolean,
     default: null
   },
+  removable: {
+    type: Boolean,
+    default: null
+  },
   frozen: {
     type: Boolean,
     default: false
@@ -125,6 +129,9 @@ const dragEnabled = computed(() =>
 const resizeEnabled = computed(() =>
   props.resizable === null ? board.props.resizable : props.resizable
 )
+const removeEnabled = computed(() =>
+  props.removable === null ? board.props.removable : props.removable
+)
 
 const state = reactive({
   isDragging: false,
@@ -157,6 +164,17 @@ const canDrag = computed(
 )
 const interactive = computed(
   () => (dragEnabled.value || resizeEnabled.value) && !props.frozen && !props.shadow
+)
+const canRemove = computed(
+  () => removeEnabled.value && board.listensForRemove() && !props.frozen && !props.shadow
+)
+const focusable = computed(() => interactive.value || canRemove.value)
+
+const describedBy = computed(
+  () =>
+    [interactive.value && board.instructionsId, canRemove.value && board.removeInstructionsId]
+      .filter(Boolean)
+      .join(' ') || undefined
 )
 
 const gestureStyle = computed(() => (unref(interactive) ? { touchAction: 'none' } : {}))
@@ -835,7 +853,7 @@ function endTap() {
   board.stopPlacing(props.id)
 }
 
-function cancelGrab() {
+function cancelGrab(announce = true) {
   if (!state.grabbed) return
   const origin = grabOrigin
   endKeyGesture()
@@ -858,13 +876,23 @@ function cancelGrab() {
 
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot(a11y.value.returned))
+  if (announce) nextTick(() => announceSlot(a11y.value.returned))
 }
 
 function onKeydown(e) {
-  if (!unref(interactive)) return
+  if (!unref(focusable)) return
   if (e.target !== exposeObj.el) return
   if (e.altKey || e.ctrlKey || e.metaKey) return
+
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (!canRemove.value) return
+    e.preventDefault()
+    cancelGrab(false)
+    board.remove(props.id, tileName.value)
+    return
+  }
+
+  if (!unref(interactive)) return
 
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault()
@@ -899,11 +927,11 @@ function onBlur() {
     :class="classObj"
     :style="[state.style, gestureStyle]"
     :data-tile="id"
-    :tabindex="interactive ? 0 : undefined"
-    :role="interactive ? 'group' : undefined"
+    :tabindex="focusable ? 0 : undefined"
+    :role="focusable ? 'group' : undefined"
     :aria-roledescription="interactive ? a11y.roleDescription : undefined"
-    :aria-label="interactive ? tileLabel : undefined"
-    :aria-describedby="interactive ? board.instructionsId : undefined"
+    :aria-label="focusable ? tileLabel : undefined"
+    :aria-describedby="describedBy"
     :aria-hidden="shadow ? 'true' : undefined"
     :data-grabbed="state.grabbed ? 'true' : undefined"
     @keydown="onKeydown"

@@ -359,12 +359,13 @@ the pointer one.
 
 ### Key map
 
-| Key                                 | While idle        | While grabbed             |
-| ----------------------------------- | ----------------- | ------------------------- |
-| <kbd>Enter</kbd> / <kbd>Space</kbd> | pick the item up  | drop it where it is       |
-| <kbd>↑↓←→</kbd>                     | _not intercepted_ | move one cell (see below) |
-| <kbd>Shift</kbd> + <kbd>↑↓←→</kbd>  | _not intercepted_ | resize by one column/row  |
-| <kbd>Esc</kbd>                      | —                 | restore the original slot |
+| Key                                      | While idle        | While grabbed                  |
+| ---------------------------------------- | ----------------- | ------------------------------ |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>      | pick the item up  | drop it where it is            |
+| <kbd>↑↓←→</kbd>                          | _not intercepted_ | move one cell (see below)      |
+| <kbd>Shift</kbd> + <kbd>↑↓←→</kbd>       | _not intercepted_ | resize by one column/row       |
+| <kbd>Esc</kbd>                           | —                 | restore the original slot      |
+| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | ask to remove it  | restore, then ask to remove it |
 
 Arrow keys are deliberately inert until the item is grabbed, so a merely-focused tile
 never steals page scroll. `preventDefault()` is only called on keys the controller
@@ -482,6 +483,24 @@ went nowhere. `onBeforeUpdate` remembers the focused element if it is inside the
 board, and `onUpdated` focuses it again (`preventScroll`) when focus has fallen to
 `<body>`. It never takes focus from anything else, so tabbing away or clicking
 elsewhere mid-update is left alone.
+
+### Removing a tile
+
+Removal is opt-in, through `removable` on the board or a tile, and only counts when the
+app listens for `remove`: the board never edits the array, so without a listener Delete
+would do nothing, and the tile would still say it does. With both, a removable tile is a
+tab stop even on a board that cannot move, and its `aria-describedby` adds the Delete
+paragraph. Delete on a picked-up tile puts it back first, silently, so the layout the
+app removes from is the one it last saw.
+
+The board does not know whether the app removed the tile until it re-renders. It keeps
+the pending id and name, and `onUpdated` announces "<name>. Removed." only once the tile
+has left the DOM; a `nextTick` drops the pending id when the app kept the tile. Focus is
+handled separately and for any removal, including one the app makes from its own
+controls: `onBeforeUpdate` also snapshots the tile elements in reading order when focus
+is inside the board, and if the focused element is gone afterwards, `onUpdated` focuses
+the next tab stop after its tile, or the nearest one before it. If no tile is left,
+focus stays with the browser.
 
 ---
 

@@ -177,6 +177,12 @@ const boardProps = [
   ['gap', 'Space between tiles, in pixels. A pair sets the two axes apart.', 'number | Gap', '10'],
   ['draggable', 'Board-wide default. A tile can override it.', 'boolean', 'true'],
   ['resizable', 'Board-wide default. A tile can override it.', 'boolean', 'true'],
+  [
+    'removable',
+    'Let Delete remove a focused tile, through the remove event. A tile can override it.',
+    'boolean',
+    'false'
+  ],
   ['autoHeight', 'Grow the board to fit its lowest tile.', 'boolean', 'true'],
   [
     'gravity',
@@ -210,7 +216,12 @@ const boardEvents = [
     'What v-model:tiles binds. Fires with a fresh array whenever a change commits.',
     '(tiles: Tile[]) => void'
   ],
-  ['ready', 'Once the board has been measured and has settled.', '(tiles: Tile[]) => void']
+  ['ready', 'Once the board has been measured and has settled.', '(tiles: Tile[]) => void'],
+  [
+    'remove',
+    'Delete or Backspace on a removable tile. Call the same remove() the rest of your page uses; a tile it keeps stays.',
+    '(id: TileId) => void'
+  ]
 ]
 
 const tileProps = [
@@ -230,6 +241,7 @@ const tileProps = [
   ['maxH', 'Largest height a resize may reach.', 'number', 'Infinity'],
   ['draggable', 'Overrides the board. null inherits it.', 'boolean | null', 'null'],
   ['resizable', 'Overrides the board. null inherits it.', 'boolean | null', 'null'],
+  ['removable', 'Overrides the board. null inherits it.', 'boolean | null', 'null'],
   ['frozen', 'Fix the tile in place and take it out of the reflow.', 'boolean', 'false'],
   [
     'dragHandle',
@@ -314,7 +326,7 @@ const typeRows = [
   ['Gap', 'number | [number, number].'],
   ['GridBoardProps', "The board's props, if you wrap it in your own component."],
   ['GridTileProps', "A tile's props, for the same reason."],
-  ['GridBoardEmits', 'update:tiles and ready, with their payloads.'],
+  ['GridBoardEmits', 'update:tiles, ready and remove, with their payloads.'],
   ['GridTileEmits', 'The seven gesture events, with their payloads.'],
   ['GridTileSlots', 'default and handle.'],
   ['GridBoardExposed', 'What a board ref gives you: el and dispatch.'],
@@ -347,7 +359,11 @@ const keyboardRows = [
   ['Enter or Space', 'Pick the focused tile up, and drop it again.'],
   ['Arrow keys', 'Move the picked-up tile by one cell, or past the next tile when gravity is on.'],
   ['Shift + Arrows', 'Resize the picked-up tile by one cell.'],
-  ['Escape', 'Cancel, putting every tile back where the gesture started.']
+  ['Escape', 'Cancel, putting every tile back where the gesture started.'],
+  [
+    'Delete or Backspace',
+    'Remove the focused tile, when it is removable. Focus moves to the next tile, or the one before it.'
+  ]
 ]
 
 const a11yRows = [
@@ -359,11 +375,15 @@ const a11yRows = [
     'Each tile is a group described as "Draggable tile" and named by its position and size: "Revenue, column 1, row 1, 6 wide, 4 tall". Set the name with label.'
   ],
   ['Instructions', '3.3.2', 'A visually hidden paragraph, linked with aria-describedby, explains the keys.'],
-  ['Status messages', '4.1.3', 'A polite live region announces the pick-up, every move, the drop and a cancel.'],
+  [
+    'Status messages',
+    '4.1.3',
+    'A polite live region announces the pick-up, every move, the drop, a cancel and a removal.'
+  ],
   [
     'Reading and focus order',
     '1.3.2, 2.4.3',
-    'Tiles sit in the DOM by row, then column, so Tab and screen readers follow the layout. A tile keeps focus when a move reorders it.'
+    'Tiles sit in the DOM by row, then column, so Tab and screen readers follow the layout. A tile keeps focus when a move reorders it, and when a tile is removed, focus moves to the next one.'
   ],
   ['Focus visible', '2.4.7', "A 2px outline in the tile's text colour, dashed while the tile is picked up."],
   [
@@ -765,7 +785,11 @@ onBeforeUnmount(() => {
           <h2 class="doc-h2">Add &amp; remove</h2>
           <p class="doc-lead">
             Replace the array to change the board.
-            <code class="doc-inline">getLastRow()</code> gives a new tile somewhere to start.
+            <code class="doc-inline">getLastRow()</code> gives a new tile somewhere to start. Set
+            <code class="doc-inline">removable</code> on the tiles your
+            <code class="doc-inline">remove()</code> may take away, call it from
+            <code class="doc-inline">@remove</code>, and Delete removes the focused tile the same
+            way a click does.
           </p>
           <div class="doc-note doc-note--compact">
             <p class="doc-note__title">Number what you render, never what you track</p>
@@ -788,7 +812,13 @@ onBeforeUnmount(() => {
               <span class="doc-controls__status">{{ dynamicTiles.length }} on the board</span>
             </div>
             <DocExample :code="dynamicSnippet">
-              <GridBoard v-model:tiles="dynamicTiles" :columns="12" :row-height="40">
+              <GridBoard
+                v-model:tiles="dynamicTiles"
+                :columns="12"
+                :row-height="40"
+                removable
+                @remove="removeTile"
+              >
                 <GridTile
                   v-for="(tile, index) in dynamicTiles"
                   :key="tile.id"
