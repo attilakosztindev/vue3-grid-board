@@ -1,6 +1,6 @@
 {
   "name": "vue3-grid-board",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A draggable, resizable board for Vue 3. SSR friendly and accessible.",
   "license": "MIT",
   "author": "Attila Kosztin",
