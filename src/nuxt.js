@@ -21,11 +21,10 @@ export default defineNuxtModule({
   },
   defaults: {
     prefix: '',
-    css: true,
     autoImports: true
   },
   setup(options, nuxt) {
-    if (options.css) nuxt.options.css.push(`${PACKAGE}/style.css`)
+    nuxt.options.css.push(`${PACKAGE}/style.css`)
 
     for (const name of COMPONENTS) {
       addComponent({

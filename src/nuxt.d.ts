@@ -2,7 +2,6 @@ import type { NuxtModule } from 'nuxt/schema'
 
 export interface ModuleOptions {
   prefix?: string
-  css?: boolean
   autoImports?: boolean
 }
 
