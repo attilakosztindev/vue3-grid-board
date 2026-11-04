@@ -102,9 +102,6 @@ if (!board) {
   )
 }
 
-const SETTLE_MS = 220
-const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
-
 let pointerCtl
 const settleAnims = new Set()
 let gestureFrame = null
@@ -573,9 +570,12 @@ function settleFrom(dx, dy, raise = true) {
 
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
 
+  const { duration, easing } = board.settleTiming()
+  if (duration === 0) return
+
   const anim = el.animate(
     [{ transform: `translate3d(${dx}px, ${dy}px, 0)` }, { transform: 'translate3d(0px, 0px, 0)' }],
-    { duration: SETTLE_MS, easing: SETTLE_EASING, composite: 'add' }
+    { duration, easing, composite: 'add' }
   )
   settleAnims.add(anim)
   if (raise) state.settling = true
@@ -858,8 +858,8 @@ function onBlur() {
 .grid-tile {
   border-radius: var(--grid-radius, 22px);
   transition:
-    width 200ms ease,
-    height 200ms ease;
+    width var(--grid-tile-duration, 220ms) var(--grid-tile-easing, cubic-bezier(0.2, 0, 0, 1)),
+    height var(--grid-tile-duration, 220ms) var(--grid-tile-easing, cubic-bezier(0.2, 0, 0, 1));
 }
 
 .grid-tile:focus-visible {
@@ -900,10 +900,10 @@ function onBlur() {
   border-radius: var(--grid-radius, 22px);
   opacity: 0.2;
   transition:
-    left 200ms ease,
-    top 200ms ease,
-    width 200ms ease,
-    height 200ms ease;
+    left var(--grid-shadow-duration, 200ms) var(--grid-shadow-easing, ease),
+    top var(--grid-shadow-duration, 200ms) var(--grid-shadow-easing, ease),
+    width var(--grid-shadow-duration, 200ms) var(--grid-shadow-easing, ease),
+    height var(--grid-shadow-duration, 200ms) var(--grid-shadow-easing, ease);
   z-index: 1;
   user-select: none;
 }

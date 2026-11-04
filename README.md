@@ -89,6 +89,33 @@ Tile positions are yours. The board never mutates the array you pass — it emit
 
 Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow keys move it, <kbd>Shift</kbd> with the arrow keys resizes it. <kbd>Enter</kbd> drops it, <kbd>Escape</kbd> puts it back.
 
+## Transitions
+
+Tiles, the placeholder and the board height animate. Each takes its timing from a CSS custom property, set on the board or any element above it.
+
+| Variable                       | Times                                               | Default                      |
+| ------------------------------ | --------------------------------------------------- | ---------------------------- |
+| `--grid-tile-duration`         | A tile moving or resizing into place.               | `220ms`                      |
+| `--grid-tile-easing`           |                                                     | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--grid-shadow-duration`       | The placeholder showing where a dragged tile lands. | `200ms`                      |
+| `--grid-shadow-easing`         |                                                     | `ease`                       |
+| `--grid-board-grow-duration`   | The board growing to fit its tiles.                 | `150ms`                      |
+| `--grid-board-shrink-duration` | The board shrinking.                                | `200ms`                      |
+| `--grid-board-easing`          | Both.                                               | `ease`                       |
+
+A duration of `0ms` turns that animation off:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .grid-board {
+    --grid-tile-duration: 0ms;
+    --grid-shadow-duration: 0ms;
+    --grid-board-grow-duration: 0ms;
+    --grid-board-shrink-duration: 0ms;
+  }
+}
+```
+
 ## GridBoard
 
 | Prop         | Type                         | Default | Description                                          |

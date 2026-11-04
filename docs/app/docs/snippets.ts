@@ -289,7 +289,7 @@ applyGravity(next, true, 'a')
 tiles.value = next`
 
 export const stylingSnippet = `.grid-tile {
-  background: var(--ui-bg-elevated);
+  background: #f8fafc;
   border-radius: inherit;
 }
 
@@ -298,12 +298,26 @@ export const stylingSnippet = `.grid-tile {
 }
 
 .grid-tile--grabbed {
-  outline: 2px solid var(--ui-primary);
+  outline: 2px solid #10b981;
 }
 
 .grid-shadow {
-  background: var(--ui-primary);
+  background: #10b981;
   opacity: 0.2;
+}`
+
+export const motionSnippet = `.grid-board {
+  --grid-tile-duration: 300ms;
+  --grid-board-grow-duration: 100ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-board {
+    --grid-tile-duration: 0ms;
+    --grid-shadow-duration: 0ms;
+    --grid-board-grow-duration: 0ms;
+    --grid-board-shrink-duration: 0ms;
+  }
 }`
 
 export const installPnpmSnippet = `pnpm add vue3-grid-board`

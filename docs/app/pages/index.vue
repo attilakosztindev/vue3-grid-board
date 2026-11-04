@@ -13,6 +13,7 @@ import {
   installYarnSnippet,
   interactiveSnippet,
   methodsSnippet,
+  motionSnippet,
   mutationSnippet,
   nuxtModuleSnippet,
   overflowSnippet,
@@ -274,6 +275,16 @@ const cssRows = [
   ['.grid-tile--grabbed', 'The tile was picked up from the keyboard.', 'keyboard drag'],
   ['.grid-handle', 'The resize grip, whether or not you filled it.', 'resizable'],
   ['.grid-handle--chevron', 'The grip, when no #handle slot was given.', 'resizable']
+]
+
+const motionRows = [
+  ['--grid-tile-duration', 'A tile moving or resizing into place.', '220ms'],
+  ['--grid-tile-easing', 'The same, its curve.', 'cubic-bezier(0.2, 0, 0, 1)'],
+  ['--grid-shadow-duration', 'The placeholder showing where a dragged tile lands.', '200ms'],
+  ['--grid-shadow-easing', 'The same, its curve.', 'ease'],
+  ['--grid-board-grow-duration', 'The board growing to fit its tiles.', '150ms'],
+  ['--grid-board-shrink-duration', 'The board shrinking.', '200ms'],
+  ['--grid-board-easing', 'Both, their curve.', 'ease']
 ]
 
 const nuxtOptionRows = [
@@ -1175,9 +1186,40 @@ onBeforeUnmount(() => {
             <code class="doc-inline">dragHandle</code> the body is not the handle, so style
             your own with <code class="doc-inline">cursor: grab</code>.
           </p>
-          <div class="doc-note doc-note--compact">
+          <h3 class="doc-h2-sub">Transitions</h3>
+          <p class="doc-text">
+            Tiles, the placeholder and the board height animate. Each takes its timing from a CSS
+            custom property, set on the board or any element above it. A duration of
+            <code class="doc-inline">0ms</code> turns that animation off.
+          </p>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="Transition variables">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Times</th>
+                  <th scope="col">Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in motionRows" :key="row[0]">
+                  <th scope="row">
+                    <code class="doc-inline">{{ row[0] }}</code>
+                  </th>
+                  <td>{{ row[1] }}</td>
+                  <td>
+                    <code class="doc-inline">{{ row[2] }}</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="doc-demo">
+            <DocExample :code="motionSnippet" lang="css" />
+          </div>
+          <div class="doc-note">
             <p class="doc-note__title">Never transition top, left, width or height</p>
-            <p class="doc-note__body">The board already animates those to settle a tile, and a second transition fights the first. Colour, shadow and opacity are free.</p>
+            <p class="doc-note__body">The board already animates those, and a second transition fights the first. Change their timing with the variables above. Colour, shadow and opacity are free.</p>
           </div>
         </section>
 

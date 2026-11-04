@@ -64,8 +64,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:tiles', 'ready'])
 
+const SETTLE_MS = 220
+const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
+
 let resizeObserver = null
 let lastEmitted = null
+let settleCache = null
 
 const exposeObj = {
   el: undefined,
@@ -129,7 +133,8 @@ provide(GRID_BOARD, {
   instructionsId,
   dragEvent: onDragEvent,
   resizeEvent: onResizeEvent,
-  announce: onAnnounce
+  announce: onAnnounce,
+  settleTiming
 })
 
 seedTiles()
@@ -205,6 +210,26 @@ function preventSelection(e) {
   e.preventDefault()
 }
 
+function settleTiming() {
+  if (settleCache) return settleCache
+  if (!exposeObj.el) return { duration: SETTLE_MS, easing: SETTLE_EASING }
+  const style = getComputedStyle(exposeObj.el)
+  const easing = style.getPropertyValue('--grid-tile-easing').trim()
+  settleCache = {
+    duration: readDuration(style.getPropertyValue('--grid-tile-duration'), SETTLE_MS),
+    easing: easing && CSS.supports('transition-timing-function', easing) ? easing : SETTLE_EASING
+  }
+  requestAnimationFrame(() => (settleCache = null))
+  return settleCache
+}
+
+function readDuration(value, fallback) {
+  const match = value.trim().match(/^([\d.]+)(ms|s)?$/)
+  if (!match) return fallback
+  const ms = parseFloat(match[1]) * (match[2] === 's' ? 1000 : 1)
+  return Number.isFinite(ms) ? ms : fallback
+}
+
 function onAnnounce(message) {
   if (!message) return
   state.announcement = message === state.announcement ? `${message}\u200b` : message
@@ -243,7 +268,8 @@ function adoptTiles() {
 
 function updateHeight() {
   const height = boardHeight()
-  if (state.boardStyle.height !== height) state.boardStyle = boardStyle(height)
+  if (state.boardStyle.height !== height)
+    state.boardStyle = boardStyle(height, state.boardStyle.height)
 }
 
 function onContainerResize() {
@@ -256,8 +282,13 @@ function boardHeight() {
   return `${getLastRow(state.tiles) * (props.rowHeight + gy) + gy}px`
 }
 
-function boardStyle(height) {
-  return { position: 'relative', height }
+function boardStyle(height, previous) {
+  const grows = parseFloat(height) > parseFloat(previous)
+  return {
+    position: 'relative',
+    height,
+    ...(grows ? { transitionDuration: 'var(--grid-board-grow-duration, 150ms)' } : {})
+  }
 }
 
 function onDragEvent([phase, id, x, y, h, w] = []) {
@@ -357,11 +388,7 @@ function setRef(e) {
 <style scoped>
 .grid-board {
   position: relative;
-  transition: height 200ms ease;
-}
-
-.grid-board--busy {
-  transition: none;
+  transition: height var(--grid-board-shrink-duration, 200ms) var(--grid-board-easing, ease);
 }
 
 .grid-sr {

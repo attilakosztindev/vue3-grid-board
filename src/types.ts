@@ -111,6 +111,7 @@ export interface GridBoardContext {
   dragEvent: (event: DragEventTuple) => void
   resizeEvent: (event: ResizeEventTuple) => void
   announce: (message: string) => void
+  settleTiming: () => { duration: number; easing: string }
 }
 
 export interface PointerGestureEvent {

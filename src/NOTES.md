@@ -124,11 +124,15 @@ tiles, 453 → 151 for 150; the +1 is the shadow).
   instant.
 - **Container height.** `height` is a layout property, so transitioning it is a
   main-thread animation: a style recalc plus a layout of the container and a reflow
-  of everything after it, every frame. Fine for the one-off settle after a gesture,
-  but during a gesture the height changes every time the tile crosses a cell, which
-  restarts the transition and runs it back-to-back for the whole drag. The
-  `.grid-board--busy` class disables it mid-gesture; snapping also tracks the shadow
-  more honestly.
+  of everything after it, every frame. During a gesture the height changes every time
+  the tile crosses a cell, which restarts the transition back-to-back for the whole
+  drag. It used to be switched off mid-gesture for that reason, which made the board
+  jump a row at a time; it now runs during gestures too, by choice. Growing uses
+  `--grid-board-grow-duration` (150ms) and shrinking `--grid-board-shrink-duration`
+  (200ms): `boardStyle` sets the grow duration inline whenever the new height is the
+  larger one. Growing faster keeps the board close behind a shadow that has just
+  reached a new row, though a container that clips can still cut the shadow off for
+  those 150ms. `0ms` brings the snapping back.
 - **Gesture frame caching.** `getControlPosition` reads `offsetParent`,
   `scrollLeft`/`scrollTop` and a bounding rect — three synchronous layout flushes per
   frame. The answer only changes if something scrolls or resizes, so it is measured
@@ -167,6 +171,16 @@ mid-flight simply picks up a second offset that also decays.
 Because animations composite with `add`, a settle left running from a previous
 gesture would stack its offset onto the next one. `clearSettle()` exists for that.
 
+The duration and easing come from `--grid-tile-duration` and `--grid-tile-easing`,
+falling back to 220ms and `cubic-bezier(0.2, 0, 0, 1)`. Reading a custom property is
+a `getComputedStyle` call, which is a forced style flush when styles are dirty — the
+same cost that rules out the CSS FLIP above. So the board reads them once, from its
+own element, and caches the result until the next animation frame
+(`settleTiming`); every tile displaced in that frame reuses it. That is also why the
+variables have to be set on the board or an ancestor rather than on a single tile.
+A duration of `0` skips the animation, and an easing that `CSS.supports` rejects
+falls back to the default.
+
 `raise` lifts the tile above its neighbours: right for the tile you just dropped
 (`state.raised` → `.settling`, `z-index: 100`), wrong for a tile merely being pushed
 out of the way.
@@ -186,7 +200,7 @@ set. It is a readout of where the dragged tile will land, so it is never interac
 It **glides**, but not with the FLIP the tiles use. The position watcher in
 `grid-tile.vue` returns early on `props.shadow` before it reaches `settleFrom`;
 the movement comes from a plain CSS transition on `left` / `top` / `width` / `height`
-in the shadow rule. §15 has the measurements, but the two reasons are:
+in the shadow rule, timed by `--grid-shadow-duration` and `--grid-shadow-easing`. §15 has the measurements, but the two reasons are:
 
 1. **A transition converges, a FLIP does not.** The shadow re-targets every time the
    pointer crosses a cell, which is far more often than a 220ms glide can finish. A
