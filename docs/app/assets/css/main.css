@@ -322,6 +322,41 @@ input {
   margin-top: 1.5rem;
 }
 
+.doc-heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.doc-heading-row > .doc-h2-sub {
+  margin-top: 0;
+}
+
+.doc-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--doc-accent-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--doc-accent) 10%, var(--doc-bg));
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--doc-accent-strong);
+  text-decoration: none;
+}
+
+.doc-chip:hover {
+  background: color-mix(in srgb, var(--doc-accent) 18%, var(--doc-bg));
+}
+
+.doc-chip:focus-visible {
+  outline: 2px solid var(--doc-accent-strong);
+  outline-offset: 2px;
+}
+
 .doc-lead {
   margin-top: 0.5rem;
   margin-bottom: 1.25rem;

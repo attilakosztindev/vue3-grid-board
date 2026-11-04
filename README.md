@@ -43,7 +43,7 @@ import { GridBoard, GridTile } from 'vue3-grid-board/core'
 import 'vue3-grid-board/style.css'
 ```
 
-### Nuxt module
+### Nuxt module [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/attilakosztindev/vue3-grid-board/tree/main/examples/nuxt)
 
 Register the module instead of importing anything: `GridBoard` and `GridTile` become auto-imports, and the stylesheet is added for you.
 
@@ -67,8 +67,6 @@ export default defineNuxtConfig({
 | ------------- | ------------------------------------------------------------------------------------ | --------- | ------- |
 | `prefix`      | Put in front of the component names: `'Ui'` gives `<UiGridBoard>`.                   | `string`  | `''`    |
 | `autoImports` | Auto-import the layout helpers too. Off by default, because their names are generic. | `boolean` | `false` |
-
-[Try it on StackBlitz](https://stackblitz.com/github/attilakosztindev/vue3-grid-board/tree/main/examples/nuxt): a minimal Nuxt app with the module.
 
 ## Usage
 

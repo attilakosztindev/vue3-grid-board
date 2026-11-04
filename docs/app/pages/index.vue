@@ -636,7 +636,18 @@ onBeforeUnmount(() => {
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-          <h3 id="nuxt" class="doc-h2-sub">Nuxt</h3>
+          <div class="doc-heading-row">
+            <h3 id="nuxt" class="doc-h2-sub">Nuxt</h3>
+            <a
+              class="doc-chip"
+              href="https://stackblitz.com/github/attilakosztindev/vue3-grid-board/tree/main/examples/nuxt"
+              target="_blank"
+              rel="noopener"
+            >
+              Try it on StackBlitz
+              <span class="doc-sr">(opens in a new tab)</span>
+            </a>
+          </div>
           <p class="doc-lead">
             Register the module instead of importing anything:
             <code class="doc-inline">GridBoard</code> and <code class="doc-inline">GridTile</code>
@@ -675,12 +686,6 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-          <p class="doc-text">
-            <a
-              class="doc-link"
-              href="https://stackblitz.com/github/attilakosztindev/vue3-grid-board/tree/main/examples/nuxt"
-            >Try it on StackBlitz</a>: a minimal Nuxt app with the module.
-          </p>
         </section>
 
         <section id="usage" class="doc-section">
