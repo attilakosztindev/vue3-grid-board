@@ -16,6 +16,7 @@ import {
   methodsSnippet,
   motionSnippet,
   mutationSnippet,
+  nuxiAddSnippet,
   nuxtModuleSnippet,
   overflowSnippet,
   persistenceSnippet,
@@ -292,7 +293,12 @@ const motionRows = [
 
 const nuxtOptionRows = [
   ['prefix', "Put in front of the component names: 'Ui' gives <UiGridBoard>.", 'string', "''"],
-  ['autoImports', 'Auto-import the layout helpers.', 'boolean', 'true']
+  [
+    'autoImports',
+    'Auto-import the layout helpers too. Off by default, because their names are generic.',
+    'boolean',
+    'false'
+  ]
 ]
 
 const typeRows = [
@@ -536,9 +542,13 @@ onBeforeUnmount(() => {
           <h3 id="nuxt" class="doc-h2-sub">Nuxt</h3>
           <p class="doc-lead">
             Register the module instead of importing anything:
-            <code class="doc-inline">GridBoard</code>, <code class="doc-inline">GridTile</code> and
-            the layout helpers become auto-imports, and the stylesheet is added for you.
+            <code class="doc-inline">GridBoard</code> and <code class="doc-inline">GridTile</code>
+            become auto-imports, and the stylesheet is added for you.
           </p>
+          <div class="doc-demo">
+            <DocExample :code="nuxiAddSnippet" lang="bash" />
+          </div>
+          <p class="doc-label">That adds it to your config, or add it yourself</p>
           <div class="doc-demo">
             <DocExample :code="nuxtModuleSnippet" lang="ts" />
           </div>
@@ -568,6 +578,12 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
+          <p class="doc-text">
+            <a
+              class="doc-link"
+              href="https://stackblitz.com/github/attilakosztindev/vue3-grid-board/tree/main/examples/nuxt"
+            >Try it on StackBlitz</a>: a minimal Nuxt app with the module.
+          </p>
         </section>
 
         <section id="usage" class="doc-section">

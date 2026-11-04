@@ -564,10 +564,12 @@ export const importSnippet = `import { GridBoard, GridTile } from 'vue3-grid-boa
 export const importStandaloneSnippet = `import { GridBoard, GridTile } from 'vue3-grid-board/core'
 import 'vue3-grid-board/style.css'`
 
+export const nuxiAddSnippet = `npx nuxi module add vue3-grid-board`
+
 export const nuxtModuleSnippet = `export default defineNuxtConfig({
   modules: ['vue3-grid-board/nuxt'],
   vue3GridBoard: {
     prefix: '',
-    autoImports: true
+    autoImports: false
   }
 })`

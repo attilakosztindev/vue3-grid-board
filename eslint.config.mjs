@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'docs/**', 'coverage/**', '.nuxt/**']
+    ignores: ['dist/**', 'node_modules/**', 'docs/**', 'examples/**', 'coverage/**', '.nuxt/**']
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

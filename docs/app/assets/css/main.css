@@ -266,6 +266,16 @@ input {
   color: var(--doc-slate-600);
 }
 
+.doc-link {
+  color: var(--doc-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.doc-link:hover {
+  color: var(--doc-accent-deep);
+}
+
 .doc-label {
   margin-top: 1.5rem;
   font-size: 0.875rem;

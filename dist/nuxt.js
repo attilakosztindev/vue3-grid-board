@@ -21,7 +21,7 @@ export default defineNuxtModule({
   },
   defaults: {
     prefix: '',
-    autoImports: true
+    autoImports: false
   },
   setup(options, nuxt) {
     nuxt.options.css.push(`${PACKAGE}/style.css`)
