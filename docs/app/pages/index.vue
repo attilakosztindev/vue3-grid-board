@@ -22,7 +22,6 @@ import {
   slotsSnippet,
   ssrPageSnippet,
   ssrRouteSnippet,
-  stylingSnippet,
   typesSnippet,
   usageSnippet
 } from '~/docs/snippets'
@@ -1301,9 +1300,6 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div class="doc-demo">
-            <DocExample :code="stylingSnippet" lang="css" />
           </div>
           <h3 class="doc-h2-sub">Cursors</h3>
           <p class="doc-text">

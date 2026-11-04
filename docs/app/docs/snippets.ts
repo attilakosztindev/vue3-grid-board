@@ -505,24 +505,6 @@ function moveA() {
   </GridBoard>
 </template>`
 
-export const stylingSnippet = `.grid-tile {
-  background: #f8fafc;
-  border-radius: inherit;
-}
-
-.grid-tile--resizing {
-  opacity: 0.9;
-}
-
-.grid-tile--grabbed {
-  outline: 2px solid #10b981;
-}
-
-.grid-shadow {
-  background: #10b981;
-  opacity: 0.2;
-}`
-
 export const a11ySnippet = `<script setup lang="ts">
 import { ref } from 'vue'
 import { GridBoard, GridTile } from 'vue3-grid-board'
