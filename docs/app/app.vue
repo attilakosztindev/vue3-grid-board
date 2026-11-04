@@ -2,7 +2,7 @@
 const site = 'https://attilakosztindev.github.io/vue3-grid-board'
 const title = 'vue3-grid-board — a draggable, resizable board for Vue 3'
 const description =
-  'A draggable, resizable board for Vue 3. Server-rendered, keyboard-operable, and correct on the first paint.'
+  'A draggable, resizable board for Vue 3. SSR friendly and accessible.'
 
 const route = useRoute()
 const url = computed(() => site + route.path.replace(/\/?$/, '/'))

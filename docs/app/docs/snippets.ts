@@ -31,6 +31,8 @@ const tiles = ref<Tile[]>([
 </template>`
 
 export const interactiveSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
 const interactive = ref(true)
@@ -45,6 +47,11 @@ const tiles = ref<Tile[]>([
 </script>
 
 <template>
+  <label>
+    <input v-model="interactive" type="checkbox">
+    Interactive
+  </label>
+
   <GridBoard
     v-model:tiles="tiles"
     :columns="12"
@@ -65,6 +72,8 @@ const tiles = ref<Tile[]>([
 </template>`
 
 export const gravitySnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
 const gravity = ref(false)
@@ -78,6 +87,11 @@ const tiles = ref<Tile[]>([
 </script>
 
 <template>
+  <label>
+    <input v-model="gravity" type="checkbox">
+    Gravity
+  </label>
+
   <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :gravity="gravity">
     <GridTile
       v-for="tile in tiles"
@@ -91,61 +105,86 @@ const tiles = ref<Tile[]>([
   </GridBoard>
 </template>`
 
-export const frozenSnippet = `const tiles = ref<Tile[]>([
+export const frozenSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
+
+const tiles = ref<Tile[]>([
   { id: 'nav', x: 0, y: 0, w: 3, h: 6, frozen: true },
   { id: 'a', x: 3, y: 0, w: 5, h: 3 },
   { id: 'b', x: 8, y: 0, w: 4, h: 3 },
   { id: 'c', x: 3, y: 3, w: 4, h: 3 },
   { id: 'd', x: 7, y: 3, w: 5, h: 3 }
-])`
-
-export const slotsSnippet = `<script setup lang="ts">
-import type { TileWith } from 'vue3-grid-board'
-
-const tile = reactive<TileWith<{ title: string; note: string }>>({
-  id: 'a',
-  x: 0,
-  y: 0,
-  w: 4,
-  h: 3,
-  title: 'Notes',
-  note: ''
-})
+])
 </script>
 
 <template>
-  <GridTile
-    :id="tile.id"
-    :x="tile.x"
-    :y="tile.y"
-    :w="tile.w"
-    :h="tile.h"
-    drag-handle="card-header"
-  >
-    <header class="card-header">{{ tile.title }}</header>
-    <input v-model="tile.note">
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+      :frozen="tile.frozen"
+    >
+      {{ tile.frozen ? 'Frozen' : tile.id }}
+    </GridTile>
+  </GridBoard>
+</template>`
 
-    <template #handle>
-      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-        <path
-          d="M3 13 L13 3 M13 3 H8 M13 3 V8"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
-      </svg>
-    </template>
-  </GridTile>
+export const slotsSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { TileWith } from 'vue3-grid-board'
+
+const tiles = ref<TileWith<{ title: string; note: string }>[]>([
+  { id: 'a', x: 0, y: 0, w: 4, h: 3, title: 'Notes', note: '' }
+])
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+      drag-handle="card-header"
+    >
+      <header class="card-header">{{ tile.title }}</header>
+      <input v-model="tile.note">
+
+      <template #handle>
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path
+            d="M3 13 L13 3 M13 3 H8 M13 3 V8"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+        </svg>
+      </template>
+    </GridTile>
+  </GridBoard>
 </template>
 
 <style>
 .grid-tile > .grid-handle {
-  color: var(--ui-primary);
+  color: #047857;
 }
 </style>`
 
 export const overflowSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
 const escape = ref(true)
@@ -158,6 +197,11 @@ const tiles = ref<Tile[]>([
 </script>
 
 <template>
+  <label>
+    <input v-model="escape" type="checkbox">
+    Overflow
+  </label>
+
   <div class="panel">
     <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :overflow="escape">
       <GridTile
@@ -180,7 +224,9 @@ const tiles = ref<Tile[]>([
 }
 </style>`
 
-export const dynamicSnippet = `import { getLastRow } from 'vue3-grid-board'
+export const dynamicSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile, getLastRow } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
@@ -198,23 +244,79 @@ function add() {
   tiles.value = [...tiles.value, tile]
 }
 
-function remove(id: string) {
+function remove(id: Tile['id']) {
   tiles.value = tiles.value.filter((t) => t.id !== id)
-}`
+}
+</script>
 
-export const mutationSnippet = `import type { Tile } from 'vue3-grid-board'
+<template>
+  <button type="button" @click="add">Add tile</button>
+  <span>{{ tiles.length }} on the board</span>
+
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="(tile, index) in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+      :label="\`Tile \${index + 1}\`"
+    >
+      {{ index + 1 }}
+      <button type="button" :aria-label="\`Remove tile \${index + 1}\`" @click="remove(tile.id)">
+        ×
+      </button>
+    </GridTile>
+  </GridBoard>
+</template>`
+
+export const mutationSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([
   { id: 'a', x: 0, y: 0, w: 4, h: 2 },
   { id: 'c', x: 4, y: 0, w: 4, h: 2 }
 ])
-const tile: Tile = { id: 'd', x: 0, y: 2, w: 4, h: 2 }
 
-tiles.value = [...tiles.value, tile]
-tiles.value = tiles.value.map((t) => (t.id === 'a' ? { ...t, w: 6 } : t))
-tiles.value = tiles.value.filter((t) => t.id !== 'c')`
+function add() {
+  const tile: Tile = { id: 'd', x: 0, y: 2, w: 4, h: 2 }
+  tiles.value = [...tiles.value, tile]
+}
 
-export const persistenceSnippet = `import { validateTiles } from 'vue3-grid-board'
+function widen() {
+  tiles.value = tiles.value.map((t) => (t.id === 'a' ? { ...t, w: 6 } : t))
+}
+
+function remove() {
+  tiles.value = tiles.value.filter((t) => t.id !== 'c')
+}
+</script>
+
+<template>
+  <button type="button" @click="add">Add d</button>
+  <button type="button" @click="widen">Widen a</button>
+  <button type="button" @click="remove">Remove c</button>
+
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
+  </GridBoard>
+</template>`
+
+export const persistenceSnippet = `<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { GridBoard, GridTile, validateTiles } from 'vue3-grid-board'
 import type { Tile } from 'vue3-grid-board'
 
 const KEY = 'dashboard'
@@ -241,19 +343,93 @@ function restore(fallback: Tile[]): Tile[] {
 
 const tiles = ref<Tile[]>(restore(defaults))
 
-watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))`
+watch(tiles, (next) => localStorage.setItem(KEY, JSON.stringify(next)))
+</script>
 
-export const typesSnippet = `import type { GridBoardExposed, Tile } from 'vue3-grid-board'
+<template>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
+  </GridBoard>
+</template>`
+
+export const ssrPageSnippet = `<script setup lang="ts">
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { Tile } from 'vue3-grid-board'
+
+const { data: tiles } = await useFetch<Tile[]>('/api/grid', { default: () => [] })
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    >
+      {{ tile.id }}
+    </GridTile>
+  </GridBoard>
+</template>`
+
+export const ssrRouteSnippet = `import type { Tile } from 'vue3-grid-board'
+
+export default defineEventHandler((): Tile[] => [
+  { id: 'revenue', x: 0, y: 0, w: 8, h: 3 },
+  { id: 'signups', x: 8, y: 0, w: 4, h: 3 },
+  { id: 'churn', x: 0, y: 3, w: 12, h: 2 }
+])`
+
+export const typesSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { GridBoardExposed, Tile } from 'vue3-grid-board'
 
 const tiles = ref<Tile[]>([{ id: 'a', x: 0, y: 0, w: 2, h: 2 }])
 
 const board = ref<GridBoardExposed | null>(null)
 
-board.value?.dispatch('dragEvent', ['dragmove', 'a', 3, 1, 2, 2])
-board.value?.dispatch('measure')`
+function nudge() {
+  board.value?.dispatch('dragEvent', ['dragmove', 'a', 3, 1, 2, 2])
+}
 
-export const extendSnippet = `import type { TileWith } from 'vue3-grid-board'
-import { getTileById } from 'vue3-grid-board'
+function measure() {
+  board.value?.dispatch('measure')
+}
+</script>
+
+<template>
+  <button type="button" @click="nudge">Move a</button>
+  <button type="button" @click="measure">Measure</button>
+
+  <GridBoard ref="board" v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
+  </GridBoard>
+</template>`
+
+export const extendSnippet = `<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { GridBoard, GridTile, getTileById } from 'vue3-grid-board'
+import type { TileWith } from 'vue3-grid-board'
 
 type Panel = TileWith<{
   title: string
@@ -264,10 +440,32 @@ const tiles = ref<Panel[]>([
   { id: 'a', x: 0, y: 0, w: 4, h: 3, title: 'Revenue', kind: 'chart' }
 ])
 
-const panel = getTileById(tiles.value, 'a')
-const title = panel?.title`
+const firstTitle = computed(() => getTileById(tiles.value, 'a')?.title)
+</script>
 
-export const methodsSnippet = `import {
+<template>
+  <h2>{{ firstTitle }}</h2>
+
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    >
+      {{ tile.title }} ({{ tile.kind }})
+    </GridTile>
+  </GridBoard>
+</template>`
+
+export const methodsSnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import {
+  GridBoard,
+  GridTile,
   applyGravity,
   copyTiles,
   getTileById,
@@ -280,13 +478,32 @@ const tiles = ref<Tile[]>([
   { id: 'b', x: 4, y: 0, w: 4, h: 2 }
 ])
 
-const next = copyTiles(tiles.value)
-const tile = getTileById(next, 'a')!
+function moveA() {
+  const next = copyTiles(tiles.value)
+  const tile = getTileById(next, 'a')!
 
-moveTile(next, tile, 3, 1, true, false)
-applyGravity(next, true, 'a')
+  moveTile(next, tile, 3, 1, true, false)
+  applyGravity(next, true, 'a')
 
-tiles.value = next`
+  tiles.value = next
+}
+</script>
+
+<template>
+  <button type="button" @click="moveA">Move a</button>
+
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
+  </GridBoard>
+</template>`
 
 export const stylingSnippet = `.grid-tile {
   background: #f8fafc;
@@ -306,23 +523,37 @@ export const stylingSnippet = `.grid-tile {
   opacity: 0.2;
 }`
 
-export const messagesSnippet = `<script setup lang="ts">
-import type { GridMessages } from 'vue3-grid-board'
+export const a11ySnippet = `<script setup lang="ts">
+import { ref } from 'vue'
+import { GridBoard, GridTile } from 'vue3-grid-board'
+import type { GridA11y, Tile } from 'vue3-grid-board'
 
-const messages: Partial<GridMessages> = {
-  roleDescription: 'Verschiebbare Kachel',
-  tileName: (id) => \`Kachel \${id}\`,
+const tiles = ref<Tile[]>([
+  { id: 'a', x: 0, y: 0, w: 6, h: 2 },
+  { id: 'b', x: 6, y: 0, w: 6, h: 2 }
+])
+
+const a11y: Partial<GridA11y> = {
+  roleDescription: 'Movable widget',
+  tileName: (id) => \`Widget \${id}\`,
   tileLabel: ({ name, column, row, w, h }) =>
-    \`\${name}, Spalte \${column}, Zeile \${row}, \${w} breit, \${h} hoch\`,
-  instructions: 'Mit Enter oder Leertaste aufnehmen, mit den Pfeiltasten verschieben …',
-  pickedUp: 'Aufgenommen.',
-  dropped: 'Abgelegt.'
+    \`\${name}: column \${column}, row \${row}, \${w} by \${h}\`,
+  pickedUp: 'Grabbed. Use the arrow keys to move it, and Enter to place it.',
+  dropped: 'Placed.'
 }
 </script>
 
 <template>
-  <GridBoard v-model:tiles="tiles" :messages="messages">
-    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  <GridBoard v-model:tiles="tiles" :columns="12" :row-height="40" :a11y="a11y">
+    <GridTile
+      v-for="tile in tiles"
+      :key="tile.id"
+      :id="tile.id"
+      :x="tile.x"
+      :y="tile.y"
+      :w="tile.w"
+      :h="tile.h"
+    />
   </GridBoard>
 </template>`
 
@@ -355,7 +586,6 @@ export const nuxtModuleSnippet = `export default defineNuxtConfig({
   modules: ['vue3-grid-board/nuxt'],
   vue3GridBoard: {
     prefix: '',
-    css: true,
     autoImports: true
   }
 })`

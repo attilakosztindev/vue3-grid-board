@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { GridBoard, GridTile, getLastRow, validateTiles } from 'vue3-grid-board'
 import {
+  a11ySnippet,
   dynamicSnippet,
   extendSnippet,
   frozenSnippet,
@@ -12,7 +13,6 @@ import {
   installPnpmSnippet,
   installYarnSnippet,
   interactiveSnippet,
-  messagesSnippet,
   methodsSnippet,
   motionSnippet,
   mutationSnippet,
@@ -20,6 +20,8 @@ import {
   overflowSnippet,
   persistenceSnippet,
   slotsSnippet,
+  ssrPageSnippet,
+  ssrRouteSnippet,
   stylingSnippet,
   typesSnippet,
   usageSnippet
@@ -194,9 +196,9 @@ const boardProps = [
     'false'
   ],
   [
-    'messages',
-    "Everything the board reads to screen readers, for a page not in English. Any key left out stays English.",
-    'Partial<GridMessages>',
+    'a11y',
+    'The text the board gives screen readers: role description, tile labels, instructions and announcements. Keys left out stay English.',
+    'Partial<GridA11y>',
     'null'
   ]
 ]
@@ -296,7 +298,6 @@ const motionRows = [
 
 const nuxtOptionRows = [
   ['prefix', "Put in front of the component names: 'Ui' gives <UiGridBoard>.", 'string', "''"],
-  ['css', 'Add the stylesheet to the app.', 'boolean', 'true'],
   ['autoImports', 'Auto-import the layout helpers.', 'boolean', 'true']
 ]
 
@@ -312,7 +313,7 @@ const typeRows = [
   ['GridTileSlots', 'default and handle.'],
   ['GridBoardExposed', 'What a board ref gives you: el and dispatch.'],
   ['GridTileExposed', 'What a tile ref gives you: el.'],
-  ['GridMessages', 'The text behind the messages prop, and GridTileDescription for tileLabel.'],
+  ['GridA11y', 'The text behind the a11y prop, and GridTileDescription for tileLabel.'],
   ['GridDispatch', "The dispatch signature, overloaded per command."],
   ['DragEventTuple', 'The payload dispatch takes for a drag, and ResizeEventTuple for a resize.'],
   ['PointerDragResizeOptions', 'Options for usePointerDragResize, with its controller type.']
@@ -373,7 +374,7 @@ const a11yRows = [
   [
     'Language',
     '3.1.2',
-    "The board's own text is marked as English, or given in the page's language through messages."
+    "The board's own text is marked as English, or given in the page's language through a11y."
   ],
   ['Animation', '2.3.3', 'Every animation turns off with the transition variables.']
 ]
@@ -384,7 +385,7 @@ const a11yGaps = [
     '1.4.3',
     "Your tile's text against its background. The grip and the focus outline follow the text colour."
   ],
-  ['Language', '3.1.2', 'On a page that is not in English, pass messages in its language.']
+  ['Language', '3.1.2', 'On a page that is not in English, pass a11y in its language.']
 ]
 
 const nav = [
@@ -400,9 +401,8 @@ const nav = [
       { id: 'overflow', label: 'Overflow' },
       { id: 'dynamic', label: 'Add & remove' },
       { id: 'persistence', label: 'Save & restore' },
-      { id: 'keyboard', label: 'Keyboard' },
       { id: 'accessibility', label: 'Accessibility' },
-      { id: 'ssr', label: 'Server rendering' },
+      { id: 'ssr', label: 'SSR' },
       { id: 'events', label: 'Events' }
     ]
   },
@@ -539,14 +539,6 @@ onBeforeUnmount(() => {
             <DocExample :code="importStandaloneSnippet" lang="ts" />
           </div>
 
-          <div class="doc-note">
-            <p class="doc-note__title">One component, split in two</p>
-            <p class="doc-note__body">
-              A tile reads its geometry from the board it is nested in, so rendering one outside a
-              board throws rather than silently laying itself out wrong. Import both, always.
-            </p>
-          </div>
-
           <h3 id="nuxt" class="doc-h2-sub">Nuxt</h3>
           <p class="doc-lead">
             Register the module instead of importing anything:
@@ -680,7 +672,7 @@ onBeforeUnmount(() => {
             the board settles around it.
           </p>
           <div class="doc-demo">
-            <DocExample :code="frozenSnippet" lang="ts">
+            <DocExample :code="frozenSnippet">
               <GridBoard v-model:tiles="frozenTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in frozenTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile" :class="{ 'doc-tile--locked': tile.frozen }">
@@ -779,7 +771,7 @@ onBeforeUnmount(() => {
               </button>
               <span class="doc-controls__status">{{ dynamicTiles.length }} on the board</span>
             </div>
-            <DocExample :code="dynamicSnippet" lang="ts">
+            <DocExample :code="dynamicSnippet">
               <GridBoard v-model:tiles="dynamicTiles" :columns="12" :row-height="40">
                 <GridTile
                   v-for="(tile, index) in dynamicTiles"
@@ -813,7 +805,7 @@ onBeforeUnmount(() => {
             </p>
           </div>
           <div class="doc-demo doc-demo--compact">
-            <DocExample :code="mutationSnippet" lang="ts" />
+            <DocExample :code="mutationSnippet" />
           </div>
           <div class="doc-note doc-note--compact">
             <p class="doc-note__title">Give a new tile a finite y</p>
@@ -854,7 +846,7 @@ onBeforeUnmount(() => {
                 {{ persistStatus }}
               </span>
             </div>
-            <DocExample :code="persistenceSnippet" lang="ts">
+            <DocExample :code="persistenceSnippet">
               <GridBoard v-model:tiles="persistTiles" :columns="12" :row-height="40">
                 <GridTile v-for="tile in persistTiles" :key="tile.id" v-bind="tile">
                   <div class="doc-tile">{{ tile.id }}</div>
@@ -868,11 +860,16 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <section id="keyboard" class="doc-section">
-          <h2 class="doc-h2">Keyboard</h2>
+        <section id="accessibility" class="doc-section">
+          <h2 class="doc-h2">Accessibility</h2>
           <p class="doc-lead">
-            Every unfrozen tile is focusable and fully operable from the keyboard. Nothing to
-            configure.
+            Every gesture works from the keyboard and without dragging, with nothing to configure.
+            The board meets the WCAG 2.2 AA criteria that concern a widget like it.
+          </p>
+
+          <h3 id="keyboard" class="doc-h2-sub">Keyboard</h3>
+          <p class="doc-text">
+            Every unfrozen tile is a tab stop. Pick it up, move or resize it, and drop it again.
           </p>
           <div class="doc-demo">
             <DocExample>
@@ -906,14 +903,14 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
-        </section>
 
-        <section id="accessibility" class="doc-section">
-          <h2 class="doc-h2">Accessibility</h2>
-          <p class="doc-lead">
-            The board meets the WCAG 2.2 AA criteria that concern a widget like it. Two things
-            depend on your page.
+          <h3 class="doc-h2-sub">Without dragging</h3>
+          <p class="doc-text">
+            Tap a tile, then tap where it should go. Tap its grip, then tap where its corner should
+            go. Tap it again to put it down. The board above works this way too.
           </p>
+
+          <h3 class="doc-h2-sub">WCAG 2.2</h3>
           <div class="doc-table-wrap" tabindex="0" role="region" aria-label="What the board does">
             <table class="doc-table">
               <thead>
@@ -952,8 +949,16 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
+          <h3 class="doc-h2-sub">Screen-reader text</h3>
+          <p class="doc-text">
+            Everything the board reads out comes from the
+            <code class="doc-inline">a11y</code> prop: the role description, the tile labels, the
+            instructions and the announcements. Keys you leave out keep their English default. Here
+            the wording changes; on a page in another language, give the same keys in that
+            language.
+          </p>
           <div class="doc-demo">
-            <DocExample :code="messagesSnippet" lang="vue" />
+            <DocExample :code="a11ySnippet" />
           </div>
 
           <div class="doc-note">
@@ -969,11 +974,20 @@ onBeforeUnmount(() => {
         </section>
 
         <section id="ssr" class="doc-section">
-          <h2 class="doc-h2">Server rendering</h2>
+          <h2 class="doc-h2">SSR</h2>
           <p class="doc-lead">
-            The server emits the real board — no
-            <code class="doc-inline">&lt;ClientOnly&gt;</code>, no hydration mismatch, no flash.
+            The board is SSR friendly: it renders in its final layout on the server, with no
+            <code class="doc-inline">&lt;ClientOnly&gt;</code>. The following example is
+            demonstrated with Nuxt.
           </p>
+          <p class="doc-label">pages/dashboard.vue</p>
+          <div class="doc-demo">
+            <DocExample :code="ssrPageSnippet" />
+          </div>
+          <p class="doc-label">server/api/grid.get.ts</p>
+          <div class="doc-demo">
+            <DocExample :code="ssrRouteSnippet" lang="ts" />
+          </div>
         </section>
 
         <section id="events" class="doc-section">
@@ -1042,7 +1056,7 @@ onBeforeUnmount(() => {
             </table>
           </div>
           <div class="doc-demo">
-            <DocExample :code="typesSnippet" lang="ts" />
+            <DocExample :code="typesSnippet" />
           </div>
         </section>
 
@@ -1050,10 +1064,11 @@ onBeforeUnmount(() => {
           <h2 class="doc-h2">Custom fields</h2>
           <p class="doc-lead">
             Put your own data on a tile with <code class="doc-inline">TileWith&lt;T&gt;</code>. The
-            engine carries unknown keys through untouched.
+            engine carries unknown keys through untouched, and
+            <code class="doc-inline">v-model:tiles</code> keeps your type.
           </p>
           <div class="doc-demo">
-            <DocExample :code="extendSnippet" lang="ts" />
+            <DocExample :code="extendSnippet" />
           </div>
         </section>
 
@@ -1364,7 +1379,7 @@ onBeforeUnmount(() => {
             </table>
           </div>
           <div class="doc-demo">
-            <DocExample :code="methodsSnippet" lang="ts" />
+            <DocExample :code="methodsSnippet" />
           </div>
         </section>
       </main>
