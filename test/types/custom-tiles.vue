@@ -28,8 +28,8 @@ defineExpose({ updatesKeepTheTileType, plainTilesStillWork })
   <GridBoard v-model:tiles="panels" @ready="titles">
     <GridTile
       v-for="tile in panels"
-      :key="tile.id"
       :id="tile.id"
+      :key="tile.id"
       :x="tile.x"
       :y="tile.y"
       :w="tile.w"
