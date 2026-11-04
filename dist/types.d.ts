@@ -30,6 +30,28 @@ export interface GridBoardProps {
   autoHeight?: boolean
   gravity?: boolean
   overflow?: boolean
+  messages?: Partial<GridMessages> | null
+}
+
+export interface GridTileDescription {
+  name: string
+  column: number
+  row: number
+  w: number
+  h: number
+}
+
+export interface GridMessages {
+  roleDescription: string
+  tileName: (id: TileId) => string
+  tileLabel: (tile: GridTileDescription) => string
+  instructions: string
+  pickedUp: string
+  pickedUpToMove: string
+  pickedUpToResize: string
+  dropped: string
+  putDown: string
+  returned: string
 }
 
 export interface GridTileProps {
@@ -112,10 +134,26 @@ export interface GridBoardContext {
   resizeEvent: (event: ResizeEventTuple) => void
   announce: (message: string) => void
   settleTiming: () => { duration: number; easing: string }
+  messages: ComputedRef<GridMessages>
+  startPlacing: (
+    id: TileId,
+    place: (column: number, row: number) => void,
+    putDown: () => void
+  ) => void
+  stopPlacing: (id: TileId) => void
+  cancelPlacing: () => void
+  placingId: () => TileId | null
 }
 
 export interface PointerGestureEvent {
   type: DragPhase | ResizePhase
+  target: HTMLElement
+  clientX: number
+  clientY: number
+}
+
+export interface PointerTapEvent {
+  mode: 'drag' | 'resize'
   target: HTMLElement
   clientX: number
   clientY: number
@@ -131,6 +169,7 @@ export interface PointerDragResizeOptions {
   autoScroll?: () => boolean
   onDrag?: (event: PointerGestureEvent) => void
   onResize?: (event: PointerGestureEvent) => void
+  onTap?: (event: PointerTapEvent) => void
 }
 
 export interface PointerDragResizeController {

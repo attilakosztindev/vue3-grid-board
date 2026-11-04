@@ -306,6 +306,26 @@ export const stylingSnippet = `.grid-tile {
   opacity: 0.2;
 }`
 
+export const messagesSnippet = `<script setup lang="ts">
+import type { GridMessages } from 'vue3-grid-board'
+
+const messages: Partial<GridMessages> = {
+  roleDescription: 'Verschiebbare Kachel',
+  tileName: (id) => \`Kachel \${id}\`,
+  tileLabel: ({ name, column, row, w, h }) =>
+    \`\${name}, Spalte \${column}, Zeile \${row}, \${w} breit, \${h} hoch\`,
+  instructions: 'Mit Enter oder Leertaste aufnehmen, mit den Pfeiltasten verschieben …',
+  pickedUp: 'Aufgenommen.',
+  dropped: 'Abgelegt.'
+}
+</script>
+
+<template>
+  <GridBoard v-model:tiles="tiles" :messages="messages">
+    <GridTile v-for="tile in tiles" :key="tile.id" v-bind="tile" />
+  </GridBoard>
+</template>`
+
 export const motionSnippet = `.grid-board {
   --grid-tile-duration: 300ms;
   --grid-board-grow-duration: 100ms;

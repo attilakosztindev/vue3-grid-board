@@ -89,6 +89,35 @@ Tile positions are yours. The board never mutates the array you pass — it emit
 
 Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow keys move it, <kbd>Shift</kbd> with the arrow keys resizes it. <kbd>Enter</kbd> drops it, <kbd>Escape</kbd> puts it back.
 
+## Accessibility
+
+The board meets the WCAG 2.2 AA criteria that concern a widget like it:
+
+- Every unfrozen tile is a tab stop, and every gesture has a key. Tabbing away from a picked-up tile drops it.
+- Nothing needs a drag: tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down.
+- Each tile is a group described as "Draggable tile" and named by its position and size, with the keys explained through `aria-describedby`.
+- A polite live region announces the pick-up, every move, the drop and a cancel.
+- Tiles sit in the DOM by row, then column, so Tab and screen readers follow the layout, and a tile keeps focus when a move reorders it.
+- The resize grip is at least 24 by 24 pixels. It and the focus outline are drawn in the tile's text colour, so they are as visible as your text.
+- The board's own text is marked as English. Pass `messages` to give it in the page's language.
+- Every animation turns off with the [transition variables](#transitions).
+
+Two things depend on your page: the contrast of your tile's text against its background (1.4.3), and `messages` in the page's language when it is not English (3.1.2).
+
+```vue
+<GridBoard
+  v-model:tiles="tiles"
+  :messages="{
+    roleDescription: 'Verschiebbare Kachel',
+    tileLabel: ({ name, column, row, w, h }) =>
+      `${name}, Spalte ${column}, Zeile ${row}, ${w} breit, ${h} hoch`,
+    pickedUp: 'Aufgenommen.'
+  }"
+>
+```
+
+WAI-ARIA has no pattern for a draggable grid: `aria-grabbed` and `aria-dropeffect` were deprecated in ARIA 1.1, and screen readers ignore them.
+
 ## Transitions
 
 Tiles, the placeholder and the board height animate. Each takes its timing from a CSS custom property, set on the board or any element above it.
@@ -118,17 +147,18 @@ A duration of `0ms` turns that animation off:
 
 ## GridBoard
 
-| Prop         | Type                         | Default | Description                                          |
-| ------------ | ---------------------------- | ------- | ---------------------------------------------------- |
-| `tiles`      | `Tile[]`                     | —       | Required. The layout.                                |
-| `columns`    | `number`                     | `12`    | Column count.                                        |
-| `rowHeight`  | `number`                     | `150`   | Row height in pixels.                                |
-| `gap`        | `number \| [number, number]` | `10`    | Space between tiles. A pair sets the two axes apart. |
-| `draggable`  | `boolean`                    | `true`  | Whether tiles can be dragged.                        |
-| `resizable`  | `boolean`                    | `true`  | Whether tiles can be resized.                        |
-| `autoHeight` | `boolean`                    | `true`  | Grow the board to fit its tiles.                     |
-| `gravity`    | `boolean`                    | `true`  | Pull tiles upward into free space.                   |
-| `overflow`   | `boolean`                    | `false` | Allow tiles to be dragged past the last row.         |
+| Prop         | Type                         | Default | Description                                                 |
+| ------------ | ---------------------------- | ------- | ----------------------------------------------------------- |
+| `tiles`      | `Tile[]`                     | —       | Required. The layout.                                       |
+| `columns`    | `number`                     | `12`    | Column count.                                               |
+| `rowHeight`  | `number`                     | `150`   | Row height in pixels.                                       |
+| `gap`        | `number \| [number, number]` | `10`    | Space between tiles. A pair sets the two axes apart.        |
+| `draggable`  | `boolean`                    | `true`  | Whether tiles can be dragged.                               |
+| `resizable`  | `boolean`                    | `true`  | Whether tiles can be resized.                               |
+| `autoHeight` | `boolean`                    | `true`  | Grow the board to fit its tiles.                            |
+| `gravity`    | `boolean`                    | `true`  | Pull tiles upward into free space.                          |
+| `overflow`   | `boolean`                    | `false` | Allow tiles to be dragged past the last row.                |
+| `messages`   | `Partial<GridMessages>`      | `null`  | The text read to screen readers, for a page not in English. |
 
 Emits `update:tiles` with the new layout, and `ready` once measured.
 
@@ -154,7 +184,7 @@ Slots: `default` for the tile's content, `handle` to replace the resize handle.
 
 ## Helpers
 
-`applyGravity`, `copyTiles`, `getLastRow`, `getTileById`, `moveTile` and `validateTiles` are exported for working with a layout outside the board. `usePointerDragResize` is the gesture composable the tiles use. TypeScript types (`Tile`, `TileId`, `Gap` and the prop, emit and slot interfaces) ship with the package.
+`applyGravity`, `copyTiles`, `getLastRow`, `getTileById`, `moveTile` and `validateTiles` are exported for working with a layout outside the board. `usePointerDragResize` is the gesture composable the tiles use. TypeScript types (`Tile`, `TileId`, `Gap`, `GridMessages` and the prop, emit and slot interfaces) ship with the package.
 
 ## Development
 

@@ -12,7 +12,8 @@ export function usePointerDragResize(root, options) {
     resizeIgnore = () => null,
     autoScroll = () => true,
     onDrag = () => {},
-    onResize = () => {}
+    onResize = () => {},
+    onTap = () => {}
   } = options
 
   let pointerId = null
@@ -132,11 +133,13 @@ export function usePointerDragResize(root, options) {
 
   function onPointerUp(e) {
     if (e.pointerId !== pointerId) return
+    const tapped = !started && e.type === 'pointerup' && mode
     if (started) {
       if (pendingMove) emitMoveNow()
       emit(`${mode}end`)
     }
     teardown()
+    if (tapped) onTap({ mode: tapped, target: e.target, clientX: e.clientX, clientY: e.clientY })
   }
 
   function teardown() {

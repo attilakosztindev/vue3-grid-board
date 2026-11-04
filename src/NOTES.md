@@ -434,6 +434,50 @@ tile.
 Static tiles, non-interactive grids and the shadow get no `tabindex` and no ARIA;
 the shadow is additionally `aria-hidden`, as is the resize handle.
 
+### Moving without dragging
+
+WCAG 2.5.7 asks for a single-pointer alternative to every drag, and keyboard support
+does not count. A press that never passes the drag threshold is reported by the pointer
+engine as a tap (`onTap`, only on a real `pointerup`, after `teardown`). The tile then
+picks itself up through the same `grab()` as <kbd>Enter</kbd>, and registers with the
+board as the tile waiting to be placed (`startPlacing`). The next tap anywhere on the
+board lands in the board's capture-phase `click` handler, which turns the coordinates
+into a cell (`cellAt`) and hands it to the tile's `placeAt`: the top-left for a tap
+that started on the body, the bottom-right corner for one that started on the grip.
+`placeAt` runs the move through the keyboard's gesture path, so the events, gravity and
+announcements match.
+
+Three details keep it from fighting the rest:
+
+- The board cancels `mousedown` in the capture phase while a tile waits, unless the
+  press is on that tile. Otherwise the press would move focus off the waiting tile,
+  its `blur` would put it down, and the `click` would find nothing to place.
+- A tap on another tile does not pick that one up while a tile waits
+  (`placingId`); it falls through to the board's `click` and places the waiting tile
+  there. A pointer drag of any tile puts the waiting one down (`cancelPlacing`).
+- Taps on controls inside a tile (`a, button, input, select, textarea, label,
+[contenteditable]`) are left to the control, whatever `dragIgnore` says.
+
+### Messages
+
+Every string the board reads out comes from `messages`, merged over English defaults.
+`tileLabel` receives a 1-based column and row. Without the prop, the instructions and
+the live region carry `lang="en"` (WCAG 3.1.2); with it, they inherit the page's
+language. The tile's `aria-label` and `aria-roledescription` are attributes, which
+`lang` cannot mark without also marking the tile's content, so on a page that is not in
+English only `messages` fixes them.
+
+### Focus survives a reorder
+
+Tiles are rendered in reading order, which is frozen while the board is busy and
+recomputed once the gesture ends. A drop that changes the order makes Vue move tile
+elements, and moving the focused element out of the document and back in drops its
+focus to `<body>` — after a keyboard drop the user lost their place, and the next key
+went nowhere. `onBeforeUpdate` remembers the focused element if it is inside the
+board, and `onUpdated` focuses it again (`preventScroll`) when focus has fallen to
+`<body>`. It never takes focus from anything else, so tabbing away or clicking
+elsewhere mid-update is left alone.
+
 ---
 
 ## 11. A dragged tile must not be clipped by an ancestor

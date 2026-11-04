@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { h } from 'vue'
+import { h, nextTick } from 'vue'
 import GridBoard from '../src/grid-board.vue'
 import GridTile from '../src/grid-tile.vue'
 
@@ -86,6 +86,25 @@ describe('moving a picked-up tile vertically with the keyboard', () => {
     await press(wrapper, 'a', 'Enter', 'ArrowDown')
 
     expect(slots(wrapper)).toMatchObject({ a: { x: 0, y: 1 } })
+    wrapper.unmount()
+  })
+})
+
+describe('focus after a keyboard drop', () => {
+  it('stays on the tile when the drop moves it later in the reading order', async () => {
+    const wrapper = mountBoard()
+    const tile = wrapper.find('.grid-tile[data-tile="signups"]:not(.grid-shadow)')
+      .element as HTMLElement
+    tile.focus()
+
+    await press(wrapper, 'signups', 'Enter', 'ArrowDown', 'Enter')
+    await nextTick()
+
+    const order = wrapper
+      .findAll('.grid-tile:not(.grid-shadow)')
+      .map((t) => t.attributes('data-tile'))
+    expect(order).toEqual(['revenue', 'churn', 'sessions', 'signups'])
+    expect(document.activeElement).toBe(tile)
     wrapper.unmount()
   })
 })

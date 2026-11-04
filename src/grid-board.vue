@@ -3,6 +3,8 @@ import {
   Fragment,
   onBeforeMount,
   onBeforeUnmount,
+  onBeforeUpdate,
+  onUpdated,
   reactive,
   watch,
   provide,
@@ -59,10 +61,31 @@ const props = defineProps({
   overflow: {
     type: Boolean,
     default: false
+  },
+  messages: {
+    type: Object,
+    default: null
   }
 })
 
 const emit = defineEmits(['update:tiles', 'ready'])
+
+const DEFAULT_MESSAGES = {
+  roleDescription: 'Draggable tile',
+  tileName: (id) => `Tile ${id}`,
+  tileLabel: ({ name, column, row, w, h }) =>
+    `${name}, column ${column}, row ${row}, ${w} wide, ${h} tall`,
+  instructions:
+    'Press Enter or Space to pick the tile up. Then use the arrow keys to move it, or hold Shift with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back. Without a keyboard, tap the tile and then tap where it should go, or tap its corner grip and then tap where that corner should go.',
+  pickedUp:
+    'Picked up. Arrow keys move, Shift plus arrow keys resize, Enter drops, Escape cancels.',
+  pickedUpToMove: 'Picked up. Tap where it should go, or tap it again to put it down.',
+  pickedUpToResize:
+    'Picked up to resize. Tap where its corner should go, or tap it again to put it down.',
+  dropped: 'Dropped.',
+  putDown: 'Put down.',
+  returned: 'Returned to where it started.'
+}
 
 const SETTLE_MS = 220
 const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
@@ -70,6 +93,8 @@ const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
 let resizeObserver = null
 let lastEmitted = null
 let settleCache = null
+let focusedTile = null
+let placing = null
 
 const exposeObj = {
   el: undefined,
@@ -94,6 +119,8 @@ const gap = computed(() => {
 })
 
 const instructionsId = useId()
+
+const messages = computed(() => ({ ...DEFAULT_MESSAGES, ...props.messages }))
 
 const slots = useSlots()
 
@@ -134,7 +161,12 @@ provide(GRID_BOARD, {
   dragEvent: onDragEvent,
   resizeEvent: onResizeEvent,
   announce: onAnnounce,
-  settleTiming
+  settleTiming,
+  messages,
+  startPlacing,
+  stopPlacing,
+  cancelPlacing,
+  placingId: () => placing?.id ?? null
 })
 
 seedTiles()
@@ -186,6 +218,19 @@ watch(gap, updateHeight)
 
 onBeforeMount(updateHeight)
 
+onBeforeUpdate(() => {
+  const active = IS_BROWSER ? document.activeElement : null
+  focusedTile = active && exposeObj.el?.contains(active) ? active : null
+})
+
+onUpdated(() => {
+  const tile = focusedTile
+  focusedTile = null
+  if (!tile || !tile.isConnected || document.activeElement === tile) return
+  if (document.activeElement && document.activeElement !== document.body) return
+  tile.focus({ preventScroll: true })
+})
+
 onBeforeUnmount(() => {
   if (resizeObserver && exposeObj.el) resizeObserver.disconnect()
   if (IS_BROWSER) document.removeEventListener('selectstart', preventSelection)
@@ -228,6 +273,51 @@ function readDuration(value, fallback) {
   if (!match) return fallback
   const ms = parseFloat(match[1]) * (match[2] === 's' ? 1000 : 1)
   return Number.isFinite(ms) ? ms : fallback
+}
+
+function startPlacing(id, place, putDown) {
+  if (placing && placing.id !== id) placing.putDown()
+  placing = { id, place, putDown }
+}
+
+function stopPlacing(id) {
+  if (placing?.id === id) placing = null
+}
+
+function cancelPlacing() {
+  placing?.putDown()
+}
+
+function placingTile(target) {
+  if (!placing) return null
+  const tile = exposeObj.el?.querySelector(
+    `.grid-tile[data-tile="${CSS.escape(String(placing.id))}"]:not(.grid-shadow)`
+  )
+  return { tile, inside: !!tile && tile.contains(target) }
+}
+
+function onPlaceMousedown(e) {
+  const hit = placingTile(e.target)
+  if (hit && !hit.inside) e.preventDefault()
+}
+
+function onPlaceClick(e) {
+  const hit = placingTile(e.target)
+  if (!hit || hit.inside) return
+  e.preventDefault()
+  e.stopPropagation()
+  const { x, y } = cellAt(e.clientX, e.clientY)
+  placing.place(x, y)
+}
+
+function cellAt(clientX, clientY) {
+  const rect = exposeObj.el.getBoundingClientRect()
+  const [gx, gy] = gap.value
+  const cols = props.columns
+  const colWidth = (rect.width - gx * (cols + 1)) / cols
+  const x = Math.floor((clientX - rect.left - gx / 2) / (colWidth + gx))
+  const y = Math.floor((clientY - rect.top - gy / 2) / (props.rowHeight + gy))
+  return { x: Math.min(Math.max(x, 0), cols - 1), y: Math.max(y, 0) }
 }
 
 function onAnnounce(message) {
@@ -363,6 +453,8 @@ function setRef(e) {
     class="grid-board"
     :class="{ 'grid-board--busy': state.busy }"
     :style="state.boardStyle"
+    @mousedown.capture="onPlaceMousedown"
+    @click.capture="onPlaceClick"
   >
     <GridTile
       v-show="state.busy"
@@ -375,11 +467,16 @@ function setRef(e) {
       shadow
     />
     <OrderedTiles />
-    <p :id="instructionsId" class="grid-sr">
-      Press Enter or Space to pick the tile up. Then use the arrow keys to move it, or hold Shift
-      with the arrow keys to resize it. Press Enter to drop it, or Escape to put it back.
+    <p :id="instructionsId" class="grid-sr" :lang="props.messages ? undefined : 'en'">
+      {{ messages.instructions }}
     </p>
-    <p class="grid-sr" role="status" aria-live="polite" aria-atomic="true">
+    <p
+      class="grid-sr"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      :lang="props.messages ? undefined : 'en'"
+    >
       {{ state.announcement }}
     </p>
   </div>

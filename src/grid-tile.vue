@@ -110,6 +110,9 @@ let rawStyle = null
 let dragSlot = null
 let keyGesture = null
 let grabOrigin = null
+let tapMode = null
+
+const TAP_IGNORE = 'a, button, input, select, textarea, label, [contenteditable]'
 
 const columns = computed(() => board.props.columns)
 const rowHeight = computed(() => board.props.rowHeight)
@@ -175,11 +178,18 @@ const classObj = computed(() => ({
   'grid-tile--grabbed': state.grabbed
 }))
 
-const tileName = computed(() => props.label || `Tile ${props.id}`)
+const messages = computed(() => board.messages.value)
 
-const tileLabel = computed(
-  () =>
-    `${unref(tileName)}, column ${state.innerX + 1}, row ${state.innerY + 1}, ${state.innerW} wide, ${state.innerH} tall`
+const tileName = computed(() => props.label || messages.value.tileName(props.id))
+
+const tileLabel = computed(() =>
+  messages.value.tileLabel({
+    name: tileName.value,
+    column: state.innerX + 1,
+    row: state.innerY + 1,
+    w: state.innerW,
+    h: state.innerH
+  })
 )
 
 createStyle()
@@ -251,11 +261,13 @@ function syncPointerCtl() {
     resizeIgnore: () => props.resizeIgnore,
     autoScroll: () => true,
     onDrag: handleDrag,
-    onResize: handleResize
+    onResize: handleResize,
+    onTap: handleTap
   })
 }
 
 onBeforeUnmount(() => {
+  board.stopPlacing(props.id)
   endKeyGesture()
   clearSettle()
   endGestureFrame()
@@ -403,6 +415,7 @@ function handleResize(event) {
   let pos
   switch (event.type) {
     case 'resizestart': {
+      board.cancelPlacing()
       state.resizeMin = calcPosition(0, 0, props.minW, props.minH)
       state.resizeMax = calcPosition(0, 0, props.maxW, props.maxH)
       state.previousW = state.innerW
@@ -474,6 +487,7 @@ function handleDrag(event) {
     case 'dragend': {
       if (event.type === 'dragend' && !state.isDragging) return
       if (event.type === 'dragstart') {
+        board.cancelPlacing()
         state.previousX = state.innerX
         state.previousY = state.innerY
         clearSettle()
@@ -690,7 +704,13 @@ function currentSlot() {
 
 function announceSlot(suffix) {
   const slot = currentSlot()
-  const where = `${unref(tileName)}, column ${slot.x + 1}, row ${slot.y + 1}, ${slot.w} wide, ${slot.h} tall`
+  const where = messages.value.tileLabel({
+    name: tileName.value,
+    column: slot.x + 1,
+    row: slot.y + 1,
+    w: slot.w,
+    h: slot.h
+  })
   board.announce(suffix ? `${where}. ${suffix}` : where)
 }
 
@@ -752,27 +772,74 @@ function keyResizeBy(dw, dh) {
   nextTick(() => announceSlot())
 }
 
-function grab() {
+function grab(message = messages.value.pickedUp) {
   grabOrigin = currentSlot()
   state.grabbed = true
-  announceSlot(
-    'Picked up. Arrow keys move, Shift plus arrow keys resize, Enter drops, Escape cancels.'
-  )
+  announceSlot(message)
 }
 
 function releaseGrab() {
   if (!state.grabbed) return
   const moved = keyGesture !== null
   endKeyGesture()
+  endTap()
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot(moved ? 'Dropped.' : 'Put down.'))
+  nextTick(() => announceSlot(moved ? messages.value.dropped : messages.value.putDown))
+}
+
+function handleTap({ mode, target }) {
+  if (!unref(interactive)) return
+  const waiting = board.placingId()
+  if (waiting !== null && waiting !== props.id) return
+  const control = target.closest?.(TAP_IGNORE)
+  if (control && control !== exposeObj.el && exposeObj.el.contains(control)) return
+
+  if (state.grabbed) {
+    releaseGrab()
+    return
+  }
+  tapMode = mode
+  exposeObj.el.focus({ preventScroll: true })
+  grab(mode === 'resize' ? messages.value.pickedUpToResize : messages.value.pickedUpToMove)
+  board.startPlacing(props.id, placeAt, releaseGrab)
+}
+
+function placeAt(column, row) {
+  const slot = currentSlot()
+  if (tapMode === 'resize') {
+    const w = Math.max(
+      props.minW,
+      Math.min(props.maxW, columns.value - slot.x, column - slot.x + 1)
+    )
+    const h = Math.max(props.minH, Math.min(props.maxH, row - slot.y + 1))
+    if (w !== slot.w || h !== slot.h) {
+      beginKeyGesture('resize')
+      board.resizeEvent(['resizemove', props.id, slot.x, slot.y, h, w])
+      emit('resize', props.id, w, h)
+    }
+  } else {
+    const x = Math.max(0, Math.min(column, columns.value - slot.w))
+    if (x !== slot.x || row !== slot.y) {
+      beginKeyGesture('drag')
+      board.dragEvent(['dragmove', props.id, x, row, slot.h, slot.w])
+      emit('drag', props.id, x, row)
+    }
+  }
+  releaseGrab()
+}
+
+function endTap() {
+  if (!tapMode) return
+  tapMode = null
+  board.stopPlacing(props.id)
 }
 
 function cancelGrab() {
   if (!state.grabbed) return
   const origin = grabOrigin
   endKeyGesture()
+  endTap()
 
   if (origin) {
     let slot = currentSlot()
@@ -791,7 +858,7 @@ function cancelGrab() {
 
   state.grabbed = false
   grabOrigin = null
-  nextTick(() => announceSlot('Returned to where it started.'))
+  nextTick(() => announceSlot(messages.value.returned))
 }
 
 function onKeydown(e) {
@@ -834,7 +901,7 @@ function onBlur() {
     :data-tile="id"
     :tabindex="interactive ? 0 : undefined"
     :role="interactive ? 'group' : undefined"
-    :aria-roledescription="interactive ? 'Draggable tile' : undefined"
+    :aria-roledescription="interactive ? messages.roleDescription : undefined"
     :aria-label="interactive ? tileLabel : undefined"
     :aria-describedby="interactive ? board.instructionsId : undefined"
     :aria-hidden="shadow ? 'true' : undefined"
@@ -915,8 +982,8 @@ function onBlur() {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: var(--grid-radius, 22px);
-  min-height: var(--grid-radius, 22px);
+  min-width: max(24px, var(--grid-radius, 22px));
+  min-height: max(24px, var(--grid-radius, 22px));
   color: currentColor;
   cursor: se-resize;
 }
@@ -925,21 +992,22 @@ function onBlur() {
 .grid-tile > .grid-handle--chevron::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
   border: 0 solid currentColor;
   border-right-width: 2px;
   border-bottom-width: 2px;
-  opacity: 0.35;
 }
 
 .grid-tile > .grid-handle--chevron::before {
+  right: 8px;
+  bottom: 8px;
   width: calc(var(--grid-radius, 22px) - 8px);
   height: calc(var(--grid-radius, 22px) - 8px);
   border-bottom-right-radius: calc(var(--grid-radius, 22px) - 8px);
 }
 
 .grid-tile > .grid-handle--chevron::after {
+  right: 13px;
+  bottom: 13px;
   width: calc(var(--grid-radius, 22px) - 13px);
   height: calc(var(--grid-radius, 22px) - 13px);
   border-bottom-right-radius: calc(var(--grid-radius, 22px) - 13px);

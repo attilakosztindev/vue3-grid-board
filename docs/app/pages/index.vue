@@ -12,6 +12,7 @@ import {
   installPnpmSnippet,
   installYarnSnippet,
   interactiveSnippet,
+  messagesSnippet,
   methodsSnippet,
   motionSnippet,
   mutationSnippet,
@@ -191,6 +192,12 @@ const boardProps = [
     'Let the tile being dragged or resized paint over anything that would otherwise clip it.',
     'boolean',
     'false'
+  ],
+  [
+    'messages',
+    "Everything the board reads to screen readers, for a page not in English. Any key left out stays English.",
+    'Partial<GridMessages>',
+    'null'
   ]
 ]
 
@@ -305,6 +312,7 @@ const typeRows = [
   ['GridTileSlots', 'default and handle.'],
   ['GridBoardExposed', 'What a board ref gives you: el and dispatch.'],
   ['GridTileExposed', 'What a tile ref gives you: el.'],
+  ['GridMessages', 'The text behind the messages prop, and GridTileDescription for tileLabel.'],
   ['GridDispatch', "The dispatch signature, overloaded per command."],
   ['DragEventTuple', 'The payload dispatch takes for a drag, and ResizeEventTuple for a resize.'],
   ['PointerDragResizeOptions', 'Options for usePointerDragResize, with its controller type.']
@@ -335,6 +343,50 @@ const keyboardRows = [
   ['Escape', 'Cancel, putting every tile back where the gesture started.']
 ]
 
+const a11yRows = [
+  ['Keyboard', '2.1.1', 'Every unfrozen tile is a tab stop, and every gesture has a key.'],
+  [
+    'Dragging movements',
+    '2.5.7',
+    'Tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down.'
+  ],
+  ['No keyboard trap', '2.1.2', 'Tabbing away from a picked-up tile drops it where it is.'],
+  [
+    'Name and role',
+    '4.1.2',
+    'Each tile is a group described as "Draggable tile" and named by its position and size: "Revenue, column 1, row 1, 6 wide, 4 tall". Set the name with label.'
+  ],
+  ['Instructions', '3.3.2', 'A visually hidden paragraph, linked with aria-describedby, explains the keys.'],
+  ['Status messages', '4.1.3', 'A polite live region announces the pick-up, every move, the drop and a cancel.'],
+  [
+    'Reading and focus order',
+    '1.3.2, 2.4.3',
+    'Tiles sit in the DOM by row, then column, so Tab and screen readers follow the layout. A tile keeps focus when a move reorders it.'
+  ],
+  ['Focus visible', '2.4.7', "A 2px outline in the tile's text colour, dashed while the tile is picked up."],
+  [
+    'Non-text contrast',
+    '1.4.11',
+    "The grip and the focus outline are drawn in the tile's text colour, so they are as visible as your text."
+  ],
+  ['Target size', '2.5.8', 'The resize grip is at least 24 by 24 pixels.'],
+  [
+    'Language',
+    '3.1.2',
+    "The board's own text is marked as English, or given in the page's language through messages."
+  ],
+  ['Animation', '2.3.3', 'Every animation turns off with the transition variables.']
+]
+
+const a11yGaps = [
+  [
+    'Text contrast',
+    '1.4.3',
+    "Your tile's text against its background. The grip and the focus outline follow the text colour."
+  ],
+  ['Language', '3.1.2', 'On a page that is not in English, pass messages in its language.']
+]
+
 const nav = [
   {
     title: 'Guide',
@@ -349,6 +401,7 @@ const nav = [
       { id: 'dynamic', label: 'Add & remove' },
       { id: 'persistence', label: 'Save & restore' },
       { id: 'keyboard', label: 'Keyboard' },
+      { id: 'accessibility', label: 'Accessibility' },
       { id: 'ssr', label: 'Server rendering' },
       { id: 'events', label: 'Events' }
     ]
@@ -852,6 +905,66 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section id="accessibility" class="doc-section">
+          <h2 class="doc-h2">Accessibility</h2>
+          <p class="doc-lead">
+            The board meets the WCAG 2.2 AA criteria that concern a widget like it. Two things
+            depend on your page.
+          </p>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="What the board does">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th scope="col">Criterion</th>
+                  <th scope="col">WCAG</th>
+                  <th scope="col">How</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in a11yRows" :key="row[0]">
+                  <th scope="row">{{ row[0] }}</th>
+                  <td>{{ row[1] }}</td>
+                  <td>{{ row[2] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="doc-h2-sub">Up to you</h3>
+          <div class="doc-table-wrap" tabindex="0" role="region" aria-label="What is up to you">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th scope="col">Criterion</th>
+                  <th scope="col">WCAG</th>
+                  <th scope="col">What to do</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in a11yGaps" :key="row[0]">
+                  <th scope="row">{{ row[0] }}</th>
+                  <td>{{ row[1] }}</td>
+                  <td>{{ row[2] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="doc-demo">
+            <DocExample :code="messagesSnippet" lang="vue" />
+          </div>
+
+          <div class="doc-note">
+            <p class="doc-note__title">There is no WAI-ARIA pattern for a draggable grid</p>
+            <p class="doc-note__body">
+              <code class="doc-inline">aria-grabbed</code> and
+              <code class="doc-inline">aria-dropeffect</code>, ARIA's drag-and-drop attributes, were
+              deprecated in ARIA 1.1 and screen readers ignore them. The board does what replaced
+              them in practice: a role description, a name that carries the position, instructions,
+              and a live region for every change.
+            </p>
           </div>
         </section>
 
