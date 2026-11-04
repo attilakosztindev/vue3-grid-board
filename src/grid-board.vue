@@ -6,6 +6,7 @@ import {
   onBeforeUpdate,
   onUpdated,
   reactive,
+  toRaw,
   watch,
   provide,
   computed,
@@ -231,7 +232,9 @@ watch(
 watch(
   () => props.gravity,
   () => {
-    applyGravity(state.tiles, props.gravity)
+    const tiles = toRaw(state.tiles).slice()
+    applyGravity(tiles, props.gravity)
+    state.tiles = tiles
     updateHeight()
     if (IS_BROWSER) commit()
   }
@@ -384,8 +387,9 @@ function onAnnounce(message) {
 
 function seedTiles() {
   validateTiles(props.tiles)
-  state.tiles = copyTiles(props.tiles)
-  applyGravity(state.tiles, props.gravity)
+  const tiles = copyTiles(props.tiles)
+  applyGravity(tiles, props.gravity)
+  state.tiles = tiles
   state.boardStyle = boardStyle(boardHeight())
 }
 
@@ -407,8 +411,9 @@ function commit() {
 
 function adoptTiles() {
   if (!differs(props.tiles, state.tiles)) return
-  state.tiles = copyTiles(props.tiles)
-  applyGravity(state.tiles, props.gravity)
+  const tiles = copyTiles(props.tiles)
+  applyGravity(tiles, props.gravity)
+  state.tiles = tiles
   updateHeight()
   if (IS_BROWSER) commit()
 }
@@ -439,7 +444,8 @@ function boardStyle(height, previous) {
 }
 
 function onDragEvent([phase, id, x, y, h, w] = []) {
-  const tile = getTileById(state.tiles, id) ?? { x: 0, y: 0 }
+  const tiles = toRaw(state.tiles).slice()
+  const tile = getTileById(tiles, id) ?? { x: 0, y: 0 }
 
   if (
     phase === 'dragmove' &&
@@ -454,8 +460,9 @@ function onDragEvent([phase, id, x, y, h, w] = []) {
 
   const gesturing = phase === 'dragmove' || phase === 'dragstart'
 
-  state.tiles = moveTile(state.tiles, tile, x, y, true, false)
-  applyGravity(state.tiles, props.gravity, id)
+  moveTile(tiles, tile, x, y, true, false)
+  applyGravity(tiles, props.gravity, id)
+  state.tiles = tiles
 
   if (gesturing) state.shadow = { ...state.shadow, x: tile.x, y: tile.y, w, h }
   state.busy = gesturing
@@ -466,7 +473,8 @@ function onDragEvent([phase, id, x, y, h, w] = []) {
 
 function onResizeEvent([phase, id, x, y, h, w] = []) {
   if (!phase) return
-  const tile = getTileById(state.tiles, id) ?? { x, y, h: 0, w: 0 }
+  const tiles = toRaw(state.tiles).slice()
+  const tile = getTileById(tiles, id) ?? { x, y, h: 0, w: 0 }
 
   if (
     phase === 'resizemove' &&
@@ -484,7 +492,8 @@ function onResizeEvent([phase, id, x, y, h, w] = []) {
 
   const gesturing = phase === 'resizestart' || phase === 'resizemove'
 
-  applyGravity(state.tiles, props.gravity, id)
+  applyGravity(tiles, props.gravity, id)
+  state.tiles = tiles
 
   if (gesturing) state.shadow = { ...state.shadow, x: tile.x, y: tile.y, w: tile.w, h: tile.h }
   state.busy = gesturing

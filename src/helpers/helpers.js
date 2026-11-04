@@ -35,15 +35,21 @@ function sortByRowThenColumn(tiles, priorityId) {
   })
 }
 
+function sharesColumns(a, b) {
+  return !(a.x + a.w <= b.x) && !(a.x >= b.x + b.w)
+}
+
 function fall(settled, tile, gravity) {
+  const column = settled.filter((t) => sharesColumns(t, tile))
+
   if (gravity) {
-    while (tile.y > 0 && !firstOverlap(settled, tile)) {
+    while (tile.y > 0 && !firstOverlap(column, tile)) {
       tile.y--
     }
   }
 
   let hit
-  while ((hit = firstOverlap(settled, tile))) {
+  while ((hit = firstOverlap(column, tile))) {
     tile.y = hit.y + hit.h
   }
 }

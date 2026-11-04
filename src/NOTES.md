@@ -334,6 +334,29 @@ Production build, median of 5, identical DOM, both variants Vue-rendered.
 - The remaining 5–8× is per-component cost (a 25-key reactive state, 7 watchers, 5 bus
   subscriptions and 2 computeds per tile) plus `applyGravity()`'s O(n²) pass.
 
+### Gravity off the reactive path
+
+Profiling a keyboard move on 500 tiles put 80% of the time in `applyGravity()`: 40% in
+`firstOverlap()` scanning every settled tile for every row a tile fell, and 38% in Vue's
+proxy `get`, because the pass ran on `state.tiles` itself. The board now runs gravity
+and moves on a plain copy of the array (`toRaw(...).slice()`) and assigns it back once,
+which triggers the same dependents. `fall()` first keeps the settled tiles that share
+a column with the falling tile, in their original order, so `firstOverlap()` returns
+the same tile it did before; a randomized comparison against the previous helpers
+(20,000 layouts, 320,000 checks) found no difference.
+
+Chromium, production build, median of 5, default props:
+
+| tiles | mount       | replace all | key move    | drag, per pointer move |
+| ----- | ----------- | ----------- | ----------- | ---------------------- |
+| 20    | 16.7 → 18.9 | 7.6 → 8.3   | 4.4 → 3.8   | 1.8 → 1.6              |
+| 100   | 52.3 → 45.0 | 34.5 → 29.9 | 26.8 → 14.8 | 17.7 → 10.9            |
+| 500   | 374 → 168   | 338 → 146   | 400 → 79    | 325 → 30               |
+
+At 20 tiles the difference is within run-to-run noise. `tapToMove`, `removable` and
+`overflow` cost nothing measurable either way; a static board (no drag, resize, gravity
+or auto-height) skips the pointer listener, the grip and the tab stop.
+
 ---
 
 ## 9. Known latent issue

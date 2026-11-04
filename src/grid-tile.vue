@@ -1,5 +1,15 @@
 <script setup>
-import { reactive, unref, watch, computed, onBeforeUnmount, onMounted, inject, nextTick } from 'vue'
+import {
+  reactive,
+  toRaw,
+  unref,
+  watch,
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  inject,
+  nextTick
+} from 'vue'
 import { IS_BROWSER, getPointerOffset, getFrameDelta, findKeyboardSlot } from './helpers/helpers'
 import { usePointerDragResize } from './helpers/usePointerDragResize'
 import { GRID_BOARD } from './context'
@@ -763,7 +773,7 @@ function keyMoveBy(dx, dy) {
   beginKeyGesture('drag')
   const slot = currentSlot()
   const next = findKeyboardSlot(
-    board.state.tiles,
+    toRaw(board.state.tiles),
     props.id,
     dx,
     dy,
