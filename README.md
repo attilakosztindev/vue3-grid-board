@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="https://attilakosztindev.github.io/vue3-grid-board/vue3-grid-board-logo.svg" alt="" width="160" height="160">
+<p align="center" style="text-align: center">
+  <img src="docs/public/vue3-grid-board-logo.svg" alt="" width="160" height="160">
 </p>
 
-<h1 align="center">vue3-grid-board</h1>
+<h1 align="center" style="text-align: center">vue3-grid-board</h1>
 
 A draggable, resizable board for Vue 3. SSR friendly and accessible.
 
