@@ -117,7 +117,8 @@ input {
   --doc-switch-thumb: #fff;
   --doc-icon: color-mix(in srgb, #065f46 55%, #fff);
 
-  --doc-bg: #fff;
+  --doc-bg: #f5f5f5;
+  --doc-container-bg: #fff;
   --doc-text: #404040;
   --doc-text-strong: #262626;
   --doc-text-muted: #525252;
@@ -156,6 +157,7 @@ input {
   --doc-switch-thumb: #e2e8f0;
 
   --doc-bg: #14161b;
+  --doc-container-bg: #1b1e25;
   --doc-text: #c8cfd9;
   --doc-text-strong: #d5dce6;
   --doc-text-muted: #a1a1aa;
@@ -460,6 +462,7 @@ input {
 
 .doc-table {
   width: 100%;
+  background-color: var(--doc-container-bg);
   border-collapse: collapse;
   font-size: 0.875rem;
 }
@@ -539,7 +542,7 @@ input {
   align-items: center;
   justify-content: center;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--doc-accent) 15%, transparent);
+  background: color-mix(in srgb, var(--doc-accent) 25%, transparent);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--doc-accent-deep);
@@ -705,7 +708,7 @@ input {
 }
 
 .doc-example__preview {
-  background: var(--doc-bg);
+  background: var(--doc-container-bg);
   padding: 1.5rem;
 }
 

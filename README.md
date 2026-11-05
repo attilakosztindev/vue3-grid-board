@@ -97,6 +97,8 @@ A tile is an empty container: what you put inside it is its content. Tile positi
 
 Focus a tile and press <kbd>Enter</kbd> or <kbd>Space</kbd> to pick it up. Arrow keys move it, <kbd>Shift</kbd> with the arrow keys resizes it. <kbd>Enter</kbd> drops it, <kbd>Escape</kbd> puts it back.
 
+Moving a tile sideways within its row swaps it with the tiles whose top is level with its own, once it passes a neighbour's middle, whatever their sizes. One arrow press swaps it with the next tile. A tile that enters a row from above or below pushes the tiles it lands on down instead.
+
 ### Without dragging
 
 Set `tap-to-move` on the board, and tiles move with taps instead of a drag: tap a tile, then tap where it should go. Tap its grip, then tap where its corner should go. Tap it again to put it down. It is off by default, so a plain click on a tile does nothing unless you ask for it.

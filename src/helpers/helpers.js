@@ -71,6 +71,47 @@ function pushAside(tiles, blocker, tile, isUserAction) {
   return moveTile(tiles, tile, undefined, tile.y + 1, false)
 }
 
+function slideAlongRow(tiles, tile, x) {
+  const dir = x > tile.x ? 1 : -1
+  const row = tiles.filter((t) => t !== tile && !t.frozen && t.y === tile.y)
+  const placed = new Map()
+  let at = tile.x
+
+  for (let step = tile.x + dir; dir > 0 ? step <= x : step >= x; step += dir) {
+    const probe = { x: dir > 0 ? Math.max(at, step) : Math.min(at, step), w: tile.w }
+    const ahead = row
+      .filter((t) => !placed.has(t) && sharesColumns(t, probe))
+      .sort((a, b) => dir * (a.x - b.x))
+
+    if (!ahead.length) {
+      at = probe.x
+      continue
+    }
+
+    const crossed = []
+    for (const t of ahead) {
+      const middle = t.x + t.w / 2
+      if (dir > 0 ? probe.x + tile.w > middle : probe.x < middle) crossed.push(t)
+      else break
+    }
+    if (!crossed.length) continue
+
+    let edge = dir > 0 ? at : at + tile.w
+    for (const t of crossed) {
+      if (dir > 0) {
+        placed.set(t, edge)
+        edge += t.w
+      } else {
+        edge -= t.w
+        placed.set(t, edge)
+      }
+    }
+    at = dir > 0 ? edge : edge - tile.w
+  }
+
+  return { at, placed }
+}
+
 function isNum(n) {
   return typeof n === 'number' && !Number.isNaN(n)
 }
@@ -113,6 +154,21 @@ export function moveTile(tiles, tile, x, y, isUserAction, preventOverlap) {
 
   const oldX = tile.x
   const oldY = tile.y
+
+  if (
+    isUserAction &&
+    !preventOverlap &&
+    typeof x === 'number' &&
+    x !== oldX &&
+    (y === undefined || y === oldY) &&
+    tiles.includes(tile)
+  ) {
+    const { at, placed } = slideAlongRow(tiles, tile, x)
+    x = at
+    tile.x = at
+    tile.moved = true
+    for (const [t, px] of placed) moveTile(tiles, t, px, t.y, false)
+  }
 
   const movingUp = y && tile.y > y
   if (typeof x === 'number') tile.x = x

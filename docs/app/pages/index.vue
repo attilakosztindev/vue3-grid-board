@@ -374,7 +374,7 @@ const methodRows = [
   ],
   [
     'moveTile(tiles, tile, x, y, fromUser, preventOverlap)',
-    'Move one tile in place, pushing whatever it hits.',
+    'Move one tile in place. A user move along its row swaps it past the tiles level with it; anything else it hits is pushed down.',
     'T[]'
   ],
   ['validateTiles(tiles, name?)', 'Throw on a bad type, a missing id or a duplicate id.', 'void']
@@ -383,7 +383,10 @@ const methodRows = [
 const keyboardRows = [
   ['Tab', 'Move focus between tiles. Frozen tiles are skipped.'],
   ['Enter or Space', 'Pick the focused tile up, and drop it again.'],
-  ['Arrow keys', 'Move the picked-up tile by one cell, or past the next tile when gravity is on.'],
+  [
+    'Arrow keys',
+    'Move the picked-up tile by one cell, or past the next tile: sideways within its row, and up or down when gravity is on.'
+  ],
   ['Shift + Arrows', 'Resize the picked-up tile by one cell.'],
   ['Escape', 'Cancel, putting every tile back where the gesture started.']
 ]
@@ -689,7 +692,8 @@ onBeforeUnmount(() => {
           <p class="doc-lead">
             Use <code class="doc-inline">draggable</code> and
             <code class="doc-inline">resizable</code> to freeze the board or bring the gestures
-            back.
+            back. Drag a tile sideways past the middle of a tile level with it, and the two swap
+            places, whatever their sizes.
           </p>
           <div class="doc-demo">
             <div class="doc-controls">

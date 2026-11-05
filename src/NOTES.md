@@ -426,6 +426,33 @@ board runs, one cell further each time, and returns the first slot that changes 
 board then receives one ordinary `dragmove` tuple for that slot. With gravity off the first
 step always changes the layout, so moves stay exactly one cell.
 
+### Sideways moves swap within a row
+
+`pushAside()` only ever moves a displaced tile vertically: above the moving tile if that slot
+is free, otherwise down one row. That makes vertical swaps work, but a sideways drag could
+never swap. For two tiles side by side the "above" slot is the same row, so the neighbour was
+pushed down at the first column of overlap, and gravity could not lift it back because the
+dragged tile then sat on top of it.
+
+`moveTile()` therefore handles a user move that changes only `x` with `slideAlongRow()` first.
+It considers the non-frozen tiles whose `y` equals the moving tile's, steps the moving tile
+one column at a time towards the target, and:
+
+- moves it freely while it overlaps none of them;
+- holds it while it overlaps a neighbour whose middle its leading edge has not passed yet;
+- once it passes, packs the passed neighbours into the columns it is leaving, in their order,
+  and places the moving tile right after them.
+
+Stepping makes the result independent of how far a single pointer event jumps, so a fast drag,
+a slow drag, an arrow key and a tap-to-move jump all give the same layout. The strict "past
+the middle" test gives hysteresis: after a swap the pointer sits on the near side of the
+neighbour's new middle, so it does not swap straight back. Widths and heights may differ; a
+neighbour that lands on something in the columns it moves into resolves through an ordinary
+non-user `moveTile()`. Everything else keeps the old path: vertical and diagonal moves, frozen
+tiles, tiles whose top differs, and non-user moves. A randomized comparison with the previous
+helpers (20,000 layouts) found every such move unchanged, and every sideways move leaving a
+valid layout.
+
 ### Lazy gesture start
 
 `grab()` only sets `state.grabbed`; it does not open a gesture. The `dragstart` /
