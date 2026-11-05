@@ -236,11 +236,6 @@ input {
   max-width: 14rem;
 }
 
-:root[data-theme='dark'] .doc-sidebar__logo--light,
-:root:not([data-theme='dark']) .doc-sidebar__logo--dark {
-  display: none;
-}
-
 .doc-sidebar__name {
   font-size: 1.5rem;
   line-height: calc(2 / 1.5);

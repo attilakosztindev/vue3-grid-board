@@ -28,7 +28,6 @@ import {
 } from '~/docs/snippets'
 
 const logo = asset('/vue3-grid-board-logo.svg')
-const logoDark = asset('/vue3-grid-board-logo-dark.svg')
 
 const THEME_KEY = 'vue3-grid-board-theme'
 const dark = ref(false)
@@ -539,14 +538,7 @@ onBeforeUnmount(() => {
             alt=""
             width="24"
             height="24"
-            class="doc-sidebar__logo doc-sidebar__logo--light"
-          />
-          <img
-            :src="logoDark"
-            alt=""
-            width="24"
-            height="24"
-            class="doc-sidebar__logo doc-sidebar__logo--dark"
+            class="doc-sidebar__logo"
           />
           <span class="doc-sidebar__name">vue3-grid-board</span>
         </a>
