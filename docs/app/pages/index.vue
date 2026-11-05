@@ -506,7 +506,6 @@ onMounted(() => {
   colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
   colorScheme.addEventListener('change', followSystemTheme)
 
-  measureSections()
   window.addEventListener('scroll', readActiveSection, { passive: true })
   window.addEventListener('resize', measureSections, { passive: true })
 
@@ -514,6 +513,8 @@ onMounted(() => {
   if (main && typeof ResizeObserver !== 'undefined') {
     spyResizeObserver = new ResizeObserver(measureSections)
     spyResizeObserver.observe(main)
+  } else {
+    measureSections()
   }
 })
 
